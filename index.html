@@ -2730,7 +2730,7 @@ const app = (() => {
               <label style="font-size:11px; color:var(--text-secondary); font-weight:600;">Nb factures:</label>
               <input type="number" min="0" max="${maxFact}" value="${pickCount}" 
                 onchange="app.simSetPick(this.dataset.name, this.value)"
-                oninput="app.simSetPick(this.dataset.name, this.value)"
+                
                 data-name="${name.replace(/"/g, '&quot;')}"
                 style="width:50px; text-align:center; font-size:14px; font-weight:700; padding:5px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
               <span style="font-size:11px; color:var(--text-tertiary);">/ ${maxFact}</span>
@@ -2741,7 +2741,6 @@ const app = (() => {
               <input type="number" min="0" max="${data.totalDebt}" value="${state.simCustomAmounts && state.simCustomAmounts[name] !== undefined ? state.simCustomAmounts[name] : ''}" 
                 placeholder="Ex. 500000"
                 onchange="app.simSetAmount(this.dataset.name, this.value)"
-                oninput="app.simSetAmount(this.dataset.name, this.value)"
                 data-name="${name.replace(/"/g, '&quot;')}"
                 step="1000"
                 style="width:140px; text-align:right; font-size:14px; font-weight:700; padding:5px 8px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
