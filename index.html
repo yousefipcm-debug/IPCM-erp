@@ -2724,6 +2724,7 @@ const app = (() => {
               <p style="font-weight:700; font-size:14px; margin:0;">${name}</p>
               <p style="font-size:11px; color:var(--text-secondary); margin:2px 0 0;">${maxFact} facture(s) impayée(s) · Total: ${fmtDZD(data.totalDebt)}</p>
             </div>
+            <button onclick="app.simDeleteSupplier(this.dataset.name)" data-name="${name.replace(/"/g, '&quot;')}" style="background:none; border:1px solid var(--danger-text); border-radius:6px; color:var(--danger-text); font-size:12px; padding:3px 8px; cursor:pointer; font-weight:bold;">Supprimer</button>
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <div style="display:flex; align-items:center; gap:4px;">
@@ -2794,6 +2795,13 @@ const app = (() => {
     if (!state.simCustomAmounts) state.simCustomAmounts = {};
     delete state.simCustomAmounts[name];
     renderSimulateur();
+  }
+
+  function simDeleteSupplier(name) {
+    if (!confirm('Supprimer toutes les situations de ' + name + ' ?')) return;
+    state.fournisseurs = state.fournisseurs.filter(f => f.name !== name);
+    save(K.fournisseurs, state.fournisseurs);
+    renderAll();
   }
 
   function simSetAmount(name, val) {
@@ -3025,6 +3033,7 @@ const app = (() => {
     showFournisseurReport,
     printFournisseurReport,
     simSetPick,
+    simDeleteSupplier,
     simSetAmount,
     printSimulator,
     deleteSituationPayment,
