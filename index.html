@@ -2668,20 +2668,51 @@ const app = (() => {
 
     const cards = suppliers.map(([name, data]) => {
       const pickCount = state.simPicks[name] || 0;
+      const customAmount = state.simCustomAmounts && state.simCustomAmounts[name] !== undefined ? state.simCustomAmounts[name] : null;
       const maxFact = data.factures.length;
-      const selected = data.factures.slice(0, pickCount);
-      const toPay = selected.reduce((s, f) => s + f.remaining, 0);
+      
+      let toPay = 0;
+      let highlightInfo = [];
+      
+      if (customAmount !== null && customAmount > 0) {
+        // Custom amount mode: distribute across factures oldest first
+        let remaining = customAmount;
+        data.factures.forEach((f, fi) => {
+          if (remaining <= 0) { highlightInfo.push({ selected: false, partial: 0 }); return; }
+          if (remaining >= f.remaining) {
+            highlightInfo.push({ selected: true, partial: 0 });
+            remaining -= f.remaining;
+            toPay += f.remaining;
+          } else {
+            highlightInfo.push({ selected: true, partial: remaining });
+            toPay += remaining;
+            remaining = 0;
+          }
+        });
+      } else if (pickCount > 0) {
+        // Pick count mode
+        const selected = data.factures.slice(0, pickCount);
+        toPay = selected.reduce((s, f) => s + f.remaining, 0);
+        data.factures.forEach((f, fi) => {
+          highlightInfo.push({ selected: fi < pickCount, partial: 0 });
+        });
+      } else {
+        data.factures.forEach(() => highlightInfo.push({ selected: false, partial: 0 }));
+      }
+      
       const restAfter = data.totalDebt - toPay;
       grandTotalToPay += toPay;
 
       const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
       const factureRows = data.factures.map((f, fi) => {
-        const isSelected = fi < pickCount;
+        const info = highlightInfo[fi] || { selected: false, partial: 0 };
+        const isSelected = info.selected;
+        const isPartial = info.partial > 0;
         return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-bottom:1px solid var(--border); font-size:12px; ${isSelected ? 'background:var(--ok-bg);' : ''}">
           <span style="${isSelected ? 'font-weight:600;' : 'opacity:0.5;'}">${fi + 1}. ${f.ref || '—'}</span>
           <span style="color:var(--text-secondary);">${f.date || '—'}</span>
-          <span style="font-weight:600; color:${isSelected ? 'var(--ok-text)' : 'var(--text-tertiary)'};">${fmtDZD(f.remaining)}</span>
+          <span style="font-weight:600; color:${isSelected ? 'var(--ok-text)' : 'var(--text-tertiary)'};">${isPartial ? fmtDZD(info.partial) + ' / ' : ''}${fmtDZD(f.remaining)}</span>
         </div>`;
       }).join('');
 
@@ -2694,22 +2725,36 @@ const app = (() => {
               <p style="font-size:11px; color:var(--text-secondary); margin:2px 0 0;">${maxFact} facture(s) impayée(s) · Total: ${fmtDZD(data.totalDebt)}</p>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:11px; color:var(--text-secondary); font-weight:600;">Nb factures à payer:</label>
-            <input type="number" min="0" max="${maxFact}" value="${pickCount}" 
-              onchange="app.simSetPick(this.dataset.name, this.value)"
-              oninput="app.simSetPick(this.dataset.name, this.value)"
-              data-name="${name.replace(/"/g, '&quot;')}"
-              style="width:60px; text-align:center; font-size:16px; font-weight:700; padding:6px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
-            <span style="font-size:11px; color:var(--text-tertiary);">/ ${maxFact}</span>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <label style="font-size:11px; color:var(--text-secondary); font-weight:600;">Nb factures:</label>
+              <input type="number" min="0" max="${maxFact}" value="${pickCount}" 
+                onchange="app.simSetPick(this.dataset.name, this.value)"
+                oninput="app.simSetPick(this.dataset.name, this.value)"
+                data-name="${name.replace(/"/g, '&quot;')}"
+                style="width:50px; text-align:center; font-size:14px; font-weight:700; padding:5px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
+              <span style="font-size:11px; color:var(--text-tertiary);">/ ${maxFact}</span>
+            </div>
+            <span style="font-size:11px; color:var(--text-tertiary);">ou</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <label style="font-size:11px; color:var(--text-secondary); font-weight:600;">Montant:</label>
+              <input type="number" min="0" max="${data.totalDebt}" value="${state.simCustomAmounts && state.simCustomAmounts[name] !== undefined ? state.simCustomAmounts[name] : ''}" 
+                placeholder="Ex. 500000"
+                onchange="app.simSetAmount(this.dataset.name, this.value)"
+                oninput="app.simSetAmount(this.dataset.name, this.value)"
+                data-name="${name.replace(/"/g, '&quot;')}"
+                step="1000"
+                style="width:140px; text-align:right; font-size:14px; font-weight:700; padding:5px 8px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
+              <span style="font-size:11px; color:var(--text-tertiary);">DZD</span>
+            </div>
           </div>
         </div>
 
         ${factureRows}
 
-        ${pickCount > 0 ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+        ${toPay > 0 ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
           <div style="background:var(--warn-bg); border-radius:8px; padding:10px 12px;">
-            <p style="font-size:10px; color:var(--warn-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">À payer (${pickCount} facture${pickCount > 1 ? 's' : ''})</p>
+            <p style="font-size:10px; color:var(--warn-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">À payer</p>
             <p style="font-size:16px; font-weight:700; margin:0; color:var(--warn-text);">${fmtDZD(toPay)}</p>
           </div>
           <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
@@ -2746,6 +2791,23 @@ const app = (() => {
   function simSetPick(name, val) {
     if (!state.simPicks) state.simPicks = {};
     state.simPicks[name] = Math.max(0, parseInt(val) || 0);
+    // Clear custom amount when using pick mode
+    if (!state.simCustomAmounts) state.simCustomAmounts = {};
+    delete state.simCustomAmounts[name];
+    renderSimulateur();
+  }
+
+  function simSetAmount(name, val) {
+    if (!state.simCustomAmounts) state.simCustomAmounts = {};
+    const amount = Math.max(0, parseFloat(val) || 0);
+    if (amount > 0) {
+      state.simCustomAmounts[name] = amount;
+      // Clear pick count when using amount mode
+      if (!state.simPicks) state.simPicks = {};
+      state.simPicks[name] = 0;
+    } else {
+      delete state.simCustomAmounts[name];
+    }
     renderSimulateur();
   }
 
@@ -2964,6 +3026,7 @@ const app = (() => {
     showFournisseurReport,
     printFournisseurReport,
     simSetPick,
+    simSetAmount,
     printSimulator,
     deleteSituationPayment,
     deleteFournisseurPayment,
