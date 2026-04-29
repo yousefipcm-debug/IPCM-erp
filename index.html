@@ -2653,7 +2653,7 @@ const app = (() => {
       s.factures.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     });
 
-    const suppliers = Object.entries(supplierMap).sort((a, b) => b[1].totalDebt - a[1].totalDebt);
+    const suppliers = Object.entries(supplierMap).filter(([, d]) => d.totalDebt >= 1).sort((a, b) => b[1].totalDebt - a[1].totalDebt);
 
     if (suppliers.length === 0) {
       el.innerHTML = '<div class="empty-state">Aucune dette fournisseur impayée.</div>';
