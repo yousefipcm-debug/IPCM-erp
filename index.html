@@ -1,0 +1,2991 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPCM BOUTEMA</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1A1A17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IPCM BOUTEMA">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="screen">
+<style>
+  :root {
+    --bg-page: #F7F6F2;
+    --bg-surface: #FFFFFF;
+    --bg-muted: #F1EFE8;
+    --bg-hover: #EDEBE4;
+    --text-primary: #1A1A17;
+    --text-secondary: #5F5E5A;
+    --text-tertiary: #888780;
+    --border: rgba(26, 26, 23, 0.08);
+    --border-strong: rgba(26, 26, 23, 0.16);
+    --accent: #1A1A17;
+    --danger-bg: #FCEBEB;
+    --danger-text: #A32D2D;
+    --danger-border: rgba(163, 45, 45, 0.25);
+    --warn-bg: #FAEEDA;
+    --warn-text: #854F0B;
+    --warn-border: rgba(133, 79, 11, 0.25);
+    --ok-bg: #EAF3DE;
+    --ok-text: #3B6D11;
+    --ok-border: rgba(59, 109, 17, 0.25);
+    --info-bg: #E6F1FB;
+    --info-text: #185FA5;
+    --info-border: rgba(24, 95, 165, 0.25);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-page: #15161A;
+      --bg-surface: #1C1D21;
+      --bg-muted: #25262B;
+      --bg-hover: #2D2F34;
+      --text-primary: #EAEAE5;
+      --text-secondary: #A8A7A0;
+      --text-tertiary: #6E6D68;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --accent: #EAEAE5;
+      --danger-bg: rgba(226, 75, 74, 0.12);
+      --danger-text: #F09595;
+      --warn-bg: rgba(239, 159, 39, 0.12);
+      --warn-text: #FAC775;
+      --ok-bg: rgba(151, 196, 89, 0.12);
+      --ok-text: #C0DD97;
+      --info-bg: rgba(55, 138, 221, 0.12);
+      --info-text: #85B7EB;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .brand {
+    padding: 20px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-row { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--text-primary); color: var(--bg-surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+  }
+  .brand-name { font-size: 14px; font-weight: 600; margin: 0; }
+  .brand-sub { font-size: 11px; color: var(--text-tertiary); margin: 1px 0 0; font-weight: 500; }
+
+  .nav-section-label {
+    padding: 14px 16px 4px;
+    font-size: 10px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  }
+  .nav-list { list-style: none; padding: 2px 10px; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+  .nav-btn {
+    width: 100%; background: transparent; border: none;
+    text-align: left; padding: 8px 10px; border-radius: 7px;
+    font-size: 13px; color: var(--text-secondary); cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    font-family: inherit; transition: all 0.12s; font-weight: 500;
+  }
+  .nav-btn:hover { background: var(--bg-muted); color: var(--text-primary); }
+  .nav-btn.active { background: var(--bg-muted); color: var(--text-primary); }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #E24B4A; margin-left: auto; display: none;
+    box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.15);
+  }
+  .nav-btn.has-alert .nav-dot { display: block; }
+
+  .sidebar-foot {
+    margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-tertiary);
+  }
+  .foot-row { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .save-pulse {
+    width: 7px; height: 7px; border-radius: 50%; background: #3B6D11;
+    animation: breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    background: var(--bg-surface); border-bottom: 1px solid var(--border);
+    padding: 16px 28px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar h1 { font-size: 19px; font-weight: 600; margin: 0; }
+  .topbar p { font-size: 12.5px; color: var(--text-tertiary); margin: 2px 0 0; font-weight: 500; }
+  .top-pills { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pill {
+    font-size: 11px; padding: 4px 10px; border-radius: 999px;
+    background: var(--bg-muted); color: var(--text-secondary); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill-ok { background: var(--ok-bg); color: var(--ok-text); }
+  .pill-warn { background: var(--warn-bg); color: var(--warn-text); }
+  .pill-danger { background: var(--danger-bg); color: var(--danger-text); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .content { padding: 24px 28px; flex: 1; }
+
+  .panel { display: none; animation: fadeIn 0.22s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .journal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .journal-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+    transition: border-color 0.15s;
+  }
+  .journal-card:hover { border-color: var(--border-strong); }
+  .journal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .journal-title { font-size: 13px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .journal-title .ico { width: 20px; height: 20px; padding: 3px; border-radius: 6px; background: var(--bg-muted); }
+  .journal-action {
+    background: transparent; border: 1px solid var(--border-strong);
+    border-radius: 6px; padding: 4px 10px; font-size: 11px;
+    color: var(--text-primary); cursor: pointer; font-weight: 600;
+    transition: all 0.12s; font-family: inherit;
+  }
+  .journal-action:hover { background: var(--bg-muted); }
+  .journal-balance { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+  .journal-hint { font-size: 11.5px; color: var(--text-tertiary); font-weight: 500; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 18px; position: relative;
+    min-width: 0; overflow: hidden; transition: border-color 0.15s;
+  }
+  .kpi-card:hover { border-color: var(--border-strong); }
+  .kpi-card.danger { border-color: var(--danger-border); background: var(--danger-bg); }
+  .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .kpi-lbl {
+    font-size: 11px; color: var(--text-secondary); text-transform: uppercase;
+    letter-spacing: 0.06em; margin: 0; font-weight: 600;
+  }
+  .kpi-card.danger .kpi-lbl { color: var(--danger-text); }
+  .kpi-icon-chip {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--bg-muted);
+    display: flex; align-items: center; justify-content: center; color: var(--text-secondary);
+  }
+  .kpi-card.danger .kpi-icon-chip { background: var(--bg-surface); color: var(--danger-text); }
+  .kpi-card.danger.flash .kpi-icon-chip { animation: pulseRed 1.4s ease-in-out infinite; }
+  @keyframes pulseRed { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.55; } }
+  .kpi-val {
+    font-size: 24px; font-weight: 600; margin: 0; overflow-wrap: break-word;
+    line-height: 1.15; font-family: 'Inter', sans-serif;
+  }
+  .kpi-card.danger .kpi-val { color: var(--danger-text); }
+  .kpi-hint { font-size: 11.5px; color: var(--text-tertiary); margin: 6px 0 0; font-weight: 500; }
+  .kpi-card.danger .kpi-hint { color: var(--danger-text); opacity: 0.8; }
+
+  .card {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px; min-width: 0; margin-bottom: 12px;
+  }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 6px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600; margin: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .ti { width: 16px; height: 16px; color: var(--text-secondary); }
+  .card-hint { font-size: 11.5px; color: var(--text-tertiary); font-weight: 500; }
+
+  .aging-table {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .aging-cell {
+    background: var(--bg-surface);
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .aging-cell.header {
+    background: var(--bg-muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+  }
+  .aging-cell.num { text-align: right; font-weight: 500; }
+  .aging-cell.danger { color: var(--danger-text); font-weight: 600; }
+  .aging-cell.warn { color: var(--warn-text); font-weight: 600; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 10.5px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  }
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    padding: 8px 11px; border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md); background: var(--bg-surface);
+    color: var(--text-primary); width: 100%; height: 36px;
+    transition: border-color 0.12s, box-shadow 0.12s; font-weight: 500;
+  }
+  textarea { height: auto; min-height: 72px; resize: vertical; }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--text-primary);
+    box-shadow: 0 0 0 3px var(--bg-muted);
+  }
+  .num-input { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .btn-primary {
+    background: var(--text-primary); color: var(--bg-surface);
+    border: 1px solid var(--text-primary); border-radius: var(--radius-md);
+    padding: 0 16px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit; height: 36px;
+    transition: opacity 0.12s, transform 0.08s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    background: transparent; color: var(--text-primary);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+    padding: 0 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit; height: 32px;
+    transition: all 0.12s;
+  }
+  .btn-secondary:hover { background: var(--bg-muted); }
+
+  .tbl-wrap { overflow-x: auto; margin: 0 -4px; }
+  table.mod {
+    width: 100%; font-size: 13px; border-collapse: collapse; min-width: 560px;
+  }
+  table.mod th {
+    text-align: left; font-weight: 600; color: var(--text-tertiary);
+    padding: 9px 12px; border-bottom: 1px solid var(--border);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  table.mod td {
+    padding: 11px 12px; border-bottom: 1px solid var(--border);
+    vertical-align: middle; font-variant-numeric: tabular-nums;
+  }
+  table.mod tr:last-child td { border-bottom: none; }
+  table.mod tr:hover td { background: var(--bg-muted); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 999px; font-size: 11px;
+    font-weight: 600; white-space: nowrap;
+  }
+  .b-ok { background: var(--ok-bg); color: var(--ok-text); }
+  .b-warn { background: var(--warn-bg); color: var(--warn-text); }
+  .b-danger { background: var(--danger-bg); color: var(--danger-text); }
+  .b-info { background: var(--info-bg); color: var(--info-text); }
+  .b-neutral { background: var(--bg-muted); color: var(--text-secondary); }
+  .bd { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .ghost-btn {
+    background: transparent; border: none; color: var(--text-tertiary);
+    cursor: pointer; padding: 4px 8px; border-radius: 6px;
+    font-family: inherit; font-size: 17px; line-height: 1;
+    transition: all 0.12s;
+  }
+  .ghost-btn:hover { background: var(--bg-muted); color: var(--danger-text); }
+
+  .empty-state {
+    text-align: center; padding: 32px 16px; color: var(--text-tertiary);
+    font-size: 13px; font-weight: 500;
+  }
+  .empty-state .eb {
+    width: 34px; height: 34px; margin: 0 auto 10px;
+    color: var(--text-tertiary); opacity: 0.45;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text-primary); color: var(--bg-surface);
+    padding: 10px 16px; border-radius: var(--radius-md);
+    font-size: 13px; font-weight: 500; opacity: 0;
+    transform: translateY(10px); transition: all 0.22s;
+    pointer-events: none; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-surface); border-radius: var(--radius-lg);
+    max-width: 600px; width: 100%; max-height: 80vh;
+    overflow-y: auto; padding: 24px;
+  }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .modal-title { font-size: 16px; font-weight: 600; margin: 0; }
+  .modal-close {
+    background: transparent; border: none; font-size: 24px;
+    color: var(--text-tertiary); cursor: pointer; padding: 0;
+    width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; border-radius: 6px;
+  }
+  .modal-close:hover { background: var(--bg-muted); }
+
+  /* ===== MOBILE APP EXPERIENCE ===== */
+  @media (max-width: 900px) {
+    .app-shell { grid-template-columns: 1fr; min-height: 100vh; min-height: 100dvh; }
+    .sidebar { display: none; }
+    .topbar { display: none; }
+    .main { padding-bottom: 72px; }
+    .content { padding: 16px 16px 24px; }
+
+    /* Mobile header */
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0 14px;
+      margin-bottom: 8px;
+    }
+    .mobile-header h1 { font-size: 22px; font-weight: 700; margin: 0; }
+    .mobile-header .pill { font-size: 12px; }
+
+    /* Bottom tab bar */
+    .mobile-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      padding: 6px 0 env(safe-area-inset-bottom, 8px);
+      justify-content: space-around;
+    }
+    .mobile-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: color 0.15s;
+      min-width: 56px;
+    }
+    .mobile-nav-btn svg { width: 22px; height: 22px; }
+    .mobile-nav-btn.active { color: var(--text-primary); }
+    .mobile-nav-btn .nav-badge {
+      position: absolute;
+      top: 2px;
+      right: 12px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #E24B4A;
+      display: none;
+    }
+    .mobile-nav-btn.has-alert .nav-badge { display: block; }
+
+    /* KPI cards - bigger on mobile */
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi-card { padding: 14px 16px; }
+    .kpi-lbl { font-size: 10px; }
+    .kpi-val { font-size: 26px; font-weight: 700; }
+    .kpi-hint { font-size: 12px; }
+    .kpi-icon-chip { width: 28px; height: 28px; }
+
+    /* Journal cards */
+    .journal-grid { grid-template-columns: 1fr; gap: 10px; }
+    .journal-card { padding: 16px 18px; }
+    .journal-balance { font-size: 26px; font-weight: 700; }
+    .journal-title { font-size: 14px; }
+    .journal-action { font-size: 12px; padding: 6px 14px; }
+
+    /* Cards */
+    .card { padding: 16px; border-radius: 14px; }
+    .card-title { font-size: 15px; }
+    .grid-2 { grid-template-columns: 1fr; }
+
+    /* Tables */
+    table.mod { font-size: 13px; min-width: 100%; }
+    table.mod th { font-size: 10px; padding: 8px 10px; }
+    table.mod td { padding: 10px; }
+
+    /* Forms */
+    .form-grid { grid-template-columns: 1fr; gap: 12px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
+      height: 44px;
+      font-size: 15px;
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .btn-primary { height: 48px; font-size: 15px; border-radius: 10px; width: 100%; }
+    .btn-secondary { height: 36px; font-size: 12px; }
+    .field label { font-size: 11px; margin-bottom: 2px; }
+
+    /* Badges */
+    .badge { font-size: 11px; padding: 4px 10px; }
+
+    /* Modals */
+    .modal { border-radius: 16px; padding: 20px; max-height: 90vh; }
+    .modal-title { font-size: 18px; }
+
+    /* Aging table */
+    .aging-table { grid-template-columns: 1fr 1fr; gap: 1px; }
+    .aging-cell { padding: 10px 12px; font-size: 13px; }
+    .aging-cell.num { text-align: right; }
+
+    /* Alerts */
+    .alert-li { font-size: 14px; padding: 12px 14px; border-radius: 10px; }
+    .al-t { font-size: 14px; }
+    .al-d { font-size: 12px; }
+
+    /* Ghost buttons bigger for touch */
+    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 40px; min-height: 40px; }
+
+    /* Stat rows */
+    .stat-row { font-size: 14px; padding: 10px 0; }
+
+    /* Empty state */
+    .empty-state { font-size: 14px; padding: 28px 16px; }
+
+    /* Informal banner */
+    .informal-banner { border-radius: 10px; padding: 14px 16px; font-size: 14px; }
+    .banner-body .bt { font-size: 14px; }
+    .banner-body .bs { font-size: 13px; }
+
+    /* Toast */
+    .toast { bottom: 84px; right: 16px; left: 16px; text-align: center; border-radius: 10px; font-size: 14px; }
+
+    /* Pills on mobile header */
+    .top-pills-mobile { display: flex; gap: 6px; flex-wrap: wrap; }
+  }
+
+  /* Hide mobile elements on desktop */
+  @media (min-width: 901px) {
+    .mobile-header { display: none; }
+    .mobile-nav { display: none; }
+  }
+
+  /* Mobile nav styling for both modes */
+  .mobile-header { display: none; }
+  .mobile-nav { display: none; }
+
+  /* Print button */
+  .print-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.12s;
+  }
+  .print-btn:hover { background: var(--bg-muted); color: var(--text-primary); }
+  .print-btn svg { width: 14px; height: 14px; }
+
+  /* Print styles */
+  @media print {
+    * { animation: none !important; transition: none !important; font-family: Arial, Helvetica, sans-serif !important; }
+    body { background: white !important; font-size: 12px; color: black !important; font-family: Arial, Helvetica, sans-serif !important; }
+    .app-shell { display: block !important; }
+    .sidebar { display: none !important; }
+    .topbar { display: none !important; }
+    .mobile-nav { display: none !important; }
+    .mobile-header { display: none !important; }
+    .main { display: block !important; padding-bottom: 0 !important; }
+    .content { padding: 0 !important; }
+    .panel { display: none !important; }
+    .panel.active { display: block !important; }
+    .print-btn { display: none !important; }
+    .btn-primary, .btn-secondary, .ghost-btn { display: none !important; }
+    .journal-action { display: none !important; }
+    .form-grid { display: none !important; }
+    .modal-overlay { display: none !important; }
+    .toast { display: none !important; }
+    .save-pulse { display: none !important; }
+    .informal-banner { display: none !important; }
+    .kpi-grid { display: none !important; }
+    .journal-grid { display: none !important; }
+    #fournisseur-names-list, #client-names-list { display: none !important; }
+    #fournisseurs-summary-cards { display: block !important; }
+    #fournisseurs-summary-cards .fournisseur-card { display: none !important; }
+    #fournisseurs-summary-cards .fournisseur-card.print-target { display: block !important; }
+    #fournisseur-report-card { display: none !important; }
+    #fournisseur-report-card.print-target { display: block !important; padding: 0 !important; }
+    #clients-summary-cards { display: none !important; }
+    #projets-cards .card > div:last-child { display: none !important; }
+    .card { break-inside: avoid; border: none !important; box-shadow: none !important; background: white !important; padding: 0 !important; margin: 0 !important; }
+    .card-head { margin-bottom: 8px !important; }
+    .card-title .ti { display: none !important; }
+    .card:not(.print-target) { display: none !important; }
+    .card.print-target { display: block !important; }
+    table.mod { font-size: 11px; border: 1px solid #ccc; }
+    table.mod th { font-size: 9px; background: #f0f0f0 !important; }
+    table.mod td { border-bottom: 1px solid #ddd; }
+    .badge { border: 0.5px solid #ccc; }
+    .print-header { display: block !important; text-align: left; margin-bottom: 20px; padding-bottom: 0; border-bottom: none; }
+    .print-header h1 { font-size: 18px; margin: 0 0 4px; color: #1A1A17; }
+    .print-header p { font-size: 11px; margin: 0; color: #333; }
+    @page { margin: 15mm; size: auto; }
+    @page :first { margin-top: 10mm; }
+  }
+  @media not print {
+    .print-header { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-mark">IB</div>
+        <div>
+          <p class="brand-name">IPCM BOUTEMA</p>
+          <p class="brand-sub">Construction et Industrie</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="nav-section-label">Pilotage</p>
+    <ul class="nav-list">
+      <li><button class="nav-btn active" data-panel="overview">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Vue d'ensemble
+      </button></li>
+      <li><button class="nav-btn" data-panel="alerts" id="nav-alerts">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Alertes
+        <span class="nav-dot"></span>
+      </button></li>
+      <li><button class="nav-btn" data-panel="projets">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-4h6v4"/></svg>
+        Projets / Chantiers
+      </button></li>
+    </ul>
+
+    <p class="nav-section-label">Finance</p>
+    <ul class="nav-list">
+      <li><button class="nav-btn" data-panel="journaux">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        Journaux
+      </button></li>
+      <li><button class="nav-btn" data-panel="situations">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Situations
+      </button></li>
+      <li><button class="nav-btn" data-panel="clients-summary">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients
+      </button></li>
+      <li><button class="nav-btn" data-panel="aging">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Balance âgée
+      </button></li>
+      <li><button class="nav-btn" data-panel="forecast">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><polyline points="7 14 12 9 16 13 21 8"/></svg>
+        Prévisionnel
+      </button></li>
+      <li><button class="nav-btn" data-panel="charges">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Charges
+      </button></li>
+      <li><button class="nav-btn" data-panel="fournisseurs">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        Fournisseurs
+      </button></li>
+      <li><button class="nav-btn" data-panel="simulateur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><rect x="4" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="16" y="2" width="4" height="18"/></svg>
+        Simulateur
+      </button></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      <div class="foot-row">
+        <span class="save-pulse"></span>
+        <span id="save-status">Sauvegarde auto</span>
+      </div>
+      <div style="margin-top: 5px; opacity: 0.85;" id="foot-date">—</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="page-title">Vue d'ensemble</h1>
+        <p id="page-sub">Le pouls de ton entreprise aujourd'hui</p>
+      </div>
+      <div class="top-pills" id="top-pills"></div>
+    </header>
+
+    <div class="content">
+
+      <div class="print-header" style="text-align:left;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:20px;">
+          <div style="text-align:left; line-height:1.9; flex:1;">
+            <span style="font-size:16px; font-weight:bold; color:#1A1A17; letter-spacing:0.03em;">I.P.C.M BOUTEMA</span><br>
+            <span style="font-size:11.5px; color:#333; font-weight:500;">Entreprise industrielle production d&rsquo;ensemble construction métallique</span><br>
+            <span style="font-size:11.5px; color:#222; font-weight:500;">Adresse: RTE Sidi Achour Med Div 08 GP 85 BLIDA</span><br>
+            <span style="font-size:11.5px; color:#222; font-weight:500;">RC: 09/00-4108712A23 &nbsp; NIF: 16922040023019500900 &nbsp; NIS: 196922040023050 &nbsp; BP: 1001369786</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0; gap:0; line-height:1;">
+            <img src="data:image/png;base64,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" alt="IPCM" style="height:50px; object-fit:contain; margin-bottom:-6px;">
+            <span style="font-size:13px; font-weight:700; color:#1A1A17; letter-spacing:0.08em; margin:0; padding:0;">BOUTEMA</span>
+            <span style="font-size:9px; color:#555; letter-spacing:0.05em; margin:2px 0 0 0; padding:0;">Construction et Industrie</span>
+          </div>
+        </div>
+        <div style="border-bottom:2px solid #C8782A; margin-top:8px; margin-bottom:6px;"></div>
+        <p id="print-page-info" style="font-size:12px; font-weight:700; color:#1A1A17; margin:6px 0 0; letter-spacing:0.02em;">Rapport</p>
+      </div>
+
+      <div class="mobile-header">
+        <h1 id="mobile-page-title">Vue d'ensemble</h1>
+        <div id="mobile-pills"></div>
+      </div>
+
+      <section class="panel active" data-panel="overview">
+        <div class="kpi-grid" id="kpi-overview"></div>
+        <div class="journal-grid" id="journal-summary"></div>
+      </section>
+
+      <section class="panel" data-panel="alerts">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">
+              <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              Alertes actives
+            </p>
+            <span class="card-hint">Triées par urgence</span>
+          </div>
+          <div id="alerts-list"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="projets">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Projets actifs</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-projets-actifs">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Valeur totale contrats</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-projets-valeur">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Marge globale</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-projets-marge">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Nouveau projet</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Nom du projet</label><input type="text" id="pj-name" placeholder="Ex. Hangar Blida"/></div>
+            <div class="field"><label>Client</label>
+              <select id="pj-client"></select>
+            </div>
+            <div class="field"><label>Valeur contrat (DZD)</label><input type="number" id="pj-value" class="num-input" placeholder="0" step="1000"/></div>
+            <div class="field"><label>Date début</label><input type="date" id="pj-start"/></div>
+            <button class="btn-primary" onclick="app.addProject()">Ajouter</button>
+          </div>
+        </div>
+
+        <div id="projets-cards" style="margin-top: 12px;"></div>
+      </section>
+
+      <section class="panel" data-panel="journaux">
+        <div class="journal-grid">
+          <div class="journal-card">
+            <div class="journal-head">
+              <p class="journal-title">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                Caisse
+              </p>
+              <button class="journal-action" onclick="app.openTransactionModal('caisse')">+ Mouvement</button>
+            </div>
+            <p class="journal-balance" id="journal-caisse-bal">—</p>
+            <p class="journal-hint" id="journal-caisse-hint">—</p>
+          </div>
+          <div class="journal-card">
+            <div class="journal-head">
+              <p class="journal-title">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M12 3l9 6H3l9-6z"/><line x1="7" y1="15" x2="7" y2="17"/><line x1="12" y1="15" x2="12" y2="17"/><line x1="17" y1="15" x2="17" y2="17"/></svg>
+                Banque
+              </p>
+              <button class="journal-action" onclick="app.openTransactionModal('banque')">+ Mouvement</button>
+            </div>
+            <p class="journal-balance" id="journal-banque-bal">—</p>
+            <p class="journal-hint" id="journal-banque-hint">—</p>
+          </div>
+          <div class="journal-card">
+            <div class="journal-head">
+              <p class="journal-title">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+                Clients
+              </p>
+              <button class="journal-action" onclick="app.openSituationModal()">+ Situation</button>
+            </div>
+            <p class="journal-balance" id="journal-clients-bal">—</p>
+            <p class="journal-hint" id="journal-clients-hint">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Mouvements récents</p>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="print-btn" onclick="app.printPage(event, 'Journaux — Mouvements récents')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+              <span class="card-hint">Tous journaux confondus</span>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="transactions-recent-table"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="situations">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Créances totales</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-creances">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Situations en attente</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-situations-unpaid">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Toutes les situations</p>
+            <div style="display:flex; gap:6px;">
+              <button class="print-btn" onclick="app.printPage(event, 'Situations — Factures clients')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+              <button class="btn-secondary" onclick="app.openSituationModal()">+ Nouvelle situation</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="situations-table"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="clients-summary">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Total créances</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-clients-total">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Nombre de clients</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-clients-count">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Ajouter un client</p>
+            <span class="card-hint">Les noms apparaissent dans le menu déroulant des situations</span>
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr auto;">
+            <div class="field"><label>Nom du client</label><input type="text" id="cl-name" placeholder="Ex. SARL Alger Dev"/></div>
+            <button class="btn-primary" onclick="app.addClientName()">Ajouter</button>
+          </div>
+          <div id="client-names-list" style="margin-top: 12px;"></div>
+        </div>
+
+        <div id="clients-summary-cards" style="margin-top: 12px;"></div>
+      </section>
+
+      <section class="panel" data-panel="aging">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">
+              <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Balance âgée des créances
+            </p>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="print-btn" onclick="app.printPage(event, 'Balance âgée des créances')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+              <span class="card-hint">Par tranche d'ancienneté</span>
+            </div>
+          </div>
+          <div id="aging-report"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="forecast">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Tréso projetée J+30</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><polyline points="7 14 12 9 16 13 21 8"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-forecast-30">—</p>
+            <p class="kpi-hint" id="kpi-forecast-30-hint">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Mouvements attendus (30 prochains jours)</p>
+            <span class="card-hint">Entrées et sorties prévues</span>
+          </div>
+          <div class="tbl-wrap" id="forecast-table"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="charges">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Charges mensuelles</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-charges">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Runway estimé</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-runway">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Ajouter une charge fixe</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Libellé</label><input type="text" id="ch-label" placeholder="Ex. Loyer bureau"/></div>
+            <div class="field"><label>Type</label>
+              <input type="text" id="ch-type" placeholder="Ex. Salaire, CNAS, Loyer..."/>
+            </div>
+            <div class="field"><label>Montant mensuel (DZD)</label><input type="number" id="ch-amount" class="num-input" placeholder="0" step="1000"/></div>
+            <button id="btn-add-charge" class="btn-primary">Ajouter</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Liste des charges</p>
+            <button class="print-btn" onclick="app.printPage(event, 'Charges fixes mensuelles')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+          </div>
+          <div class="tbl-wrap" id="charges-table"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="fournisseurs">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Total dettes fournisseurs</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-dettes">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Fournisseurs actifs</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            </div>
+            <p class="kpi-val" id="kpi-fournisseurs-count">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Ajouter un fournisseur</p>
+            <span class="card-hint">Les noms apparaissent dans le menu déroulant des situations</span>
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr auto;">
+            <div class="field"><label>Nom du fournisseur</label><input type="text" id="fn-name" placeholder="Ex. Transport Bouzid"/></div>
+            <button class="btn-primary" onclick="app.addFournisseurName()">Ajouter</button>
+          </div>
+          <div id="fournisseur-names-list" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Ajouter une situation fournisseur</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Fournisseur</label>
+              <select id="f-name"></select>
+            </div>
+            <div class="field"><label>N° Facture / Réf</label><input type="text" id="f-ref" placeholder="Ex. Facture #5"/></div>
+            <div class="field"><label>Montant dû (DZD)</label><input type="number" id="f-amount" class="num-input" placeholder="0" step="1000"/></div>
+            <div class="field"><label>Date</label><input type="date" id="f-date"/></div>
+            <button id="btn-add-fournisseur" class="btn-primary">Ajouter</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Situations fournisseurs</p>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-secondary" style="font-size:11px;" onclick="app.showFournisseurReport()">Rapport global</button>
+              <button class="print-btn" onclick="app.printPage(event, 'Dettes fournisseurs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="fournisseurs-table"></div>
+        </div>
+
+        <div id="fournisseurs-summary-cards" style="margin-top: 12px;"></div>
+
+        <div class="card" id="fournisseur-report-card" style="display:none; margin-top:12px;">
+          <div class="card-head">
+            <p class="card-title">Rapport global — Dettes fournisseurs</p>
+            <div style="display:flex; gap:6px;">
+              <button class="print-btn" onclick="app.printFournisseurReport()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+              <button class="ghost-btn" onclick="document.getElementById('fournisseur-report-card').style.display='none'">×</button>
+            </div>
+          </div>
+          <div id="fournisseur-report-content"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="simulateur">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Simulateur de paiement</p>
+            <button class="print-btn" onclick="app.printSimulator()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+          </div>
+          <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;">Choisis combien de factures tu veux payer par fournisseur. Le total se calcule automatiquement (factures les plus anciennes en premier).</p>
+          <div id="sim-content"></div>
+        </div>
+      </section>
+
+    </div><!-- end content -->
+  </main>
+
+  <nav class="mobile-nav" id="mobile-nav">
+    <button class="mobile-nav-btn active" data-panel="overview" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>Accueil</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="journaux" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+      <span>Trésorerie</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="situations" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Situations</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="clients-summary" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Clients</span>
+    </button>
+    <button class="mobile-nav-btn" data-panel="alerts" id="mobile-nav-alerts" style="position:relative;">
+      <span class="nav-badge"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      <span>Alertes</span>
+    </button>
+  </nav>
+</div>
+
+<div class="modal-overlay" id="transaction-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title" id="transaction-modal-title">Nouveau mouvement</p>
+      <button class="modal-close" onclick="app.closeTransactionModal()">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Type</label>
+        <select id="trans-type" onchange="app.updateTransSitDropdowns()">
+          <option value="in">Entrée (+)</option>
+          <option value="out">Sortie (−)</option>
+        </select>
+      </div>
+      <div class="field"><label>Montant (DZD)</label><input type="number" id="trans-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>Description</label><textarea id="trans-desc" placeholder="Ex. Paiement client X"></textarea></div>
+      <div class="field"><label>Date</label><input type="date" id="trans-date"/></div>
+      <div class="field"><label>Lier à un projet (optionnel)</label>
+        <select id="trans-project">
+          <option value="">— Aucun projet —</option>
+        </select>
+      </div>
+      <div class="field" id="trans-client-field" style="display:none;">
+        <label>Client (le paiement s'applique aux factures impayées, de la plus ancienne)</label>
+        <select id="trans-client-sit">
+          <option value="">— Aucun client —</option>
+        </select>
+      </div>
+      <div class="field" id="trans-fourn-field" style="display:none;">
+        <label>Fournisseur (le paiement s'applique aux dettes impayées, de la plus ancienne)</label>
+        <select id="trans-fourn-sit">
+          <option value="">— Aucun fournisseur —</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="app.saveTransaction()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="situation-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Nouvelle situation</p>
+      <button class="modal-close" onclick="app.closeSituationModal()">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Client</label>
+        <select id="sit-client"></select>
+      </div>
+      <div class="field"><label>Projet / Chantier</label><input type="text" id="sit-project" placeholder="Ex. Hangar Blida"/></div>
+      <div class="field"><label>Numéro situation</label><input type="text" id="sit-number" placeholder="Ex. Situation #1"/></div>
+      <div class="field"><label>Montant facturé (DZD)</label><input type="number" id="sit-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>Date facture</label><input type="date" id="sit-date"/></div>
+      <div class="field"><label>Type</label>
+        <select id="sit-contract-type">
+          <option value="formel">Formel (contrat + facture)</option>
+          <option value="informel">Informel (sans contrat)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="app.saveSituation()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="partial-payment-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Enregistrer un paiement</p>
+      <button class="modal-close" onclick="app.closePartialPayment()">×</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;" id="pp-modal-info">—</p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Montant reçu (DZD)</label><input type="number" id="pp-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>Date du paiement</label><input type="date" id="pp-date"/></div>
+      <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+        <input type="checkbox" id="pp-full-check" onchange="app.toggleFullPayment()" style="width:16px; height:16px;"/>
+        <label for="pp-full-check" style="font-size:13px; color:var(--text-secondary); cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:500;">Paiement total (solder la situation)</label>
+      </div>
+      <button class="btn-primary" onclick="app.savePartialPayment()">Enregistrer le paiement</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="fournisseur-pay-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Paiement fournisseur</p>
+      <button class="modal-close" onclick="app.closeFournisseurPay()">×</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;" id="fp-modal-info">—</p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Montant payé (DZD)</label><input type="number" id="fp-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>Date</label><input type="date" id="fp-date"/></div>
+      <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+        <input type="checkbox" id="fp-full-check" onchange="app.toggleFournisseurFull()" style="width:16px; height:16px;"/>
+        <label for="fp-full-check" style="font-size:13px; color:var(--text-secondary); cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:500;">Paiement total (solder la dette)</label>
+      </div>
+      <button class="btn-primary" onclick="app.saveFournisseurPay()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="limit-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Limite silencieuse</p>
+      <button class="modal-close" onclick="app.closeLimitModal()">×</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;" id="limit-modal-info">—</p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Montant limite (DZD)</label><input type="number" id="limit-amount" class="num-input" step="1000" placeholder="Alerte si dette dépasse ce montant"/></div>
+      <button class="btn-primary" onclick="app.saveLimit()">Enregistrer</button>
+      <button class="btn-secondary" onclick="app.clearLimit()" style="width:100%;">Supprimer la limite</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="project-expense-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Ajouter une dépense</p>
+      <button class="modal-close" onclick="app.closeProjectExpense()">×</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;" id="pe-modal-info">—</p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Description</label><input type="text" id="pe-desc" placeholder="Ex. Salaires avril, Transport grue..."/></div>
+      <div class="field"><label>Montant (DZD)</label><input type="number" id="pe-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>Date</label><input type="date" id="pe-date"/></div>
+      <button class="btn-primary" onclick="app.saveProjectExpense()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="project-payment-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Paiement reçu du client</p>
+      <button class="modal-close" onclick="app.closeProjectPayment()">×</button>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin:0 0 16px;" id="pp2-modal-info">—</p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="field"><label>Montant reçu (DZD)</label><input type="number" id="pp2-amount" class="num-input" step="1000"/></div>
+      <div class="field"><label>N° Facture</label><input type="text" id="pp2-ref" placeholder="Ex. Facture #3"/></div>
+      <div class="field"><label>Date</label><input type="date" id="pp2-date"/></div>
+      <button class="btn-primary" onclick="app.saveProjectPayment()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Enregistré</div>
+
+<script>
+const app = (() => {
+  const K = {
+    transactions: 'ipcm_v2_transactions',
+    situations: 'ipcm_v2_situations',
+    charges: 'ipcm_v2_charges',
+    fournisseurs: 'ipcm_v2_fournisseurs',
+    clientNames: 'ipcm_v2_clientNames',
+    fournisseurNames: 'ipcm_v2_fournisseurNames',
+    projects: 'ipcm_v2_projects'
+  };
+
+  const state = {
+    transactions: [],
+    situations: [],
+    charges: [],
+    fournisseurs: [],
+    clientNames: [],
+    fournisseurNames: [],
+    projects: [],
+    currentJournal: null,
+    payingIdx: null,
+    editingTransIdx: null,
+    editingSitIdx: null,
+    editingChgIdx: null,
+    payingFIdx: null,
+    limitIdx: null,
+    editingProjectIdx: null
+  };
+
+  const PANEL_META = {
+    overview: { title: "Vue d'ensemble", sub: "Le pouls de ton entreprise aujourd'hui" },
+    alerts: { title: 'Alertes', sub: 'Tout ce qui demande ton attention' },
+    projets: { title: 'Projets / Chantiers', sub: 'Suivi par projet — contrat, dépenses, paiements' },
+    journaux: { title: 'Journaux', sub: 'Caisse, banque, et mouvements' },
+    situations: { title: 'Situations', sub: 'Factures et paiements clients' },
+    'clients-summary': { title: 'Clients', sub: 'Vue globale par client' },
+    aging: { title: 'Balance âgée', sub: 'Créances par ancienneté' },
+    forecast: { title: 'Prévisionnel', sub: 'Cash flow projeté' },
+    charges: { title: 'Charges mensuelles', sub: 'Ton burn rate fixe' },
+    fournisseurs: { title: 'Fournisseurs', sub: 'Dettes fournisseurs' },
+    simulateur: { title: 'Simulateur', sub: 'Planifie tes paiements et vois l\'impact sur ta trésorerie' }
+  };
+
+  const fmt = (n) => n === null || n === undefined || isNaN(n) ? '—' : new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' DZD';
+  const fmtShort = (n) => {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+  const fmtDZD = (n) => fmtShort(n) + ' DZD';
+  const daysBetween = (d1, d2) => Math.floor((d2 - d1) / 86400000);
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const parseD = (s) => s ? new Date(s) : null;
+
+  function load(k, fb) {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+    catch(e) { return fb; }
+  }
+  function save(k, v) {
+    try { localStorage.setItem(k, JSON.stringify(v)); showToast('✓ Enregistré'); }
+    catch(e) { console.error(e); }
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function loadAll() {
+    state.transactions = load(K.transactions, []);
+    state.situations = load(K.situations, []);
+    state.charges = load(K.charges, []);
+    state.fournisseurs = load(K.fournisseurs, []);
+    state.clientNames = load(K.clientNames, []);
+    state.fournisseurNames = load(K.fournisseurNames, []);
+    state.projects = load(K.projects, []);
+    renderAll();
+  }
+
+  function journalBalance(journal) {
+    return state.transactions
+      .filter(t => t.journal === journal)
+      .reduce((sum, t) => sum + (t.type === 'in' ? t.amount : -t.amount), 0);
+  }
+
+  function sitPaid(s) {
+    return (s.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+  }
+  function sitRemaining(s) {
+    return (s.amount || 0) - sitPaid(s);
+  }
+  function sitIsPaid(s) {
+    return sitRemaining(s) <= 0;
+  }
+  function totalCreances() {
+    return state.situations
+      .filter(s => !sitIsPaid(s))
+      .reduce((sum, s) => sum + sitRemaining(s), 0);
+  }
+
+  function fPaid(f) {
+    return (f.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+  }
+  function fRemaining(f) {
+    return (f.amount || 0) - fPaid(f);
+  }
+  function fIsPaid(f) {
+    return fRemaining(f) <= 0;
+  }
+  function totalDettes() {
+    return state.fournisseurs.filter(f => !fIsPaid(f)).reduce((sum, f) => sum + fRemaining(f), 0);
+  }
+
+  function chgTotal() {
+    return state.charges.reduce((s, c) => s + (c.amount || 0), 0);
+  }
+
+  function runway() {
+    const weekly = chgTotal() / 4.33;
+    const tres = journalBalance('caisse') + journalBalance('banque');
+    return weekly <= 0 ? Infinity : tres / weekly;
+  }
+
+  function agingBuckets() {
+    const now = new Date();
+    const buckets = { '0-30': 0, '31-60': 0, '61-90': 0, '90+': 0 };
+    state.situations.filter(s => !sitIsPaid(s) && s.date).forEach(s => {
+      const days = daysBetween(parseD(s.date), now);
+      const rem = sitRemaining(s);
+      if (days <= 30) buckets['0-30'] += rem;
+      else if (days <= 60) buckets['31-60'] += rem;
+      else if (days <= 90) buckets['61-90'] += rem;
+      else buckets['90+'] += rem;
+    });
+    return buckets;
+  }
+
+  function forecastBalance() {
+    const tres = journalBalance('caisse') + journalBalance('banque');
+    const creances = totalCreances();
+    const monthlyChg = chgTotal();
+    return tres + creances - monthlyChg;
+  }
+
+  function computeAlerts() {
+    const a = [];
+    const tres = journalBalance('caisse') + journalBalance('banque');
+    const r = runway();
+    const ch = chgTotal();
+    const buckets = agingBuckets();
+    const informal = state.situations.some(s => s.contractType === 'informel' && !sitIsPaid(s));
+
+    if (informal) a.push({ level: 'red', title: 'Client informel actif', desc: 'Créance non sécurisée juridiquement.' });
+    if (ch > 0 && tres < ch) a.push({ level: 'red', title: 'Trésorerie < 1 mois de charges', desc: `Tu as ${fmtDZD(tres)}, charges ${fmtDZD(ch)}.` });
+    else if (r < 4 && ch > 0) a.push({ level: 'red', title: 'Runway critique', desc: `${r.toFixed(1)} semaines restantes.` });
+    else if (r < 8 && ch > 0) a.push({ level: 'warn', title: 'Runway à surveiller', desc: `${r.toFixed(1)} semaines.` });
+    if (buckets['61-90'] > 0) a.push({ level: 'warn', title: '61-90 jours de retard', desc: `${fmtDZD(buckets['61-90'])} à relancer.` });
+    if (buckets['90+'] > 0) a.push({ level: 'red', title: '+90 jours de retard', desc: `${fmtDZD(buckets['90+'])} — envisager action en justice.` });
+    state.fournisseurs.filter(f => !fIsPaid(f) && f.limit > 0).forEach(f => {
+      const rem = fRemaining(f);
+      if (rem >= f.limit) {
+        a.push({ level: 'red', title: `Fournisseur: ${f.name}`, desc: `Dette atteint le seuil d'alerte. Action requise.` });
+      }
+    });
+    if (a.length === 0) a.push({ level: 'ok', title: 'Aucune alerte', desc: 'Tout est sous contrôle.' });
+    return a;
+  }
+
+  function renderOverview() {
+    const tres = journalBalance('caisse') + journalBalance('banque');
+    const cr = totalCreances();
+    const ch = chgTotal();
+    const r = runway();
+    const alerts = computeAlerts();
+    const reds = alerts.filter(a => a.level === 'red').length;
+
+    const kpis = [
+      { label: 'Trésorerie', val: fmtDZD(tres), danger: ch > 0 && tres < ch },
+      { label: 'Créances', val: fmtDZD(cr) },
+      { label: 'Dettes fournisseurs', val: fmtDZD(totalDettes()), danger: totalDettes() > tres },
+      { label: 'Charges/mois', val: fmtDZD(ch) },
+      { label: 'Runway', val: r === Infinity ? '∞' : r.toFixed(1) + ' sem.', danger: r < 4 && ch > 0 }
+    ];
+    document.getElementById('kpi-overview').innerHTML = kpis.map(k => `
+      <div class="kpi-card ${k.danger ? 'danger flash' : ''}">
+        <div class="kpi-top"><p class="kpi-lbl">${k.label}</p></div>
+        <p class="kpi-val">${k.val}</p>
+      </div>`).join('');
+
+    const journals = [
+      { name: 'Caisse', bal: journalBalance('caisse'), count: state.transactions.filter(t => t.journal === 'caisse').length },
+      { name: 'Banque', bal: journalBalance('banque'), count: state.transactions.filter(t => t.journal === 'banque').length },
+      { name: 'Clients', bal: totalCreances(), count: state.situations.filter(s => !sitIsPaid(s)).length }
+    ];
+    document.getElementById('journal-summary').innerHTML = journals.map(j => `
+      <div class="journal-card">
+        <p class="journal-title">${j.name}</p>
+        <p class="journal-balance">${fmtDZD(j.bal)}</p>
+        <p class="journal-hint">${j.count} entrée(s)</p>
+      </div>`).join('');
+  }
+
+  function renderAlerts() {
+    const alerts = computeAlerts();
+    const colors = { red: 'danger', warn: 'warn', ok: 'ok' };
+    document.getElementById('alerts-list').innerHTML = alerts.map(a => `
+      <div class="badge b-${colors[a.level]}" style="display:block; margin-bottom:8px; padding:10px 12px; text-align:left;">
+        <div style="font-weight:600; margin-bottom:2px;">${a.title}</div>
+        <div style="font-size:11px; opacity:0.9;">${a.desc}</div>
+      </div>`).join('');
+    document.getElementById('nav-alerts').classList.toggle('has-alert', alerts.some(a => a.level === 'red'));
+  }
+
+  function renderJournaux() {
+    document.getElementById('journal-caisse-bal').textContent = fmtDZD(journalBalance('caisse'));
+    document.getElementById('journal-banque-bal').textContent = fmtDZD(journalBalance('banque'));
+    document.getElementById('journal-clients-bal').textContent = fmtDZD(totalCreances());
+
+    const cCount = state.transactions.filter(t => t.journal === 'caisse').length;
+    const bCount = state.transactions.filter(t => t.journal === 'banque').length;
+    const sitCount = state.situations.filter(s => !sitIsPaid(s)).length;
+    document.getElementById('journal-caisse-hint').textContent = `${cCount} mouvement(s)`;
+    document.getElementById('journal-banque-hint').textContent = `${bCount} mouvement(s)`;
+    document.getElementById('journal-clients-hint').textContent = `${sitCount} impayée(s)`;
+
+    const sorted = state.transactions.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const recent = sorted.slice(0, 20);
+    const el = document.getElementById('transactions-recent-table');
+    if (recent.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun mouvement encore.</div>';
+    } else {
+      el.innerHTML = `<table class="mod">
+        <thead><tr><th>Date</th><th>Journal</th><th>Description</th><th style="text-align:right">Montant</th><th></th></tr></thead>
+        <tbody>${recent.map(t => {
+          const realIdx = state.transactions.indexOf(t);
+          return `<tr>
+          <td>${t.date}</td>
+          <td><span class="badge b-neutral">${t.journal}</span></td>
+          <td>${t.desc || '—'}</td>
+          <td style="text-align:right; font-weight:600; color:${t.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'}">
+            ${t.type === 'in' ? '+' : '−'}${fmtDZD(t.amount)}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="ghost-btn" title="Modifier" onclick="app.editTransaction(${realIdx})">&#9998;</button>
+            <button class="ghost-btn" title="Supprimer" onclick="app.deleteTransaction(${realIdx})">×</button>
+          </td>
+        </tr>`;}).join('')}</tbody></table>`;
+    }
+  }
+
+  function renderSituations() {
+    document.getElementById('kpi-creances').textContent = fmtDZD(totalCreances());
+    document.getElementById('kpi-situations-unpaid').textContent = state.situations.filter(s => !sitIsPaid(s)).length;
+
+    const el = document.getElementById('situations-table');
+    if (state.situations.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune situation encore.</div>';
+      return;
+    }
+    const now = new Date();
+    const sortedIndices = state.situations.map((s, i) => i).sort((a, b) => {
+      const da = state.situations[a].date || '';
+      const db = state.situations[b].date || '';
+      return da.localeCompare(db);
+    });
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>Client</th><th>Projet</th><th>Situation</th><th style="text-align:right">Facturé</th><th style="text-align:right">Payé</th><th style="text-align:right">Restant</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${sortedIndices.map(i => {
+        const s = state.situations[i];
+        const days = s.date ? daysBetween(parseD(s.date), now) : null;
+        const paid = sitPaid(s);
+        const rem = sitRemaining(s);
+        const isDone = sitIsPaid(s);
+        let badge;
+        if (isDone) badge = '<span class="badge b-ok"><span class="bd"></span>Soldée</span>';
+        else if (s.contractType === 'informel') badge = '<span class="badge b-danger"><span class="bd"></span>Informel</span>';
+        else if (days > 90) badge = `<span class="badge b-danger"><span class="bd"></span>+90j</span>`;
+        else if (days > 60) badge = `<span class="badge b-warn"><span class="bd"></span>61-90j</span>`;
+        else if (days > 30) badge = `<span class="badge b-warn"><span class="bd"></span>31-60j</span>`;
+        else badge = '<span class="badge b-info"><span class="bd"></span>0-30j</span>';
+
+        const paymentsHist = (s.payments || []).length > 0
+          ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border);">
+              ${(s.payments || []).map((p, pi) =>
+                `<div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between; align-items:center; padding:3px 0;">
+                  <span>${p.date}</span>
+                  <span style="display:flex; align-items:center; gap:6px;">
+                    <span style="color:var(--ok-text); font-weight:600;">+${fmtDZD(p.amount)}</span>
+                    <button onclick="app.deleteSituationPayment(${i},${pi})" style="background:none; border:1px solid var(--danger-text); border-radius:4px; color:var(--danger-text); font-size:11px; padding:1px 5px; cursor:pointer; font-weight:bold; line-height:1;">×</button>
+                  </span>
+                </div>`
+              ).join('')}
+            </div>` : '';
+
+        const paidPct = s.amount > 0 ? Math.round(100 * paid / s.amount) : 0;
+        const progressBar = !isDone && paid > 0
+          ? `<div style="margin-top:6px; height:3px; background:var(--bg-muted); border-radius:2px; overflow:hidden;">
+              <div style="height:100%; width:${paidPct}%; background:var(--ok-text); border-radius:2px;"></div>
+            </div>` : '';
+
+        return `<tr>
+          <td style="font-weight:600">${s.client}</td>
+          <td>${s.project || '—'}</td>
+          <td>${s.number || '—'}</td>
+          <td style="text-align:right">${fmtDZD(s.amount)}</td>
+          <td style="text-align:right; color:var(--ok-text); font-weight:600">${paid > 0 ? fmtDZD(paid) : '—'}</td>
+          <td style="text-align:right; font-weight:600; color:${isDone ? 'var(--ok-text)' : 'var(--danger-text)'}">${isDone ? '0 DZD' : fmtDZD(rem)}</td>
+          <td>
+            ${badge}
+            ${progressBar}
+            ${paymentsHist}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            ${!isDone ? `<button class="btn-secondary" style="font-size:11px; height:26px; padding:0 8px; margin-right:4px;" onclick="app.openPartialPayment(${i})">Paiement</button>` : ''}
+            <button class="ghost-btn" title="Modifier" onclick="app.editSituation(${i})">&#9998;</button>
+            <button class="ghost-btn" title="Supprimer" onclick="app.deleteSituation(${i})">×</button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  function renderAging() {
+    const buckets = agingBuckets();
+    const total = Object.values(buckets).reduce((a, b) => a + b, 0);
+    document.getElementById('aging-report').innerHTML = `
+      <div class="aging-table">
+        <div class="aging-cell header">Tranche</div>
+        <div class="aging-cell header">0-30 jours</div>
+        <div class="aging-cell header">31-60 jours</div>
+        <div class="aging-cell header">61-90 jours</div>
+        <div class="aging-cell header">+90 jours</div>
+        <div class="aging-cell">Montant</div>
+        <div class="aging-cell num">${fmtDZD(buckets['0-30'])}</div>
+        <div class="aging-cell num warn">${fmtDZD(buckets['31-60'])}</div>
+        <div class="aging-cell num warn">${fmtDZD(buckets['61-90'])}</div>
+        <div class="aging-cell num danger">${fmtDZD(buckets['90+'])}</div>
+        <div class="aging-cell" style="font-weight:600;">Total</div>
+        <div class="aging-cell num" style="font-weight:600;" colspan="4">${fmtDZD(total)}</div>
+      </div>`;
+  }
+
+  function renderForecast() {
+    const proj = forecastBalance();
+    const tres = journalBalance('caisse') + journalBalance('banque');
+    const delta = proj - tres;
+    document.getElementById('kpi-forecast-30').textContent = fmtDZD(proj);
+    document.getElementById('kpi-forecast-30-hint').textContent = delta > 0 ? `+${fmtDZD(delta)} vs. aujourd'hui` : `${fmtDZD(delta)} vs. aujourd'hui`;
+
+    const upcoming = [
+      { desc: 'Créances clients à encaisser', amount: totalCreances(), type: 'in' },
+      { desc: 'Charges fixes du mois', amount: chgTotal(), type: 'out' }
+    ];
+    document.getElementById('forecast-table').innerHTML = `<table class="mod">
+      <thead><tr><th>Description</th><th style="text-align:right">Montant</th></tr></thead>
+      <tbody>${upcoming.map(u => `<tr>
+        <td>${u.desc}</td>
+        <td style="text-align:right; font-weight:600; color:${u.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'}">
+          ${u.type === 'in' ? '+' : '−'}${fmtDZD(u.amount)}
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  function renderCharges() {
+    document.getElementById('kpi-charges').textContent = fmtDZD(chgTotal());
+    const r = runway();
+    document.getElementById('kpi-runway').textContent = r === Infinity ? '∞' : r.toFixed(1) + ' sem.';
+
+    const el = document.getElementById('charges-table');
+    if (state.charges.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune charge encore.</div>';
+      return;
+    }
+    const labels = {};
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>Libellé</th><th>Type</th><th style="text-align:right">Montant/mois</th><th></th></tr></thead>
+      <tbody>${state.charges.map((c, i) => `<tr>
+        <td style="font-weight:600">${c.label}</td>
+        <td><span class="badge b-info">${c.type || '—'}</span></td>
+        <td style="text-align:right; font-weight:600">${fmtDZD(c.amount)}</td>
+        <td style="text-align:right; white-space:nowrap;">
+          <button class="ghost-btn" title="Modifier" onclick="app.editCharge(${i})">&#9998;</button>
+          <button class="ghost-btn" title="Supprimer" onclick="app.deleteCharge(${i})">×</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  function renderFournisseurs() {
+    document.getElementById('kpi-dettes').textContent = fmtDZD(totalDettes());
+    const uniqueSuppliers = [...new Set(state.fournisseurs.filter(f => !fIsPaid(f)).map(f => f.name))];
+    document.getElementById('kpi-fournisseurs-count').textContent = uniqueSuppliers.length;
+
+    // Supplier names list
+    const namesEl = document.getElementById('fournisseur-names-list');
+    if (state.fournisseurNames.length === 0) {
+      namesEl.innerHTML = '';
+    } else {
+      namesEl.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px;">${state.fournisseurNames.map((n, i) =>
+        `<span class="badge b-info" style="font-size:12px; padding:5px 10px; gap:8px;">
+          ${n}
+          <button class="ghost-btn" onclick="app.deleteFournisseurName(${i})" style="font-size:14px; padding:0 2px; min-width:auto; min-height:auto; color:inherit;">×</button>
+        </span>`
+      ).join('')}</div>`;
+    }
+
+    // Populate dropdown
+    const fSel = document.getElementById('f-name');
+    if (fSel) {
+      fSel.innerHTML = '<option value="">— Sélectionner —</option>' +
+        state.fournisseurNames.map(n => `<option value="${n}">${n}</option>`).join('');
+    }
+
+    // Situations table sorted by date
+    const el = document.getElementById('fournisseurs-table');
+    if (state.fournisseurs.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune situation fournisseur encore.</div>';
+    } else {
+      const now = new Date();
+      const sortedIndices = state.fournisseurs.map((f, i) => i).sort((a, b) => {
+        const da = state.fournisseurs[a].date || '';
+        const db = state.fournisseurs[b].date || '';
+        return da.localeCompare(db);
+      });
+      el.innerHTML = `<table class="mod">
+        <thead><tr><th>Fournisseur</th><th>Réf</th><th style="text-align:right">Dû</th><th style="text-align:right">Payé</th><th style="text-align:right">Restant</th><th>Statut</th><th></th></tr></thead>
+        <tbody>${sortedIndices.map(i => {
+          const f = state.fournisseurs[i];
+          const paid = fPaid(f);
+          const rem = fRemaining(f);
+          const isDone = fIsPaid(f);
+          const days = f.date ? daysBetween(parseD(f.date), now) : null;
+          const overLimit = f.limit > 0 && rem >= f.limit;
+          let badge;
+          if (isDone) badge = '<span class="badge b-ok">Soldée</span>';
+          else if (overLimit) badge = '<span class="badge b-danger">Alerte</span>';
+          else if (days > 60) badge = '<span class="badge b-warn">+60j</span>';
+          else if (days > 30) badge = '<span class="badge b-warn">+30j</span>';
+          else badge = '<span class="badge b-info">OK</span>';
+
+          const paidPct = f.amount > 0 ? Math.round(100 * paid / f.amount) : 0;
+          const progressBar = !isDone && paid > 0
+            ? `<div style="margin-top:4px; height:3px; background:var(--bg-muted); border-radius:2px; overflow:hidden;">
+                <div style="height:100%; width:${paidPct}%; background:var(--ok-text); border-radius:2px;"></div>
+              </div>` : '';
+
+          return `<tr>
+            <td style="font-weight:600">${f.name}</td>
+            <td style="color:var(--text-secondary)">${f.ref || '—'}</td>
+            <td style="text-align:right">${fmtDZD(f.amount)}</td>
+            <td style="text-align:right; color:var(--ok-text); font-weight:600">${paid > 0 ? fmtDZD(paid) : '—'}</td>
+            <td style="text-align:right; font-weight:600; color:${isDone ? 'var(--ok-text)' : 'var(--danger-text)'}">${isDone ? '0 DZD' : fmtDZD(rem)}</td>
+            <td>
+              ${badge}
+              ${progressBar}
+            </td>
+            <td style="text-align:right; white-space:nowrap;">
+              ${!isDone ? `<button class="btn-secondary" style="font-size:11px; height:26px; padding:0 8px; margin-right:4px;" onclick="app.openFournisseurPay(${i})">Payer</button>` : ''}
+              <button class="ghost-btn" title="Limite" onclick="app.openLimitModal(${i})" style="font-size:14px;">&#9881;</button>
+              <button class="ghost-btn" title="Supprimer" onclick="app.deleteFournisseur(${i})">×</button>
+            </td>
+          </tr>`;
+        }).join('')}</tbody></table>`;
+    }
+
+    // Summary cards per supplier
+    const supplierMap = {};
+    state.fournisseurs.forEach(f => {
+      const name = f.name || 'Inconnu';
+      if (!supplierMap[name]) supplierMap[name] = { situations: [], totalDue: 0, totalPaid: 0 };
+      supplierMap[name].situations.push(f);
+      supplierMap[name].totalDue += (f.amount || 0);
+      supplierMap[name].totalPaid += fPaid(f);
+    });
+
+    const summaryEl = document.getElementById('fournisseurs-summary-cards');
+    const suppliers = Object.entries(supplierMap);
+    if (suppliers.length === 0) {
+      summaryEl.innerHTML = '';
+      return;
+    }
+
+    summaryEl.innerHTML = suppliers.map(([name, data]) => {
+      const remaining = data.totalDue - data.totalPaid;
+      const paidPct = data.totalDue > 0 ? Math.round(100 * data.totalPaid / data.totalDue) : 0;
+      const unpaidCount = data.situations.filter(f => !fIsPaid(f)).length;
+      const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+      const sitRows = data.situations.slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')).map(f => {
+        const rem = fRemaining(f);
+        const isDone = fIsPaid(f);
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px;">
+          <span>${f.ref || f.date || '—'}</span>
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--text-secondary)">${fmtDZD(f.amount)}</span>
+            <span style="font-weight:600; color:${isDone ? 'var(--ok-text)' : 'var(--danger-text)'}">${isDone ? 'soldée' : fmtDZD(rem)}</span>
+          </span>
+        </div>`;
+      }).join('');
+
+      const allPayments = [];
+      data.situations.forEach(f => {
+        const fIdx = state.fournisseurs.indexOf(f);
+        (f.payments || []).forEach((p, pi) => {
+          allPayments.push({ date: p.date, amount: p.amount, ref: f.ref || '—', fIdx, payIdx: pi });
+        });
+      });
+      allPayments.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+      const payHistHtml = allPayments.length > 0
+        ? `<div style="margin-top:14px;">
+            <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 8px;">Historique des paiements</p>
+            <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 30px; background:var(--bg-muted); padding:8px 12px; font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">
+                <span>Date</span><span>Réf</span><span style="text-align:right;">Montant</span><span></span>
+              </div>
+              ${allPayments.map(p =>
+                `<div style="display:grid; grid-template-columns:1fr 1fr 1fr 30px; padding:8px 12px; font-size:12px; border-top:1px solid var(--border); align-items:center;">
+                  <span style="color:var(--text-secondary);">${p.date}</span>
+                  <span style="color:var(--text-secondary);">${p.ref}</span>
+                  <span style="text-align:right; font-weight:600; color:var(--ok-text);">−${fmtDZD(p.amount)}</span>
+                  <button onclick="app.deleteFournisseurPayment(${p.fIdx},${p.payIdx})" style="background:none; border:1px solid var(--danger-text); border-radius:4px; color:var(--danger-text); font-size:11px; padding:1px 5px; cursor:pointer; font-weight:bold; line-height:1;">×</button>
+                </div>`
+              ).join('')}
+            </div>
+          </div>` : '';
+
+      return `<div class="card fournisseur-card" style="margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:var(--warn-bg); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; color:var(--warn-text); flex-shrink:0;">${initials}</div>
+          <div style="flex:1;">
+            <p style="font-weight:600; margin:0; font-size:14px;">${name}</p>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${data.situations.length} situation(s) · ${unpaidCount} impayée(s)</div>
+          </div>
+          <button class="print-btn" onclick="app.printFournisseur(this, '${name.replace(/'/g, "\\'")}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Total dû</p>
+            <p style="font-size:16px; font-weight:600; margin:0;">${fmtDZD(data.totalDue)}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--ok-text); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Payé</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:var(--ok-text);">${fmtDZD(data.totalPaid)}</p>
+          </div>
+          <div style="background:${remaining > 0 ? 'var(--danger-bg)' : 'var(--ok-bg)'}; border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:${remaining > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Restant</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:${remaining > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(remaining)}</p>
+          </div>
+        </div>
+        <div style="height:4px; background:var(--bg-muted); border-radius:2px; overflow:hidden; margin-bottom:14px;">
+          <div style="height:100%; width:${paidPct}%; background:var(--ok-text); border-radius:2px;"></div>
+        </div>
+        <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 6px;">Détail des situations</p>
+        ${sitRows}
+        ${payHistHtml}
+      </div>`;
+    }).join('');
+  }
+
+  function renderTopPills() {
+    const r = runway(), ch = chgTotal();
+    const reds = computeAlerts().filter(a => a.level === 'red').length;
+    let pills = [];
+    if (reds > 0) pills.push(`<span class="pill pill-danger"><span class="dot"></span>${reds} alerte(s)</span>`);
+    if (ch > 0) {
+      if (r < 4) pills.push(`<span class="pill pill-danger">Runway ${r.toFixed(1)} sem.</span>`);
+      else if (r < 8) pills.push(`<span class="pill pill-warn">Runway ${r.toFixed(1)} sem.</span>`);
+      else pills.push(`<span class="pill pill-ok">Runway ${r === Infinity ? '∞' : r.toFixed(1) + ' sem.'}</span>`);
+    }
+    pills.push(`<span class="pill">${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`);
+    document.getElementById('top-pills').innerHTML = pills.join('');
+    const mobilePills = document.getElementById('mobile-pills');
+    if (mobilePills) mobilePills.innerHTML = pills.slice(0, 2).join('');
+    const mobileAlerts = document.getElementById('mobile-nav-alerts');
+    if (mobileAlerts) mobileAlerts.classList.toggle('has-alert', reds > 0);
+  }
+
+  function renderAll() {
+    document.getElementById('foot-date').textContent = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    renderOverview();
+    renderAlerts();
+    renderProjets();
+    renderJournaux();
+    renderSimulateur();
+    renderSituations();
+    renderClientsSummary();
+    renderClientNamesList();
+    renderAging();
+    renderForecast();
+    renderCharges();
+    renderFournisseurs();
+    renderTopPills();
+  }
+
+  function updateTransSitDropdowns() {
+    const type = document.getElementById('trans-type').value;
+    const clientField = document.getElementById('trans-client-field');
+    const fournField = document.getElementById('trans-fourn-field');
+    
+    if (type === 'in') {
+      clientField.style.display = 'flex';
+      fournField.style.display = 'none';
+      // Group unpaid situations by client
+      const clientTotals = {};
+      state.situations.forEach(s => {
+        if (!sitIsPaid(s) && s.client) {
+          if (!clientTotals[s.client]) clientTotals[s.client] = 0;
+          clientTotals[s.client] += sitRemaining(s);
+        }
+      });
+      const sel = document.getElementById('trans-client-sit');
+      sel.innerHTML = '<option value="">— Aucun client —</option>' +
+        Object.entries(clientTotals).map(([name, total]) =>
+          `<option value="${name}">${name} — Restant total: ${fmtDZD(total)}</option>`
+        ).join('');
+    } else {
+      clientField.style.display = 'none';
+      fournField.style.display = 'flex';
+      // Group unpaid situations by fournisseur
+      const fournTotals = {};
+      state.fournisseurs.forEach(f => {
+        if (!fIsPaid(f) && f.name) {
+          if (!fournTotals[f.name]) fournTotals[f.name] = 0;
+          fournTotals[f.name] += fRemaining(f);
+        }
+      });
+      const sel = document.getElementById('trans-fourn-sit');
+      sel.innerHTML = '<option value="">— Aucun fournisseur —</option>' +
+        Object.entries(fournTotals).map(([name, total]) =>
+          `<option value="${name}">${name} — Restant total: ${fmtDZD(total)}</option>`
+        ).join('');
+    }
+  }
+
+  function openTransactionModal(journal) {
+    state.currentJournal = journal;
+    state.editingTransIdx = null;
+    document.getElementById('transaction-modal-title').textContent = `Nouveau mouvement — ${journal.charAt(0).toUpperCase() + journal.slice(1)}`;
+    document.getElementById('trans-date').value = todayISO();
+    document.getElementById('trans-type').value = 'in';
+    const projSel = document.getElementById('trans-project');
+    projSel.innerHTML = '<option value="">— Aucun projet —</option>' +
+      state.projects.filter(p => p.status === 'active').map((p, i) => {
+        const realIdx = state.projects.indexOf(p);
+        return `<option value="${realIdx}">${p.name}</option>`;
+      }).join('');
+    updateTransSitDropdowns();
+    document.getElementById('transaction-modal').classList.add('active');
+  }
+
+  function closeTransactionModal() {
+    document.getElementById('transaction-modal').classList.remove('active');
+    document.getElementById('trans-amount').value = '';
+    document.getElementById('trans-desc').value = '';
+    document.getElementById('trans-project').value = '';
+    document.getElementById('trans-client-sit').value = '';
+    document.getElementById('trans-fourn-sit').value = '';
+    state.editingTransIdx = null;
+  }
+
+  function saveTransaction() {
+    const type = document.getElementById('trans-type').value;
+    const amount = parseFloat(document.getElementById('trans-amount').value) || 0;
+    const desc = document.getElementById('trans-desc').value.trim();
+    const date = document.getElementById('trans-date').value || todayISO();
+    const projectIdx = document.getElementById('trans-project').value;
+    if (amount <= 0) { alert('Montant requis'); return; }
+    if (state.editingTransIdx !== null) {
+      state.transactions[state.editingTransIdx] = { journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, id: state.transactions[state.editingTransIdx].id };
+      state.editingTransIdx = null;
+    } else {
+      const transId = Date.now();
+      state.transactions.push({ journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, id: transId });
+      // Link to project
+      if (projectIdx !== '') {
+        const pIdx = parseInt(projectIdx);
+        if (state.projects[pIdx]) {
+          if (type === 'out') {
+            state.projects[pIdx].expenses.push({ desc: desc || `${state.currentJournal} sortie`, amount, date, id: transId, fromJournal: true, transId });
+          } else if (type === 'in') {
+            state.projects[pIdx].payments.push({ amount, ref: desc || `${state.currentJournal} entrée`, date, id: transId, fromJournal: true, transId });
+          }
+          save(K.projects, state.projects);
+        }
+      }
+      // Link to client situations (money in) — cascade oldest first
+      if (type === 'in') {
+        const clientName = document.getElementById('trans-client-sit').value;
+        if (clientName) {
+          let remaining = amount;
+          // Get unpaid situations for this client, sorted by date (oldest first)
+          const clientSits = state.situations
+            .map((s, i) => ({ sit: s, idx: i }))
+            .filter(x => x.sit.client === clientName && !sitIsPaid(x.sit))
+            .sort((a, b) => (a.sit.date || '').localeCompare(b.sit.date || ''));
+          
+          for (const { sit, idx } of clientSits) {
+            if (remaining <= 0) break;
+            const rem = sitRemaining(sit);
+            const payAmount = Math.min(remaining, rem);
+            if (!state.situations[idx].payments) state.situations[idx].payments = [];
+            state.situations[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
+            remaining -= payAmount;
+          }
+          save(K.situations, state.situations);
+        }
+      }
+      // Link to fournisseur situations (money out) — cascade oldest first
+      if (type === 'out') {
+        const fournName = document.getElementById('trans-fourn-sit').value;
+        if (fournName) {
+          let remaining = amount;
+          const fournSits = state.fournisseurs
+            .map((f, i) => ({ four: f, idx: i }))
+            .filter(x => x.four.name === fournName && !fIsPaid(x.four))
+            .sort((a, b) => (a.four.date || '').localeCompare(b.four.date || ''));
+          
+          for (const { four, idx } of fournSits) {
+            if (remaining <= 0) break;
+            const rem = fRemaining(four);
+            const payAmount = Math.min(remaining, rem);
+            if (!state.fournisseurs[idx].payments) state.fournisseurs[idx].payments = [];
+            state.fournisseurs[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
+            remaining -= payAmount;
+          }
+          save(K.fournisseurs, state.fournisseurs);
+        }
+      }
+    }
+    save(K.transactions, state.transactions);
+    closeTransactionModal();
+    renderAll();
+  }
+
+  function openSituationModal() {
+    state.editingSitIdx = null;
+    populateClientDropdown('');
+    document.getElementById('sit-date').value = todayISO();
+    document.getElementById('situation-modal').classList.add('active');
+  }
+
+  function closeSituationModal() {
+    document.getElementById('situation-modal').classList.remove('active');
+    ['sit-number','sit-amount'].forEach(id => document.getElementById(id).value = '');
+    state.editingSitIdx = null;
+  }
+
+  function saveSituation() {
+    const client = document.getElementById('sit-client').value;
+    const project = document.getElementById('sit-project').value.trim();
+    const number = document.getElementById('sit-number').value.trim();
+    const amount = parseFloat(document.getElementById('sit-amount').value) || 0;
+    const date = document.getElementById('sit-date').value || todayISO();
+    const contractType = document.getElementById('sit-contract-type').value;
+    if (!client || amount <= 0) { alert('Client et montant requis'); return; }
+    if (state.editingSitIdx !== null) {
+      const old = state.situations[state.editingSitIdx];
+      state.situations[state.editingSitIdx] = { client, project, number, amount, date, contractType, payments: old.payments || [], id: old.id };
+      state.editingSitIdx = null;
+    } else {
+      state.situations.push({ client, project, number, amount, date, contractType, payments: [], id: Date.now() });
+    }
+    save(K.situations, state.situations);
+    closeSituationModal();
+    renderAll();
+  }
+
+  function openPartialPayment(idx) {
+    state.payingIdx = idx;
+    const s = state.situations[idx];
+    const rem = sitRemaining(s);
+    document.getElementById('pp-modal-info').textContent = `${s.client} — ${s.number || s.project || 'Situation'} — Restant: ${fmtDZD(rem)}`;
+    document.getElementById('pp-amount').value = '';
+    document.getElementById('pp-amount').max = rem;
+    document.getElementById('pp-amount').placeholder = `Max ${Math.round(rem)}`;
+    document.getElementById('pp-date').value = todayISO();
+    document.getElementById('pp-full-check').checked = false;
+    document.getElementById('pp-amount').disabled = false;
+    document.getElementById('partial-payment-modal').classList.add('active');
+  }
+
+  function closePartialPayment() {
+    document.getElementById('partial-payment-modal').classList.remove('active');
+    state.payingIdx = null;
+  }
+
+  function toggleFullPayment() {
+    const checked = document.getElementById('pp-full-check').checked;
+    const s = state.situations[state.payingIdx];
+    const rem = sitRemaining(s);
+    if (checked) {
+      document.getElementById('pp-amount').value = Math.round(rem);
+      document.getElementById('pp-amount').disabled = true;
+    } else {
+      document.getElementById('pp-amount').value = '';
+      document.getElementById('pp-amount').disabled = false;
+    }
+  }
+
+  function savePartialPayment() {
+    const idx = state.payingIdx;
+    if (idx === null || idx === undefined) return;
+    const amount = parseFloat(document.getElementById('pp-amount').value) || 0;
+    const date = document.getElementById('pp-date').value || todayISO();
+    const rem = sitRemaining(state.situations[idx]);
+    if (amount <= 0) { alert('Montant requis'); return; }
+    const finalAmount = Math.min(amount, rem);
+    if (!state.situations[idx].payments) state.situations[idx].payments = [];
+    state.situations[idx].payments.push({ amount: finalAmount, date, id: Date.now() });
+    save(K.situations, state.situations);
+    closePartialPayment();
+    renderAll();
+  }
+
+  function deleteSituation(idx) {
+    if (!confirm('Supprimer cette situation ?')) return;
+    state.situations.splice(idx, 1);
+    save(K.situations, state.situations);
+    renderAll();
+  }
+
+  function deleteCharge(idx) {
+    if (!confirm('Supprimer cette charge ?')) return;
+    state.charges.splice(idx, 1);
+    save(K.charges, state.charges);
+    renderAll();
+  }
+
+  function deleteTransaction(idx) {
+    if (!confirm('Supprimer ce mouvement ?')) return;
+    const t = state.transactions[idx];
+    const transId = t.id;
+    
+    // Remove linked payments from client situations
+    state.situations.forEach(s => {
+      if (s.payments) {
+        s.payments = s.payments.filter(p => p.transId !== transId);
+      }
+    });
+    save(K.situations, state.situations);
+    
+    // Remove linked payments from fournisseur situations
+    state.fournisseurs.forEach(f => {
+      if (f.payments) {
+        f.payments = f.payments.filter(p => p.transId !== transId);
+      }
+    });
+    save(K.fournisseurs, state.fournisseurs);
+    
+    // Remove linked expenses/payments from projects
+    state.projects.forEach(p => {
+      if (p.expenses) p.expenses = p.expenses.filter(e => e.transId !== transId);
+      if (p.payments) p.payments = p.payments.filter(v => v.transId !== transId);
+    });
+    save(K.projects, state.projects);
+    
+    state.transactions.splice(idx, 1);
+    save(K.transactions, state.transactions);
+    renderAll();
+  }
+
+  function editTransaction(idx) {
+    const t = state.transactions[idx];
+    state.editingTransIdx = idx;
+    state.currentJournal = t.journal;
+    document.getElementById('transaction-modal-title').textContent = `Modifier mouvement — ${t.journal.charAt(0).toUpperCase() + t.journal.slice(1)}`;
+    document.getElementById('trans-type').value = t.type;
+    document.getElementById('trans-amount').value = t.amount;
+    document.getElementById('trans-desc').value = t.desc || '';
+    document.getElementById('trans-date').value = t.date;
+    document.getElementById('transaction-modal').classList.add('active');
+  }
+
+  function editSituation(idx) {
+    const s = state.situations[idx];
+    state.editingSitIdx = idx;
+    populateClientDropdown(s.client || '');
+    document.getElementById('sit-project').value = s.project || '';
+    document.getElementById('sit-number').value = s.number || '';
+    document.getElementById('sit-amount').value = s.amount || '';
+    document.getElementById('sit-date').value = s.date || '';
+    document.getElementById('sit-contract-type').value = s.contractType || 'formel';
+    document.getElementById('situation-modal').classList.add('active');
+  }
+
+  function editCharge(idx) {
+    const c = state.charges[idx];
+    state.editingChgIdx = idx;
+    document.getElementById('ch-label').value = c.label || '';
+    document.getElementById('ch-type').value = c.type || '';
+    document.getElementById('ch-amount').value = c.amount || '';
+    document.getElementById('btn-add-charge').textContent = 'Modifier';
+  }
+
+  function addClientName() {
+    const name = document.getElementById('cl-name').value.trim();
+    if (!name) { alert('Nom requis'); return; }
+    if (state.clientNames.includes(name)) { alert('Ce client existe déjà'); return; }
+    state.clientNames.push(name);
+    save(K.clientNames, state.clientNames);
+    document.getElementById('cl-name').value = '';
+    renderAll();
+  }
+
+  function deleteClientName(idx) {
+    if (!confirm('Supprimer ce client de la liste ?')) return;
+    state.clientNames.splice(idx, 1);
+    save(K.clientNames, state.clientNames);
+    renderAll();
+  }
+
+  function populateClientDropdown(selectedValue) {
+    const sel = document.getElementById('sit-client');
+    sel.innerHTML = '<option value="">— Sélectionner un client —</option>' +
+      state.clientNames.map(n => `<option value="${n}" ${n === selectedValue ? 'selected' : ''}>${n}</option>`).join('');
+  }
+
+  function renderClientNamesList() {
+    const el = document.getElementById('client-names-list');
+    if (state.clientNames.length === 0) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px;">${state.clientNames.map((n, i) =>
+      `<span class="badge b-info" style="font-size:12px; padding:5px 10px; gap:8px;">
+        ${n}
+        <button class="ghost-btn" onclick="app.deleteClientName(${i})" style="font-size:14px; padding:0 2px; min-width:auto; min-height:auto; color:inherit;">×</button>
+      </span>`
+    ).join('')}</div>`;
+  }
+
+  function populateProjectClientDropdown() {
+    const sel = document.getElementById('pj-client');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+      state.clientNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+
+  function addProject() {
+    const name = document.getElementById('pj-name').value.trim();
+    const client = document.getElementById('pj-client').value;
+    const value = parseFloat(document.getElementById('pj-value').value) || 0;
+    const start = document.getElementById('pj-start').value || todayISO();
+    if (!name || value <= 0) { alert('Nom et valeur contrat requis'); return; }
+    state.projects.push({
+      name, client, contractValue: value, startDate: start,
+      expenses: [], payments: [], status: 'active', id: Date.now()
+    });
+    save(K.projects, state.projects);
+    ['pj-name','pj-value','pj-start'].forEach(id => document.getElementById(id).value = '');
+    renderAll();
+  }
+
+  function deleteProject(idx) {
+    if (!confirm('Supprimer ce projet et tout son historique ?')) return;
+    state.projects.splice(idx, 1);
+    save(K.projects, state.projects);
+    renderAll();
+  }
+
+  function toggleProjectStatus(idx) {
+    state.projects[idx].status = state.projects[idx].status === 'active' ? 'terminé' : 'active';
+    save(K.projects, state.projects);
+    renderAll();
+  }
+
+  function openProjectExpense(idx) {
+    state.editingProjectIdx = idx;
+    const p = state.projects[idx];
+    document.getElementById('pe-modal-info').textContent = `Dépense pour : ${p.name}`;
+    document.getElementById('pe-date').value = todayISO();
+    document.getElementById('pe-desc').value = '';
+    document.getElementById('pe-amount').value = '';
+    document.getElementById('project-expense-modal').classList.add('active');
+  }
+
+  function closeProjectExpense() {
+    document.getElementById('project-expense-modal').classList.remove('active');
+  }
+
+  function saveProjectExpense() {
+    const idx = state.editingProjectIdx;
+    const desc = document.getElementById('pe-desc').value.trim();
+    const amount = parseFloat(document.getElementById('pe-amount').value) || 0;
+    const date = document.getElementById('pe-date').value || todayISO();
+    if (amount <= 0) { alert('Montant requis'); return; }
+    state.projects[idx].expenses.push({ desc, amount, date, id: Date.now() });
+    save(K.projects, state.projects);
+    closeProjectExpense();
+    renderAll();
+  }
+
+  function openProjectPayment(idx) {
+    state.editingProjectIdx = idx;
+    const p = state.projects[idx];
+    const totalReceived = p.payments.reduce((s, v) => s + v.amount, 0);
+    const remaining = p.contractValue - totalReceived;
+    document.getElementById('pp2-modal-info').textContent = `${p.name} — Reste à recevoir: ${fmtDZD(remaining)}`;
+    document.getElementById('pp2-date').value = todayISO();
+    document.getElementById('pp2-amount').value = '';
+    document.getElementById('pp2-ref').value = '';
+    document.getElementById('project-payment-modal').classList.add('active');
+  }
+
+  function closeProjectPayment() {
+    document.getElementById('project-payment-modal').classList.remove('active');
+  }
+
+  function saveProjectPayment() {
+    const idx = state.editingProjectIdx;
+    const amount = parseFloat(document.getElementById('pp2-amount').value) || 0;
+    const ref = document.getElementById('pp2-ref').value.trim();
+    const date = document.getElementById('pp2-date').value || todayISO();
+    if (amount <= 0) { alert('Montant requis'); return; }
+    state.projects[idx].payments.push({ amount, ref, date, id: Date.now() });
+    save(K.projects, state.projects);
+    closeProjectPayment();
+    renderAll();
+  }
+
+  function deleteProjectExpense(pIdx, eIdx) {
+    if (!confirm('Supprimer cette dépense ?')) return;
+    state.projects[pIdx].expenses.splice(eIdx, 1);
+    save(K.projects, state.projects);
+    renderAll();
+  }
+
+  function deleteProjectPayment(pIdx, pPayIdx) {
+    if (!confirm('Supprimer ce paiement ?')) return;
+    state.projects[pIdx].payments.splice(pPayIdx, 1);
+    save(K.projects, state.projects);
+    renderAll();
+  }
+
+  function renderProjets() {
+    const activeProjects = state.projects.filter(p => p.status === 'active');
+    const allValue = state.projects.reduce((s, p) => s + (p.contractValue || 0), 0);
+    const allReceived = state.projects.reduce((s, p) => s + p.payments.reduce((ss, v) => ss + v.amount, 0), 0);
+    const allSpent = state.projects.reduce((s, p) => s + p.expenses.reduce((ss, v) => ss + v.amount, 0), 0);
+
+    document.getElementById('kpi-projets-actifs').textContent = activeProjects.length;
+    document.getElementById('kpi-projets-valeur').textContent = fmtDZD(allValue);
+    const globalMargin = allReceived - allSpent;
+    const margeEl = document.getElementById('kpi-projets-marge');
+    margeEl.textContent = (globalMargin >= 0 ? '+' : '') + fmtDZD(globalMargin);
+    margeEl.style.color = globalMargin >= 0 ? 'var(--ok-text)' : 'var(--danger-text)';
+
+    populateProjectClientDropdown();
+
+    const el = document.getElementById('projets-cards');
+    if (state.projects.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun projet encore. Ajoute ton premier projet au-dessus.</div>';
+      return;
+    }
+
+    el.innerHTML = state.projects.map((p, i) => {
+      const totalReceived = p.payments.reduce((s, v) => s + v.amount, 0);
+      const totalSpent = p.expenses.reduce((s, v) => s + v.amount, 0);
+      const remaining = p.contractValue - totalReceived;
+      const margin = totalReceived - totalSpent;
+      const pctReceived = p.contractValue > 0 ? Math.round(100 * totalReceived / p.contractValue) : 0;
+      const pctSpent = p.contractValue > 0 ? Math.round(100 * totalSpent / p.contractValue) : 0;
+
+      let statusBadge, statusColor;
+      if (p.status === 'terminé') { statusBadge = '<span class="badge b-neutral">Terminé</span>'; statusColor = ''; }
+      else if (margin < 0) { statusBadge = '<span class="badge b-danger">Déficit</span>'; statusColor = 'var(--danger-text)'; }
+      else if (remaining <= 0) { statusBadge = '<span class="badge b-ok">Soldé</span>'; statusColor = 'var(--ok-text)'; }
+      else if (totalReceived > totalSpent) { statusBadge = '<span class="badge b-ok">Rentable</span>'; statusColor = 'var(--ok-text)'; }
+      else { statusBadge = '<span class="badge b-warn">En cours</span>'; statusColor = 'var(--warn-text)'; }
+
+      const expenseRows = (p.expenses || []).slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')).map((e, ei) =>
+        `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px;">
+          <span style="color:var(--text-secondary)">${e.date}</span>
+          <span style="flex:1; margin:0 10px;">${e.desc || '—'}</span>
+          <span style="font-weight:600; color:var(--danger-text);">−${fmtDZD(e.amount)}</span>
+          <button class="ghost-btn" onclick="app.deleteProjectExpense(${i},${ei})" style="font-size:14px; padding:2px 4px; min-width:auto; min-height:auto;">×</button>
+        </div>`
+      ).join('');
+
+      const paymentRows = (p.payments || []).slice().sort((a,b) => (a.date||'').localeCompare(b.date||'')).map((v, vi) =>
+        `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px;">
+          <span style="color:var(--text-secondary)">${v.date}</span>
+          <span style="flex:1; margin:0 10px;">${v.ref || '—'}</span>
+          <span style="font-weight:600; color:var(--ok-text);">+${fmtDZD(v.amount)}</span>
+          <button class="ghost-btn" onclick="app.deleteProjectPayment(${i},${vi})" style="font-size:14px; padding:2px 4px; min-width:auto; min-height:auto;">×</button>
+        </div>`
+      ).join('');
+
+      return `<div class="card" style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <p style="font-weight:700; font-size:16px; margin:0;">${p.name}</p>
+            <p style="font-size:12px; color:var(--text-secondary); margin:2px 0 0;">Client: ${p.client || '—'} · Début: ${p.startDate || '—'}</p>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            ${statusBadge}
+            <button class="btn-secondary" style="font-size:11px; height:26px; padding:0 8px;" onclick="app.toggleProjectStatus(${i})">${p.status === 'active' ? 'Terminer' : 'Réactiver'}</button>
+            <button class="ghost-btn" onclick="app.deleteProject(${i})">×</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Contrat</p>
+            <p style="font-size:16px; font-weight:600; margin:0;">${fmtDZD(p.contractValue)}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--ok-text); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Reçu (${pctReceived}%)</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:var(--ok-text);">${fmtDZD(totalReceived)}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--danger-text); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Dépensé (${pctSpent}%)</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:var(--danger-text);">${fmtDZD(totalSpent)}</p>
+          </div>
+          <div style="background:${margin >= 0 ? 'var(--ok-bg)' : 'var(--danger-bg)'}; border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:${margin >= 0 ? 'var(--ok-text)' : 'var(--danger-text)'}; text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Marge</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:${margin >= 0 ? 'var(--ok-text)' : 'var(--danger-text)'};">${margin >= 0 ? '+' : ''}${fmtDZD(margin)}</p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:4px; margin-bottom:14px;">
+          <div style="flex:${pctReceived}; height:6px; background:var(--ok-text); border-radius:3px 0 0 3px;"></div>
+          <div style="flex:${Math.max(0, pctSpent - pctReceived)}; height:6px; background:var(--danger-text);"></div>
+          <div style="flex:${Math.max(0, 100 - Math.max(pctReceived, pctSpent))}; height:6px; background:var(--bg-muted); border-radius:0 3px 3px 0;"></div>
+        </div>
+
+        <p style="font-size:12px; color:var(--text-secondary); margin:0 0 14px;">
+          Reste à recevoir : <strong>${fmtDZD(remaining)}</strong>
+        </p>
+
+        <div style="display:flex; gap:6px; margin-bottom:14px;">
+          <button class="btn-secondary" onclick="app.openProjectPayment(${i})">+ Paiement reçu</button>
+          <button class="btn-secondary" onclick="app.openProjectExpense(${i})">+ Dépense</button>
+          <button class="print-btn" onclick="app.printPage(event, 'Projet: ${p.name}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer</button>
+        </div>
+
+        ${paymentRows ? `<div style="margin-bottom:10px;">
+          <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 6px;">Paiements reçus</p>
+          ${paymentRows || '<div style="font-size:12px; color:var(--text-tertiary); padding:4px 0;">Aucun paiement encore.</div>'}
+        </div>` : ''}
+
+        ${expenseRows ? `<div>
+          <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 6px;">Dépenses</p>
+          ${expenseRows || '<div style="font-size:12px; color:var(--text-tertiary); padding:4px 0;">Aucune dépense encore.</div>'}
+        </div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function addFournisseurName() {
+    const name = document.getElementById('fn-name').value.trim();
+    if (!name) { alert('Nom requis'); return; }
+    if (state.fournisseurNames.includes(name)) { alert('Ce fournisseur existe déjà'); return; }
+    state.fournisseurNames.push(name);
+    save(K.fournisseurNames, state.fournisseurNames);
+    document.getElementById('fn-name').value = '';
+    renderAll();
+  }
+
+  function deleteFournisseurName(idx) {
+    if (!confirm('Supprimer ce fournisseur de la liste ?')) return;
+    state.fournisseurNames.splice(idx, 1);
+    save(K.fournisseurNames, state.fournisseurNames);
+    renderAll();
+  }
+
+  function addFournisseur() {
+    const name = document.getElementById('f-name').value;
+    const amount = parseFloat(document.getElementById('f-amount').value) || 0;
+    const date = document.getElementById('f-date').value || todayISO();
+    const ref = document.getElementById('f-ref').value.trim();
+    if (!name || amount <= 0) { alert('Fournisseur et montant requis'); return; }
+    state.fournisseurs.push({ name, amount, date, ref, payments: [], limit: 0, id: Date.now() });
+    save(K.fournisseurs, state.fournisseurs);
+    ['f-amount','f-date','f-ref'].forEach(id => document.getElementById(id).value = '');
+    renderAll();
+  }
+
+  function deleteFournisseur(idx) {
+    if (!confirm('Supprimer ce fournisseur ?')) return;
+    state.fournisseurs.splice(idx, 1);
+    save(K.fournisseurs, state.fournisseurs);
+    renderAll();
+  }
+
+  function openFournisseurPay(idx) {
+    state.payingFIdx = idx;
+    const f = state.fournisseurs[idx];
+    const rem = fRemaining(f);
+    document.getElementById('fp-modal-info').textContent = `${f.name} — Restant: ${fmtDZD(rem)}`;
+    document.getElementById('fp-amount').value = '';
+    document.getElementById('fp-amount').placeholder = `Max ${Math.round(rem)}`;
+    document.getElementById('fp-date').value = todayISO();
+    document.getElementById('fp-full-check').checked = false;
+    document.getElementById('fp-amount').disabled = false;
+    document.getElementById('fournisseur-pay-modal').classList.add('active');
+  }
+
+  function closeFournisseurPay() {
+    document.getElementById('fournisseur-pay-modal').classList.remove('active');
+    state.payingFIdx = null;
+  }
+
+  function toggleFournisseurFull() {
+    const checked = document.getElementById('fp-full-check').checked;
+    const f = state.fournisseurs[state.payingFIdx];
+    const rem = fRemaining(f);
+    if (checked) {
+      document.getElementById('fp-amount').value = Math.round(rem);
+      document.getElementById('fp-amount').disabled = true;
+    } else {
+      document.getElementById('fp-amount').value = '';
+      document.getElementById('fp-amount').disabled = false;
+    }
+  }
+
+  function saveFournisseurPay() {
+    const idx = state.payingFIdx;
+    if (idx === null || idx === undefined) return;
+    const amount = parseFloat(document.getElementById('fp-amount').value) || 0;
+    const date = document.getElementById('fp-date').value || todayISO();
+    const rem = fRemaining(state.fournisseurs[idx]);
+    if (amount <= 0) { alert('Montant requis'); return; }
+    const finalAmount = Math.min(amount, rem);
+    if (!state.fournisseurs[idx].payments) state.fournisseurs[idx].payments = [];
+    state.fournisseurs[idx].payments.push({ amount: finalAmount, date, id: Date.now() });
+    save(K.fournisseurs, state.fournisseurs);
+    closeFournisseurPay();
+    renderAll();
+  }
+
+  function openLimitModal(idx) {
+    state.limitIdx = idx;
+    const f = state.fournisseurs[idx];
+    document.getElementById('limit-modal-info').textContent = `Définir un seuil d'alerte pour: ${f.name}`;
+    document.getElementById('limit-amount').value = f.limit || '';
+    document.getElementById('limit-modal').classList.add('active');
+  }
+
+  function closeLimitModal() {
+    document.getElementById('limit-modal').classList.remove('active');
+    state.limitIdx = null;
+  }
+
+  function saveLimit() {
+    const idx = state.limitIdx;
+    if (idx === null || idx === undefined) return;
+    const amount = parseFloat(document.getElementById('limit-amount').value) || 0;
+    state.fournisseurs[idx].limit = amount;
+    save(K.fournisseurs, state.fournisseurs);
+    closeLimitModal();
+    renderAll();
+  }
+
+  function clearLimit() {
+    const idx = state.limitIdx;
+    if (idx === null || idx === undefined) return;
+    state.fournisseurs[idx].limit = 0;
+    save(K.fournisseurs, state.fournisseurs);
+    closeLimitModal();
+    renderAll();
+  }
+
+  function renderClientsSummary() {
+    const clientMap = {};
+    state.situations.forEach(s => {
+      const name = s.client || 'Inconnu';
+      if (!clientMap[name]) clientMap[name] = { situations: [], totalInvoiced: 0, totalPaid: 0, informal: false };
+      clientMap[name].situations.push(s);
+      clientMap[name].totalInvoiced += (s.amount || 0);
+      clientMap[name].totalPaid += sitPaid(s);
+      if (s.contractType === 'informel') clientMap[name].informal = true;
+    });
+
+    const clients = Object.entries(clientMap);
+    document.getElementById('kpi-clients-total').textContent = fmtDZD(totalCreances());
+    document.getElementById('kpi-clients-count').textContent = state.clientNames.length;
+
+    if (clients.length === 0) {
+      document.getElementById('clients-summary-cards').innerHTML = '<div class="empty-state">Aucun client encore.</div>';
+      return;
+    }
+
+    const now = new Date();
+    document.getElementById('clients-summary-cards').innerHTML = clients.map(([name, data]) => {
+      const remaining = data.totalInvoiced - data.totalPaid;
+      const paidPct = data.totalInvoiced > 0 ? Math.round(100 * data.totalPaid / data.totalInvoiced) : 0;
+      const unpaidCount = data.situations.filter(s => !sitIsPaid(s)).length;
+      const paidCount = data.situations.filter(s => sitIsPaid(s)).length;
+      const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+      const sitRows = data.situations.map(s => {
+        const rem = sitRemaining(s);
+        const isDone = sitIsPaid(s);
+        const days = s.date ? daysBetween(parseD(s.date), now) : null;
+        let statusBadge;
+        if (isDone) statusBadge = '<span class="badge b-ok" style="font-size:10px;">Soldée</span>';
+        else if (days > 60) statusBadge = '<span class="badge b-danger" style="font-size:10px;">+60j</span>';
+        else if (days > 30) statusBadge = '<span class="badge b-warn" style="font-size:10px;">+30j</span>';
+        else statusBadge = '<span class="badge b-info" style="font-size:10px;">OK</span>';
+
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px;">
+          <span>${s.number || s.project || '—'}</span>
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--text-secondary)">${fmtDZD(s.amount)}</span>
+            <span style="font-weight:600; color:${isDone ? 'var(--ok-text)' : 'var(--danger-text)'}">${isDone ? 'soldée' : fmtDZD(rem)}</span>
+            ${statusBadge}
+          </span>
+        </div>`;
+      }).join('');
+
+      const allPayments = [];
+      data.situations.forEach(s => {
+        const sitIdx = state.situations.indexOf(s);
+        (s.payments || []).forEach((p, pi) => {
+          allPayments.push({ date: p.date, amount: p.amount, situation: s.number || s.project || '—', sitIdx, payIdx: pi });
+        });
+      });
+      allPayments.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+      const paymentHistoryHtml = allPayments.length > 0
+        ? `<div style="margin-top:14px;">
+            <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 8px;">Historique des paiements</p>
+            <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 30px; background:var(--bg-muted); padding:8px 12px; font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">
+                <span>Date</span><span>Situation</span><span style="text-align:right;">Montant</span><span></span>
+              </div>
+              ${allPayments.map(p =>
+                `<div style="display:grid; grid-template-columns:1fr 1fr 1fr 30px; padding:8px 12px; font-size:12px; border-top:1px solid var(--border); align-items:center;">
+                  <span style="color:var(--text-secondary);">${p.date}</span>
+                  <span style="color:var(--text-secondary);">${p.situation}</span>
+                  <span style="text-align:right; font-weight:600; color:var(--ok-text);">+${fmtDZD(p.amount)}</span>
+                  <button onclick="app.deleteSituationPayment(${p.sitIdx},${p.payIdx})" style="background:none; border:1px solid var(--danger-text); border-radius:4px; color:var(--danger-text); font-size:11px; padding:1px 5px; cursor:pointer; font-weight:bold; line-height:1;">×</button>
+                </div>`
+              ).join('')}
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 30px; padding:8px 12px; font-size:12px; border-top:1px solid var(--border); background:var(--bg-muted);">
+                <span style="font-weight:600;">Total</span><span></span>
+                <span style="text-align:right; font-weight:600; color:var(--ok-text);">+${fmtDZD(allPayments.reduce((s,p) => s + p.amount, 0))}</span>
+                <span></span>
+              </div>
+            </div>
+          </div>` : '';
+
+      return `<div class="card" style="margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+          <div style="width:40px; height:40px; border-radius:10px; background:${data.informal ? 'var(--danger-bg)' : 'var(--info-bg)'}; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; color:${data.informal ? 'var(--danger-text)' : 'var(--info-text)'}; flex-shrink:0;">${initials}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <p style="font-weight:600; margin:0; font-size:14px;">${name}</p>
+              ${data.informal ? '<span class="badge b-danger" style="font-size:10px;">Informel</span>' : ''}
+            </div>
+            <div style="display:flex; gap:12px; font-size:12px; color:var(--text-secondary); margin-top:3px;">
+              <span>${data.situations.length} situation(s)</span>
+              <span>${unpaidCount} impayée(s)</span>
+              <span>${paidCount} soldée(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Facturé</p>
+            <p style="font-size:16px; font-weight:600; margin:0;">${fmtDZD(data.totalInvoiced)}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Payé</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:var(--ok-text);">${fmtDZD(data.totalPaid)}</p>
+          </div>
+          <div style="background:${remaining > 0 ? 'var(--danger-bg)' : 'var(--ok-bg)'}; border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:${remaining > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 4px;">Restant</p>
+            <p style="font-size:16px; font-weight:600; margin:0; color:${remaining > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(remaining)}</p>
+          </div>
+        </div>
+
+        <div style="height:4px; background:var(--bg-muted); border-radius:2px; overflow:hidden; margin-bottom:14px;">
+          <div style="height:100%; width:${paidPct}%; background:var(--ok-text); border-radius:2px;"></div>
+        </div>
+
+        <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:0 0 6px;">Détail des situations</p>
+        ${sitRows}
+        ${paymentHistoryHtml}
+      </div>`;
+    }).join('');
+  }
+
+  function switchPanel(p) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === p));
+    document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === p));
+    document.querySelectorAll('.panel').forEach(pan => pan.classList.toggle('active', pan.dataset.panel === p));
+    const meta = PANEL_META[p];
+    if (meta) {
+      document.getElementById('page-title').textContent = meta.title;
+      document.getElementById('page-sub').textContent = meta.sub;
+      const mobileTitle = document.getElementById('mobile-page-title');
+      if (mobileTitle) mobileTitle.textContent = meta.title;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
+  });
+
+  document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
+  });
+
+  document.getElementById('btn-add-charge').addEventListener('click', () => {
+    const label = document.getElementById('ch-label').value.trim();
+    const type = document.getElementById('ch-type').value.trim();
+    const amount = parseFloat(document.getElementById('ch-amount').value) || 0;
+    if (!label || amount <= 0) { alert('Libellé et montant requis'); return; }
+    if (state.editingChgIdx !== null) {
+      state.charges[state.editingChgIdx] = { label, type, amount, id: state.charges[state.editingChgIdx].id };
+      state.editingChgIdx = null;
+      document.getElementById('btn-add-charge').textContent = 'Ajouter';
+    } else {
+      state.charges.push({ label, type, amount, id: Date.now() });
+    }
+    save(K.charges, state.charges);
+    ['ch-label','ch-type','ch-amount'].forEach(id => document.getElementById(id).value = '');
+    renderAll();
+  });
+
+  document.getElementById('btn-add-fournisseur').addEventListener('click', () => {
+    addFournisseur();
+  });
+
+  loadAll();
+
+  function renderSimulateur() {
+    try {
+    const el = document.getElementById('sim-content');
+    if (!el) return;
+
+    // Group fournisseur situations by name
+    const supplierMap = {};
+    const allFourns = [];
+    
+    state.fournisseurs.forEach((f, i) => {
+      const rem = fRemaining(f);
+      if (rem <= 0) return;
+      allFourns.push(f);
+      const name = f.name || 'Inconnu';
+      if (!supplierMap[name]) supplierMap[name] = { factures: [], totalDebt: 0 };
+      supplierMap[name].factures.push({ ref: f.ref || '', date: f.date || '', remaining: rem, idx: i });
+      supplierMap[name].totalDebt += rem;
+    });
+
+    // Sort factures by date (oldest first) within each supplier
+    Object.values(supplierMap).forEach(s => {
+      s.factures.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    });
+
+    const suppliers = Object.entries(supplierMap).sort((a, b) => b[1].totalDebt - a[1].totalDebt);
+
+    if (suppliers.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune dette fournisseur impayée.</div>';
+      return;
+    }
+
+    // Init sim pick counts
+    if (!state.simPicks) state.simPicks = {};
+
+    let grandTotalToPay = 0;
+    const totalAllDebt = allFourns.reduce((s, f) => s + fRemaining(f), 0);
+
+    const cards = suppliers.map(([name, data]) => {
+      const pickCount = state.simPicks[name] || 0;
+      const maxFact = data.factures.length;
+      const selected = data.factures.slice(0, pickCount);
+      const toPay = selected.reduce((s, f) => s + f.remaining, 0);
+      const restAfter = data.totalDebt - toPay;
+      grandTotalToPay += toPay;
+
+      const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+      const factureRows = data.factures.map((f, fi) => {
+        const isSelected = fi < pickCount;
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-bottom:1px solid var(--border); font-size:12px; ${isSelected ? 'background:var(--ok-bg);' : ''}">
+          <span style="${isSelected ? 'font-weight:600;' : 'opacity:0.5;'}">${fi + 1}. ${f.ref || '—'}</span>
+          <span style="color:var(--text-secondary);">${f.date || '—'}</span>
+          <span style="font-weight:600; color:${isSelected ? 'var(--ok-text)' : 'var(--text-tertiary)'};">${fmtDZD(f.remaining)}</span>
+        </div>`;
+      }).join('');
+
+      return `<div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:40px; height:40px; border-radius:10px; background:var(--warn-bg); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; color:var(--warn-text); flex-shrink:0;">${initials}</div>
+            <div>
+              <p style="font-weight:700; font-size:14px; margin:0;">${name}</p>
+              <p style="font-size:11px; color:var(--text-secondary); margin:2px 0 0;">${maxFact} facture(s) impayée(s) · Total: ${fmtDZD(data.totalDebt)}</p>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:11px; color:var(--text-secondary); font-weight:600;">Nb factures à payer:</label>
+            <input type="number" min="0" max="${maxFact}" value="${pickCount}" 
+              onchange="app.simSetPick(this.dataset.name, this.value)"
+              oninput="app.simSetPick(this.dataset.name, this.value)"
+              data-name="${name.replace(/"/g, '&quot;')}"
+              style="width:60px; text-align:center; font-size:16px; font-weight:700; padding:6px; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); font-family:inherit;"/>
+            <span style="font-size:11px; color:var(--text-tertiary);">/ ${maxFact}</span>
+          </div>
+        </div>
+
+        ${factureRows}
+
+        ${pickCount > 0 ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+          <div style="background:var(--warn-bg); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--warn-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">À payer (${pickCount} facture${pickCount > 1 ? 's' : ''})</p>
+            <p style="font-size:16px; font-weight:700; margin:0; color:var(--warn-text);">${fmtDZD(toPay)}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste après</p>
+            <p style="font-size:16px; font-weight:700; margin:0; color:${restAfter > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(restAfter)}</p>
+          </div>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+        <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
+          <p style="font-size:10px; color:var(--danger-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total dettes fournisseurs</p>
+          <p style="font-size:16px; font-weight:700; margin:0; color:var(--danger-text);">${fmtDZD(totalAllDebt)}</p>
+        </div>
+        <div style="background:${grandTotalToPay > 0 ? 'var(--warn-bg)' : 'var(--bg-muted)'}; border-radius:8px; padding:10px 12px;">
+          <p style="font-size:10px; color:${grandTotalToPay > 0 ? 'var(--warn-text)' : 'var(--text-tertiary)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total à payer (sélectionné)</p>
+          <p style="font-size:16px; font-weight:700; margin:0; color:${grandTotalToPay > 0 ? 'var(--warn-text)' : 'var(--text-tertiary)'};">${grandTotalToPay > 0 ? '−' : ''}${fmtDZD(grandTotalToPay)}</p>
+        </div>
+        <div style="background:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-bg)' : 'var(--ok-bg)'}; border-radius:8px; padding:10px 12px;">
+          <p style="font-size:10px; color:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste dettes après paiement</p>
+          <p style="font-size:16px; font-weight:700; margin:0; color:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(totalAllDebt - grandTotalToPay)}</p>
+        </div>
+      </div>
+      ${cards}`;
+    } catch(e) { 
+      const el = document.getElementById('sim-content');
+      if (el) el.innerHTML = '<div style="color:red; padding:12px;">Erreur: ' + e.message + '<br>Fournisseurs: ' + state.fournisseurs.length + '</div>';
+      console.error('renderSimulateur error:', e); 
+    }
+  }
+
+  function simSetPick(name, val) {
+    if (!state.simPicks) state.simPicks = {};
+    state.simPicks[name] = Math.max(0, parseInt(val) || 0);
+    renderSimulateur();
+  }
+
+  function printSimulator() {
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('print-page-info').textContent = `Simulateur de paiement — ${today}`;
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+    const card = document.getElementById('sim-content').closest('.card');
+    if (card) card.classList.add('print-target');
+    const origTitle = document.title;
+    document.title = ' ';
+    setTimeout(function() {
+      window.print();
+      setTimeout(function() {
+        document.title = origTitle;
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+      }, 500);
+    }, 300);
+  }
+
+  function deleteSituationPayment(sitIdx, payIdx) {
+    if (!confirm('Supprimer ce paiement ?')) return;
+    state.situations[sitIdx].payments.splice(payIdx, 1);
+    save(K.situations, state.situations);
+    renderAll();
+  }
+
+  function deleteFournisseurPayment(fIdx, payIdx) {
+    if (!confirm('Supprimer ce paiement ?')) return;
+    state.fournisseurs[fIdx].payments.splice(payIdx, 1);
+    save(K.fournisseurs, state.fournisseurs);
+    renderAll();
+  }
+
+  function printPage(event, title) {
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('print-page-info').textContent = `${title} — ${today}`;
+    
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+    document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
+    
+    if (event && event.target) {
+      const card = event.target.closest('.card');
+      if (card) card.classList.add('print-target');
+    } else {
+      document.querySelectorAll('.panel.active .card').forEach(c => c.classList.add('print-target'));
+    }
+    
+    const origTitle = document.title;
+    document.title = ' ';
+    setTimeout(function() {
+      window.print();
+      setTimeout(function() {
+        document.title = origTitle;
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+      }, 500);
+    }, 300);
+  }
+
+  function printFournisseur(btn, name) {
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('print-page-info').textContent = `Situation fournisseur : ${name} — ${today}`;
+    
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+    document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
+    
+    const card = btn.closest('.fournisseur-card');
+    if (card) card.classList.add('print-target');
+    
+    const origTitle = document.title;
+    document.title = ' ';
+    setTimeout(function() {
+      window.print();
+      setTimeout(function() {
+        document.title = origTitle;
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+        document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
+      }, 500);
+    }, 300);
+  }
+
+  function showFournisseurReport() {
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const supplierMap = {};
+    state.fournisseurs.forEach(f => {
+      const name = f.name || 'Inconnu';
+      if (!supplierMap[name]) supplierMap[name] = { totalDue: 0, totalPaid: 0, count: 0, unpaid: 0 };
+      supplierMap[name].totalDue += (f.amount || 0);
+      supplierMap[name].totalPaid += fPaid(f);
+      supplierMap[name].count++;
+      if (!fIsPaid(f)) supplierMap[name].unpaid++;
+    });
+
+    const suppliers = Object.entries(supplierMap).sort((a, b) => (b[1].totalDue - b[1].totalPaid) - (a[1].totalDue - a[1].totalPaid));
+    const grandTotalDue = suppliers.reduce((s, [, d]) => s + d.totalDue, 0);
+    const grandTotalPaid = suppliers.reduce((s, [, d]) => s + d.totalPaid, 0);
+    const grandRemaining = grandTotalDue - grandTotalPaid;
+    const totalFactures = suppliers.reduce((s, [, d]) => s + d.count, 0);
+    const totalUnpaid = suppliers.reduce((s, [, d]) => s + d.unpaid, 0);
+
+    const el = document.getElementById('fournisseur-report-content');
+    el.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <p style="font-size:12px; color:var(--text-secondary); margin:0 0 12px;">Rapport généré le ${today}</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Fournisseurs</p>
+            <p style="font-size:18px; font-weight:700; margin:0;">${suppliers.length}</p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Factures</p>
+            <p style="font-size:18px; font-weight:700; margin:0;">${totalFactures} <span style="font-size:11px; color:var(--danger-text);">(${totalUnpaid} impayées)</span></p>
+          </div>
+          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--ok-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total payé</p>
+            <p style="font-size:18px; font-weight:700; margin:0; color:var(--ok-text);">${fmtDZD(grandTotalPaid)}</p>
+          </div>
+          <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
+            <p style="font-size:10px; color:var(--danger-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste à payer</p>
+            <p style="font-size:18px; font-weight:700; margin:0; color:var(--danger-text);">${fmtDZD(grandRemaining)}</p>
+          </div>
+        </div>
+      </div>
+      <table class="mod">
+        <thead><tr>
+          <th>Fournisseur</th>
+          <th style="text-align:center">Factures</th>
+          <th style="text-align:center">Impayées</th>
+          <th style="text-align:right">Total dû</th>
+          <th style="text-align:right">Payé</th>
+          <th style="text-align:right">Restant</th>
+        </tr></thead>
+        <tbody>
+          ${suppliers.map(([name, d]) => {
+            const rem = d.totalDue - d.totalPaid;
+            const pct = d.totalDue > 0 ? Math.round(100 * d.totalPaid / d.totalDue) : 0;
+            return `<tr>
+              <td style="font-weight:600">${name}</td>
+              <td style="text-align:center">${d.count}</td>
+              <td style="text-align:center; color:${d.unpaid > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; font-weight:600;">${d.unpaid}</td>
+              <td style="text-align:right">${fmtDZD(d.totalDue)}</td>
+              <td style="text-align:right; color:var(--ok-text);">${fmtDZD(d.totalPaid)}</td>
+              <td style="text-align:right; font-weight:600; color:${rem > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(rem)}</td>
+            </tr>`;
+          }).join('')}
+          <tr style="background:var(--bg-muted); font-weight:700;">
+            <td>TOTAL</td>
+            <td style="text-align:center">${totalFactures}</td>
+            <td style="text-align:center; color:var(--danger-text);">${totalUnpaid}</td>
+            <td style="text-align:right">${fmtDZD(grandTotalDue)}</td>
+            <td style="text-align:right; color:var(--ok-text);">${fmtDZD(grandTotalPaid)}</td>
+            <td style="text-align:right; color:var(--danger-text);">${fmtDZD(grandRemaining)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+
+    document.getElementById('fournisseur-report-card').style.display = 'block';
+    document.getElementById('fournisseur-report-card').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function printFournisseurReport() {
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('print-page-info').textContent = `Rapport global — Dettes fournisseurs — ${today}`;
+    
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+    document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
+    
+    const card = document.getElementById('fournisseur-report-card');
+    card.classList.add('print-target');
+    
+    const origTitle = document.title;
+    document.title = ' ';
+    setTimeout(function() {
+      window.print();
+      setTimeout(function() {
+        document.title = origTitle;
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
+      }, 500);
+    }, 300);
+  }
+
+  return {
+    openTransactionModal,
+    closeTransactionModal,
+    updateTransSitDropdowns,
+    saveTransaction,
+    editTransaction,
+    deleteTransaction,
+    openSituationModal,
+    closeSituationModal,
+    saveSituation,
+    editSituation,
+    openPartialPayment,
+    closePartialPayment,
+    toggleFullPayment,
+    savePartialPayment,
+    deleteSituation,
+    editCharge,
+    deleteCharge,
+    addClientName,
+    deleteClientName,
+    addFournisseur,
+    addFournisseurName,
+    deleteFournisseurName,
+    deleteFournisseur,
+    openFournisseurPay,
+    closeFournisseurPay,
+    toggleFournisseurFull,
+    saveFournisseurPay,
+    openLimitModal,
+    closeLimitModal,
+    saveLimit,
+    clearLimit,
+    printPage,
+    printFournisseur,
+    showFournisseurReport,
+    printFournisseurReport,
+    simSetPick,
+    printSimulator,
+    deleteSituationPayment,
+    deleteFournisseurPayment,
+    addProject,
+    deleteProject,
+    toggleProjectStatus,
+    openProjectExpense,
+    closeProjectExpense,
+    saveProjectExpense,
+    openProjectPayment,
+    closeProjectPayment,
+    saveProjectPayment,
+    deleteProjectExpense,
+    deleteProjectPayment
+  };
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
