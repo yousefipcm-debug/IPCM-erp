@@ -2640,7 +2640,7 @@ const app = (() => {
     
     state.fournisseurs.forEach((f, i) => {
       const rem = fRemaining(f);
-      if (rem <= 0) return;
+      if (rem < 1) return;
       allFourns.push(f);
       const name = f.name || 'Inconnu';
       if (!supplierMap[name]) supplierMap[name] = { factures: [], totalDebt: 0 };
