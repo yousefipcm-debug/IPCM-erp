@@ -1366,6 +1366,12 @@ const app = (() => {
     const ch = chgTotal();
     const buckets = agingBuckets();
     const informal = state.situations.some(s => s.contractType === 'informel' && !sitIsPaid(s));
+    const totalDebts = totalDettes();
+    
+    if (tres > 0 && totalDebts >= tres * 0.5) {
+      const pct = Math.round(100 * totalDebts / tres);
+      a.push({ level: pct >= 80 ? 'red' : 'warn', title: `Dettes fournisseurs à ${pct}% de ta trésorerie`, desc: `Tu dois ${fmtDZD(totalDebts)} et tu as ${fmtDZD(tres)} en banque.` });
+    }
 
     if (informal) a.push({ level: 'red', title: 'Client informel actif', desc: 'Créance non sécurisée juridiquement.' });
     if (ch > 0 && tres < ch) a.push({ level: 'red', title: 'Trésorerie < 1 mois de charges', desc: `Tu as ${fmtDZD(tres)}, charges ${fmtDZD(ch)}.` });
