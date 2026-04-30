@@ -2786,19 +2786,26 @@ const app = (() => {
       </div>`;
     }).join('');
 
+    const bankBal = journalBalance('banque') + journalBalance('caisse');
+    const bankAfter = bankBal - grandTotalToPay;
+
     el.innerHTML = `
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
+        <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
+          <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Trésorerie actuelle</p>
+          <p style="font-size:16px; font-weight:700; margin:0;">${fmtDZD(bankBal)}</p>
+        </div>
         <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
           <p style="font-size:10px; color:var(--danger-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total dettes fournisseurs</p>
           <p style="font-size:16px; font-weight:700; margin:0; color:var(--danger-text);">${fmtDZD(totalAllDebt)}</p>
         </div>
         <div style="background:${grandTotalToPay > 0 ? 'var(--warn-bg)' : 'var(--bg-muted)'}; border-radius:8px; padding:10px 12px;">
-          <p style="font-size:10px; color:${grandTotalToPay > 0 ? 'var(--warn-text)' : 'var(--text-tertiary)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total à payer (sélectionné)</p>
+          <p style="font-size:10px; color:${grandTotalToPay > 0 ? 'var(--warn-text)' : 'var(--text-tertiary)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total à payer</p>
           <p style="font-size:16px; font-weight:700; margin:0; color:${grandTotalToPay > 0 ? 'var(--warn-text)' : 'var(--text-tertiary)'};">${grandTotalToPay > 0 ? '−' : ''}${fmtDZD(grandTotalToPay)}</p>
         </div>
-        <div style="background:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-bg)' : 'var(--ok-bg)'}; border-radius:8px; padding:10px 12px;">
-          <p style="font-size:10px; color:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste dettes après paiement</p>
-          <p style="font-size:16px; font-weight:700; margin:0; color:${(totalAllDebt - grandTotalToPay) > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(totalAllDebt - grandTotalToPay)}</p>
+        <div style="background:${bankAfter >= 0 ? 'var(--ok-bg)' : 'var(--danger-bg)'}; border-radius:8px; padding:10px 12px;">
+          <p style="font-size:10px; color:${bankAfter >= 0 ? 'var(--ok-text)' : 'var(--danger-text)'}; text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste en banque après</p>
+          <p style="font-size:16px; font-weight:700; margin:0; color:${bankAfter >= 0 ? 'var(--ok-text)' : 'var(--danger-text)'};">${fmtDZD(bankAfter)}</p>
         </div>
       </div>
       ${cards}`;
