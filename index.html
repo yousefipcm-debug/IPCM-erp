@@ -565,7 +565,9 @@
     #fournisseur-names-list, #client-names-list { display: none !important; }
     #fournisseurs-summary-cards { display: block !important; }
     #fournisseurs-summary-cards .fournisseur-card { display: none !important; }
-    #fournisseurs-summary-cards .fournisseur-card.print-target { display: block !important; }
+    #fournisseurs-summary-cards .fournisseur-card.print-target { display: block !important; break-inside: avoid; page-break-inside: avoid; }
+    #clients-summary-cards > div { break-inside: avoid; page-break-inside: avoid; }
+    #projets-cards > div { break-inside: avoid; page-break-inside: avoid; }
     #fournisseur-report-card { display: none !important; }
     #fournisseur-report-card.print-target { display: block !important; padding: 0 !important; }
     #clients-summary-cards { display: none !important; }
@@ -586,6 +588,10 @@
     @page :first { margin-top: 8mm; }
     /* Simulator print rules */
     .sim-hide { display: none !important; }
+    /* Keep cards together on same page */
+    #sim-content > div { break-inside: avoid; page-break-inside: avoid; margin-bottom: 12px; }
+    table.mod { break-inside: avoid; page-break-inside: avoid; }
+    table.mod tr { break-inside: avoid; page-break-inside: avoid; }
   }
   @media not print {
     .print-header { display: none; }
