@@ -1320,9 +1320,23 @@ const app = (() => {
   }
 
   function runway() {
-    const weekly = chgTotal() / 4.33;
+    const monthly = chgTotal();
     const tres = journalBalance('caisse') + journalBalance('banque');
-    return weekly <= 0 ? Infinity : tres / weekly;
+    return monthly <= 0 ? Infinity : tres / monthly;
+  }
+
+  function fmtRunway(months) {
+    if (months === Infinity) return '∞';
+    if (months >= 12) {
+      const years = Math.floor(months / 12);
+      const rem = Math.round(months % 12);
+      return rem > 0 ? `${years} an${years > 1 ? 's' : ''} et ${rem} mois` : `${years} an${years > 1 ? 's' : ''}`;
+    }
+    if (months < 2) {
+      const weeks = Math.round(months * 4.33);
+      return `${months.toFixed(1)} mois (${weeks} semaines)`;
+    }
+    return `${months.toFixed(1)} mois`;
   }
 
   function agingBuckets() {
@@ -1356,8 +1370,8 @@ const app = (() => {
 
     if (informal) a.push({ level: 'red', title: 'Client informel actif', desc: 'Créance non sécurisée juridiquement.' });
     if (ch > 0 && tres < ch) a.push({ level: 'red', title: 'Trésorerie < 1 mois de charges', desc: `Tu as ${fmtDZD(tres)}, charges ${fmtDZD(ch)}.` });
-    else if (r < 4 && ch > 0) a.push({ level: 'red', title: 'Runway critique', desc: `${r.toFixed(1)} semaines restantes.` });
-    else if (r < 8 && ch > 0) a.push({ level: 'warn', title: 'Runway à surveiller', desc: `${r.toFixed(1)} semaines.` });
+    else if (r < 1 && ch > 0) a.push({ level: 'red', title: 'Runway critique', desc: `${fmtRunway(r)} restantes.` });
+    else if (r < 2 && ch > 0) a.push({ level: 'warn', title: 'Runway à surveiller', desc: `${fmtRunway(r)}.` });
     if (buckets['61-90'] > 0) a.push({ level: 'warn', title: '61-90 jours de retard', desc: `${fmtDZD(buckets['61-90'])} à relancer.` });
     if (buckets['90+'] > 0) a.push({ level: 'red', title: '+90 jours de retard', desc: `${fmtDZD(buckets['90+'])} — envisager action en justice.` });
     state.fournisseurs.filter(f => !fIsPaid(f) && f.limit > 0).forEach(f => {
@@ -1383,7 +1397,7 @@ const app = (() => {
       { label: 'Créances', val: fmtDZD(cr) },
       { label: 'Dettes fournisseurs', val: fmtDZD(totalDettes()), danger: totalDettes() > tres },
       { label: 'Charges/mois', val: fmtDZD(ch) },
-      { label: 'Runway', val: r === Infinity ? '∞' : r.toFixed(1) + ' sem.', danger: r < 4 && ch > 0 }
+      { label: 'Runway', val: fmtRunway(r), danger: r < 1 && ch > 0 }
     ];
     document.getElementById('kpi-overview').innerHTML = kpis.map(k => `
       <div class="kpi-card ${k.danger ? 'danger flash' : ''}">
@@ -1567,7 +1581,7 @@ const app = (() => {
   function renderCharges() {
     document.getElementById('kpi-charges').textContent = fmtDZD(chgTotal());
     const r = runway();
-    document.getElementById('kpi-runway').textContent = r === Infinity ? '∞' : r.toFixed(1) + ' sem.';
+    document.getElementById('kpi-runway').textContent = fmtRunway(r);
 
     const el = document.getElementById('charges-table');
     if (state.charges.length === 0) {
@@ -1766,9 +1780,9 @@ const app = (() => {
     let pills = [];
     if (reds > 0) pills.push(`<span class="pill pill-danger"><span class="dot"></span>${reds} alerte(s)</span>`);
     if (ch > 0) {
-      if (r < 4) pills.push(`<span class="pill pill-danger">Runway ${r.toFixed(1)} sem.</span>`);
-      else if (r < 8) pills.push(`<span class="pill pill-warn">Runway ${r.toFixed(1)} sem.</span>`);
-      else pills.push(`<span class="pill pill-ok">Runway ${r === Infinity ? '∞' : r.toFixed(1) + ' sem.'}</span>`);
+      if (r < 1) pills.push(`<span class="pill pill-danger">Runway ${fmtRunway(r)}</span>`);
+      else if (r < 2) pills.push(`<span class="pill pill-warn">Runway ${fmtRunway(r)}</span>`);
+      else pills.push(`<span class="pill pill-ok">Runway ${fmtRunway(r)}</span>`);
     }
     pills.push(`<span class="pill">${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`);
     document.getElementById('top-pills').innerHTML = pills.join('');
