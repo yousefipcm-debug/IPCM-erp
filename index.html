@@ -2243,7 +2243,7 @@ const app = (() => {
 
     document.getElementById('kpi-projets-actifs').textContent = activeProjects.length;
     document.getElementById('kpi-projets-valeur').textContent = fmtDZD(allValue);
-    const globalMargin = allReceived - allSpent;
+    const globalMargin = allValue - allSpent;
     const margeEl = document.getElementById('kpi-projets-marge');
     margeEl.textContent = (globalMargin >= 0 ? '+' : '') + fmtDZD(globalMargin);
     margeEl.style.color = globalMargin >= 0 ? 'var(--ok-text)' : 'var(--danger-text)';
@@ -2260,7 +2260,7 @@ const app = (() => {
       const totalReceived = p.payments.reduce((s, v) => s + v.amount, 0);
       const totalSpent = p.expenses.reduce((s, v) => s + v.amount, 0);
       const remaining = p.contractValue - totalReceived;
-      const margin = totalReceived - totalSpent;
+      const margin = p.contractValue - totalSpent;
       const pctReceived = p.contractValue > 0 ? Math.round(100 * totalReceived / p.contractValue) : 0;
       const pctSpent = p.contractValue > 0 ? Math.round(100 * totalSpent / p.contractValue) : 0;
 
