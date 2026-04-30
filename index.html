@@ -1333,8 +1333,7 @@ const app = (() => {
       return rem > 0 ? `${years} an${years > 1 ? 's' : ''} et ${rem} mois` : `${years} an${years > 1 ? 's' : ''}`;
     }
     if (months < 2) {
-      const weeks = Math.round(months * 4.33);
-      return `${months.toFixed(1)} mois (${weeks} semaines)`;
+      return `${months.toFixed(1)} mois`;
     }
     return `${months.toFixed(1)} mois`;
   }
