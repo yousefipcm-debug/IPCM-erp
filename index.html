@@ -2743,7 +2743,7 @@ const app = (() => {
         </div>`;
       }).join('');
 
-      return `<div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px;">
+      return `<div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; break-inside:avoid; page-break-inside:avoid;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:10px;">
             <div style="width:40px; height:40px; border-radius:10px; background:var(--warn-bg); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; color:var(--warn-text); flex-shrink:0;">${initials}</div>
