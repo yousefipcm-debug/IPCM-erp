@@ -520,7 +520,30 @@
   .mobile-header { display: none; }
   .mobile-nav { display: none; }
 
-  /* Print button */
+  .module-nav { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; flex: 1; overflow-y: auto; }
+  .module-group { display: flex; flex-direction: column; }
+  .module-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 16px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); font-family: inherit;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    border-radius: 8px; margin: 0 0 2px; text-align: left;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .module-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .module-btn:hover { background: var(--nav-hover); color: var(--text-primary); }
+  .module-btn.active { background: var(--nav-hover); color: var(--accent); }
+  .module-btn.active svg { stroke: var(--accent); }
+  .module-btn-soon { opacity: 0.45; cursor: not-allowed; }
+  .module-badge {
+    margin-left: auto; font-size: 9px; font-weight: 700;
+    background: var(--bg-muted); color: var(--text-tertiary);
+    padding: 2px 6px; border-radius: 10px; letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .module-items { padding-left: 12px; margin-bottom: 4px; }
   .print-btn {
     background: transparent;
     border: 1px solid var(--border-strong);
@@ -613,58 +636,92 @@
       </div>
     </div>
 
-    <p class="nav-section-label">Pilotage</p>
-    <ul class="nav-list">
-      <li><button class="nav-btn active" data-panel="overview">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Vue d'ensemble
-      </button></li>
-      <li><button class="nav-btn" data-panel="alerts" id="nav-alerts">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-        Alertes
-        <span class="nav-dot"></span>
-      </button></li>
-      <li><button class="nav-btn" data-panel="projets">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-4h6v4"/></svg>
-        Projets / Chantiers
-      </button></li>
-    </ul>
+    <div class="module-nav">
 
-    <p class="nav-section-label">Finance</p>
-    <ul class="nav-list">
-      <li><button class="nav-btn" data-panel="journaux">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-        Journaux
-      </button></li>
-      <li><button class="nav-btn" data-panel="situations">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Situations
-      </button></li>
-      <li><button class="nav-btn" data-panel="clients-summary">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Clients
-      </button></li>
-      <li><button class="nav-btn" data-panel="aging">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Balance âgée
-      </button></li>
-      <li><button class="nav-btn" data-panel="forecast">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><polyline points="7 14 12 9 16 13 21 8"/></svg>
-        Prévisionnel
-      </button></li>
-      <li><button class="nav-btn" data-panel="charges">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Charges
-      </button></li>
-      <li><button class="nav-btn" data-panel="fournisseurs">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-        Fournisseurs
-      </button></li>
-      <li><button class="nav-btn" data-panel="simulateur">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><rect x="4" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="16" y="2" width="4" height="18"/></svg>
-        Simulateur
-      </button></li>
-    </ul>
+      <!-- PILOTAGE - always open, no toggle -->
+      <div class="module-group active" id="module-pilotage">
+        <div class="module-btn active" style="cursor:default;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Pilotage</span>
+        </div>
+        <ul class="nav-list module-items" id="items-pilotage">
+          <li><button class="nav-btn active" data-panel="overview">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+            Vue d'ensemble
+          </button></li>
+          <li><button class="nav-btn" data-panel="alerts" id="nav-alerts">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            Alertes
+            <span class="nav-dot"></span>
+          </button></li>
+          <li><button class="nav-btn" data-panel="projets">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-4h6v4"/></svg>
+            Projets / Chantiers
+          </button></li>
+        </ul>
+      </div>
+
+      <!-- DFC -->
+      <div class="module-group" id="module-finance">
+        <button class="module-btn" onclick="app.switchModule('finance')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>DFC</span>
+        </button>
+        <ul class="nav-list module-items" id="items-finance" style="display:none;">
+          <li><button class="nav-btn" data-panel="journaux">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Journaux
+          </button></li>
+          <li><button class="nav-btn" data-panel="situations">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Situations
+          </button></li>
+          <li><button class="nav-btn" data-panel="clients-summary">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Clients
+          </button></li>
+          <li><button class="nav-btn" data-panel="aging">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Balance âgée
+          </button></li>
+          <li><button class="nav-btn" data-panel="forecast">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><polyline points="7 14 12 9 16 13 21 8"/></svg>
+            Prévisionnel
+          </button></li>
+          <li><button class="nav-btn" data-panel="charges">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Charges
+          </button></li>
+          <li><button class="nav-btn" data-panel="fournisseurs">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+            Fournisseurs
+          </button></li>
+          <li><button class="nav-btn" data-panel="simulateur">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><rect x="4" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="16" y="2" width="4" height="18"/></svg>
+            Simulateur
+          </button></li>
+        </ul>
+      </div>
+
+      <!-- RH (coming soon) -->
+      <div class="module-group" id="module-rh">
+        <button class="module-btn module-btn-soon" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>RH</span>
+          <span class="module-badge">Bientôt</span>
+        </button>
+      </div>
+
+      <!-- TECHNIQUE (coming soon) -->
+      <div class="module-group" id="module-technique">
+        <button class="module-btn module-btn-soon" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span>Technique</span>
+          <span class="module-badge">Bientôt</span>
+        </button>
+      </div>
+
+    </div>
 
     <div class="sidebar-foot">
       <div class="foot-row">
@@ -2658,6 +2715,17 @@ const app = (() => {
     addFournisseur();
   });
 
+  function switchModule(name) {
+    if (name === 'pilotage') return; // always open
+    const items = document.getElementById('items-' + name);
+    const group = document.getElementById('module-' + name);
+    const btn = group ? group.querySelector('.module-btn') : null;
+    if (!items) return;
+    const isOpen = items.style.display !== 'none';
+    items.style.display = isOpen ? 'none' : '';
+    if (btn) btn.classList.toggle('active', !isOpen);
+  }
+
   loadAll();
 
   function renderSimulateur() {
@@ -3041,6 +3109,7 @@ const app = (() => {
     openTransactionModal,
     closeTransactionModal,
     updateTransSitDropdowns,
+    switchModule,
     saveTransaction,
     editTransaction,
     deleteTransaction,
