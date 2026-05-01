@@ -732,6 +732,15 @@
         <span id="save-status">Sauvegarde auto</span>
       </div>
       <div style="margin-top: 5px; opacity: 0.85;" id="foot-date">—</div>
+      <div style="display:flex; gap:6px; margin-top:10px;">
+        <button onclick="app.exportData()" style="flex:1; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px; padding:5px 0; font-size:11px; font-weight:600; color:#2563EB; cursor:pointer; font-family:inherit;">
+          ⬇ Exporter
+        </button>
+        <label style="flex:1; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px; padding:5px 0; font-size:11px; font-weight:600; color:#16A34A; cursor:pointer; text-align:center;">
+          ⬆ Importer
+          <input type="file" accept=".json" onchange="app.importData(this)" style="display:none;"/>
+        </label>
+      </div>
     </div>
   </aside>
 
@@ -2969,6 +2978,71 @@ const app = (() => {
     renderAll();
   }
 
+  function exportData() {
+    const data = {
+      version: 2,
+      exportDate: new Date().toISOString(),
+      transactions: state.transactions,
+      situations: state.situations,
+      charges: state.charges,
+      fournisseurs: state.fournisseurs,
+      clientNames: state.clientNames,
+      fournisseurNames: state.fournisseurNames,
+      projects: state.projects,
+      simPicks: state.simPicks,
+      simCustomAmounts: state.simCustomAmounts
+    };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `IPCM_BOUTEMA_backup_${today}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!confirm('Importer ces données ? Cela va remplacer toutes vos données actuelles.')) {
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.version !== 2) { alert('Format de fichier non reconnu.'); return; }
+        state.transactions = data.transactions || [];
+        state.situations = data.situations || [];
+        state.charges = data.charges || [];
+        state.fournisseurs = data.fournisseurs || [];
+        state.clientNames = data.clientNames || [];
+        state.fournisseurNames = data.fournisseurNames || [];
+        state.projects = data.projects || [];
+        state.simPicks = data.simPicks || {};
+        state.simCustomAmounts = data.simCustomAmounts || {};
+        save(K.transactions, state.transactions);
+        save(K.situations, state.situations);
+        save(K.charges, state.charges);
+        save(K.fournisseurs, state.fournisseurs);
+        save(K.clientNames, state.clientNames);
+        save(K.fournisseurNames, state.fournisseurNames);
+        save(K.projects, state.projects);
+        save(K.simPicks, state.simPicks);
+        save(K.simCustomAmounts, state.simCustomAmounts);
+        renderAll();
+        alert('✅ Données importées avec succès — ' + (data.exportDate ? 'Sauvegarde du ' + new Date(data.exportDate).toLocaleDateString('fr-FR') : ''));
+      } catch(err) {
+        alert('Erreur lors de l\'importation. Vérifiez que le fichier est correct.');
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
   function printPage(event, title) {
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('print-page-info').textContent = `${title} — ${today}`;
@@ -3145,6 +3219,8 @@ const app = (() => {
     clearLimit,
     printPage,
     printFournisseur,
+    exportData,
+    importData,
     showFournisseurReport,
     printFournisseurReport,
     simSetPick,
