@@ -1465,7 +1465,7 @@ const app = (() => {
 
     const kpis = [
       { label: 'Trésorerie', val: fmtDZD(tres), color: tresColor },
-      { label: 'Créances', val: fmtDZD(cr), color: cr > 25000000 ? 'danger' : '' },
+      { label: 'Créances', val: fmtDZD(cr), color: cr >= 5000000 ? 'danger' : cr > 0 ? 'ok' : '' },
       { label: 'Dettes fournisseurs', val: fmtDZD(dettes), color: dettesColor },
       { label: 'Charges/mois', val: fmtDZD(ch), color: '' },
       { label: 'Runway', val: fmtRunway(r), color: ch > 0 ? runwayColor : '' }
