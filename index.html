@@ -1216,7 +1216,9 @@ const app = (() => {
     fournisseurs: 'ipcm_v2_fournisseurs',
     clientNames: 'ipcm_v2_clientNames',
     fournisseurNames: 'ipcm_v2_fournisseurNames',
-    projects: 'ipcm_v2_projects'
+    projects: 'ipcm_v2_projects',
+    simPicks: 'ipcm_v2_simPicks',
+    simCustomAmounts: 'ipcm_v2_simCustomAmounts'
   };
 
   const state = {
@@ -1284,6 +1286,8 @@ const app = (() => {
     state.clientNames = load(K.clientNames, []);
     state.fournisseurNames = load(K.fournisseurNames, []);
     state.projects = load(K.projects, []);
+    state.simPicks = load(K.simPicks, {});
+    state.simCustomAmounts = load(K.simCustomAmounts, {});
     renderAll();
   }
 
@@ -2828,6 +2832,8 @@ const app = (() => {
     // Clear custom amount when using pick mode
     if (!state.simCustomAmounts) state.simCustomAmounts = {};
     delete state.simCustomAmounts[name];
+    save(K.simPicks, state.simPicks);
+    save(K.simCustomAmounts, state.simCustomAmounts);
     renderSimulateur();
   }
 
@@ -2843,12 +2849,13 @@ const app = (() => {
     const amount = Math.max(0, parseFloat(val) || 0);
     if (amount > 0) {
       state.simCustomAmounts[name] = amount;
-      // Clear pick count when using amount mode
       if (!state.simPicks) state.simPicks = {};
       state.simPicks[name] = 0;
     } else {
       delete state.simCustomAmounts[name];
     }
+    save(K.simPicks, state.simPicks);
+    save(K.simCustomAmounts, state.simCustomAmounts);
     renderSimulateur();
   }
 
