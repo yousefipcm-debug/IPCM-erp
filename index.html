@@ -607,12 +607,12 @@
     #sim-content > div { break-inside: avoid; page-break-inside: avoid; margin-bottom: 12px; }
     table.mod { break-inside: avoid; page-break-inside: avoid; }
     table.mod tr { break-inside: avoid; page-break-inside: avoid; }
-    /* Print footer - shows on every page */
-    .print-footer { display: flex !important; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 6px; border-top: 1px solid #ddd; font-size: 9px; color: #888; }
+    /* Print footer - bottom of page */
+    .print-footer { display: flex !important; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 6px; border-top: 1px solid #ddd; font-size: 9px; color: #888; }
     .print-footer-left { font-weight: 700; color: #333; font-size: 10px; }
     .print-footer-right { color: #555; font-size: 9px; }
-    /* Signature block for DFC documents */
-    .print-signature { display: block !important; margin-top: 32px; padding-top: 16px; border-top: 1px solid #ddd; }
+    /* Signature block - after content */
+    .print-signature { display: block !important; margin-top: 40px; }
     .print-signature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 8px; }
     .print-signature-box { text-align: center; }
     .print-signature-line { border-bottom: 1px solid #333; margin: 40px 20px 6px; }
@@ -762,25 +762,6 @@
         </div>
         <div style="border-bottom:2px solid #C8782A; margin-top:4px; margin-bottom:4px;"></div>
         <p id="print-page-info" style="font-size:11px; font-weight:700; color:#1A1A17; margin:4px 0 0; letter-spacing:0.02em;">Rapport</p>
-      </div>
-
-      <div class="print-footer">
-        <span class="print-footer-left">IPCM BOUTEMA</span>
-        <span class="print-footer-right">Construction et Industrie</span>
-      </div>
-
-      <div class="print-signature" id="print-signature-block">
-        <p style="font-size:10px; font-weight:700; color:#333; margin:0 0 6px;">Visa et Signature</p>
-        <div class="print-signature-row">
-          <div class="print-signature-box">
-            <div class="print-signature-line"></div>
-            <p class="print-signature-label">Le Responsable Administratif<br>YOUCEF BOUTEMA</p>
-          </div>
-          <div class="print-signature-box">
-            <div class="print-signature-line"></div>
-            <p class="print-signature-label">Le Responsable Financier<br>Mme TERKMANE Hakima</p>
-          </div>
-        </div>
       </div>
 
       <div class="mobile-header">
@@ -2991,22 +2972,14 @@ const app = (() => {
   function printPage(event, title) {
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('print-page-info').textContent = `${title} — ${today}`;
-    
     document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
     document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
-    
     if (event && event.target) {
       const card = event.target.closest('.card');
       if (card) card.classList.add('print-target');
     } else {
       document.querySelectorAll('.panel.active .card').forEach(c => c.classList.add('print-target'));
     }
-    
-    // Show signature for DFC documents
-    const sig = document.getElementById('print-signature-block');
-    const isDFC = ['Dettes fournisseurs', 'Situations', 'Simulateur', 'Balance âgée', 'Rapport global'].some(t => title.includes(t));
-    if (sig) sig.style.display = isDFC ? 'block' : 'none';
-    
     const origTitle = document.title;
     document.title = ' ';
     setTimeout(function() {
@@ -3014,7 +2987,6 @@ const app = (() => {
       setTimeout(function() {
         document.title = origTitle;
         document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
-        if (sig) sig.style.display = '';
       }, 500);
     }, 300);
   }
@@ -3022,13 +2994,10 @@ const app = (() => {
   function printFournisseur(btn, name) {
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('print-page-info').textContent = `Situation fournisseur : ${name} — ${today}`;
-    
     document.querySelectorAll('.card').forEach(c => c.classList.remove('print-target'));
     document.querySelectorAll('.fournisseur-card').forEach(c => c.classList.remove('print-target'));
-    
     const card = btn.closest('.fournisseur-card');
     if (card) card.classList.add('print-target');
-    
     const origTitle = document.title;
     document.title = ' ';
     setTimeout(function() {
