@@ -176,6 +176,12 @@
   }
   .kpi-card:hover { box-shadow: var(--shadow-md); }
   .kpi-card.danger { border-color: #FECACA; background: var(--danger-bg); box-shadow: none; }
+  .kpi-card.kpi-warn { border-color: #FDE68A; background: var(--warn-bg); box-shadow: none; }
+  .kpi-card.kpi-ok { border-color: #BBF7D0; background: var(--ok-bg); box-shadow: none; }
+  .kpi-card.kpi-warn .kpi-lbl { color: var(--warn-text); }
+  .kpi-card.kpi-warn .kpi-val { color: var(--warn-text); }
+  .kpi-card.kpi-ok .kpi-lbl { color: var(--ok-text); }
+  .kpi-card.kpi-ok .kpi-val { color: var(--ok-text); }
   .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
   .kpi-lbl {
     font-size: 11px; color: var(--text-secondary); text-transform: uppercase;
@@ -1427,8 +1433,8 @@ const app = (() => {
 
     if (informal) a.push({ level: 'red', title: 'Client informel actif', desc: 'Créance non sécurisée juridiquement.' });
     if (ch > 0 && tres < ch) a.push({ level: 'red', title: 'Trésorerie < 1 mois de charges', desc: `Tu as ${fmtDZD(tres)}, charges ${fmtDZD(ch)}.` });
-    else if (r < 1 && ch > 0) a.push({ level: 'red', title: 'Runway critique', desc: `${fmtRunway(r)} restantes.` });
-    else if (r < 2 && ch > 0) a.push({ level: 'warn', title: 'Runway à surveiller', desc: `${fmtRunway(r)}.` });
+    else if (r < 4 && ch > 0) a.push({ level: 'red', title: 'Runway critique', desc: `${fmtRunway(r)} restants.` });
+    else if (r < 7 && ch > 0) a.push({ level: 'warn', title: 'Runway à surveiller', desc: `${fmtRunway(r)}.` });
     if (buckets['61-90'] > 0) a.push({ level: 'warn', title: '61-90 jours de retard', desc: `${fmtDZD(buckets['61-90'])} à relancer.` });
     if (buckets['90+'] > 0) a.push({ level: 'red', title: '+90 jours de retard', desc: `${fmtDZD(buckets['90+'])} — envisager action en justice.` });
     state.fournisseurs.filter(f => !fIsPaid(f) && f.limit > 0).forEach(f => {
@@ -1448,16 +1454,24 @@ const app = (() => {
     const r = runway();
     const alerts = computeAlerts();
     const reds = alerts.filter(a => a.level === 'red').length;
+    const bankBalance = journalBalance('banque') + journalBalance('caisse');
+    const dettes = totalDettes();
+    const dettesPct = bankBalance > 0 ? dettes / bankBalance : 0;
+
+    const runwayColor = r >= 7 ? 'ok' : r >= 4 ? 'warn' : 'danger';
+    const dettesColor = dettesPct >= 0.5 ? 'danger' : dettes > 0 ? 'warn' : '';
+
+    const tresColor = tres >= 20000000 ? 'ok' : tres >= 15000000 ? 'warn' : 'danger';
 
     const kpis = [
-      { label: 'Trésorerie', val: fmtDZD(tres), danger: ch > 0 && tres < ch },
-      { label: 'Créances', val: fmtDZD(cr) },
-      { label: 'Dettes fournisseurs', val: fmtDZD(totalDettes()), danger: totalDettes() > tres },
-      { label: 'Charges/mois', val: fmtDZD(ch) },
-      { label: 'Runway', val: fmtRunway(r), danger: r < 1 && ch > 0 }
+      { label: 'Trésorerie', val: fmtDZD(tres), color: tresColor },
+      { label: 'Créances', val: fmtDZD(cr), color: '' },
+      { label: 'Dettes fournisseurs', val: fmtDZD(dettes), color: dettesColor },
+      { label: 'Charges/mois', val: fmtDZD(ch), color: '' },
+      { label: 'Runway', val: fmtRunway(r), color: ch > 0 ? runwayColor : '' }
     ];
     document.getElementById('kpi-overview').innerHTML = kpis.map(k => `
-      <div class="kpi-card ${k.danger ? 'danger flash' : ''}">
+      <div class="kpi-card ${k.color === 'danger' ? 'danger flash' : k.color === 'warn' ? 'kpi-warn' : k.color === 'ok' ? 'kpi-ok' : ''}">
         <div class="kpi-top"><p class="kpi-lbl">${k.label}</p></div>
         <p class="kpi-val">${k.val}</p>
       </div>`).join('');
@@ -1837,8 +1851,8 @@ const app = (() => {
     let pills = [];
     if (reds > 0) pills.push(`<span class="pill pill-danger"><span class="dot"></span>${reds} alerte(s)</span>`);
     if (ch > 0) {
-      if (r < 1) pills.push(`<span class="pill pill-danger">Runway ${fmtRunway(r)}</span>`);
-      else if (r < 2) pills.push(`<span class="pill pill-warn">Runway ${fmtRunway(r)}</span>`);
+      if (r < 4) pills.push(`<span class="pill pill-danger">Runway ${fmtRunway(r)}</span>`);
+      else if (r < 7) pills.push(`<span class="pill pill-warn">Runway ${fmtRunway(r)}</span>`);
       else pills.push(`<span class="pill pill-ok">Runway ${fmtRunway(r)}</span>`);
     }
     pills.push(`<span class="pill">${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>`);
