@@ -703,6 +703,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20"/><rect x="4" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="16" y="2" width="4" height="18"/></svg>
             Simulateur
           </button></li>
+          <li><button class="nav-btn" data-panel="facturation">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+            Facturation
+          </button></li>
         </ul>
       </div>
 
@@ -1098,6 +1102,89 @@
         </div>
       </section>
 
+      <section class="panel" data-panel="facturation">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Émettre une nouvelle facture</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Type de facture</label>
+              <select id="inv-type">
+                <option value="finale">Facture</option>
+                <option value="proforma">Facture Proforma</option>
+              </select>
+            </div>
+            <div class="field"><label>N° (auto: 01/2026)</label><input type="text" id="inv-number" placeholder="01/2026"/></div>
+            <div class="field"><label>Date</label><input type="date" id="inv-date"/></div>
+            <div class="field"><label>Lieu</label><input type="text" id="inv-place" value="Blida" placeholder="Ex. Blida"/></div>
+            <div class="field"><label>Client</label><select id="inv-client"></select></div>
+            <div class="field"><label>Projet</label><input type="text" id="inv-project" placeholder="Ex. SAFEX, BLOCOTELHA Steel..."/></div>
+            <div class="field"><label>Ouvrage</label><input type="text" id="inv-ouvrage" placeholder="Ex. Couverture SKINZIP, Charpente..."/></div>
+            <div class="field"><label>Site</label><input type="text" id="inv-site" placeholder="Ex. Mohamadia - Algérie"/></div>
+            <div class="field"><label>Timbre fiscal (1%)</label>
+              <select id="inv-timbre">
+                <option value="0">Non</option>
+                <option value="1">Oui (paiement cash > 100k)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <p style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin:0 0 8px;">Lignes de facturation</p>
+            <div id="inv-lines"></div>
+            <button class="btn-secondary" style="margin-top:8px;" onclick="app.invAddLine()">+ Ajouter une ligne</button>
+          </div>
+
+          <div class="form-grid" style="margin-top:14px; grid-template-columns:1fr 1fr;">
+            <div class="field"><label>RIB (optionnel)</label><select id="inv-rib"></select></div>
+            <div class="field"><label>Conditions de paiement (optionnel)</label><input type="text" id="inv-conditions" placeholder="Ex. 30 jours fin de mois"/></div>
+          </div>
+
+          <div id="inv-totals" style="margin-top:16px; padding:14px; background:var(--bg-muted); border-radius:8px;"></div>
+
+          <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="btn-primary" onclick="app.saveInvoice()">Enregistrer la facture</button>
+            <button class="btn-secondary" onclick="app.invReset()">Réinitialiser</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Informations fiscales des clients</p>
+            <p style="font-size:11px; color:var(--text-tertiary); margin:0;">Renseignements à imprimer sur les factures</p>
+          </div>
+          <div class="form-grid" style="grid-template-columns:1fr 2fr;">
+            <div class="field"><label>Client</label><select id="cd-client"></select></div>
+            <div class="field"><label>Nom légal complet</label><input type="text" id="cd-fullname" placeholder="Ex. BLOCOTELHA Steel Constructions, S.A (ALGERIE)"/></div>
+            <div class="field"><label>Adresse</label><input type="text" id="cd-address" placeholder="Ex. 17 chemin de l'avenir Oued Romane - El Achour, 16106 Alger, Algérie"/></div>
+            <div class="field"><label>TIN</label><input type="text" id="cd-tin" placeholder="0 0 0 87556"/></div>
+            <div class="field"><label>NIF</label><input type="text" id="cd-nif" placeholder="314070000019511"/></div>
+            <div class="field"><label>NIS</label><input type="text" id="cd-nis" placeholder="1316299006147"/></div>
+            <button class="btn-primary" onclick="app.saveClientDetails()">Enregistrer</button>
+          </div>
+          <div id="client-details-list" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Liste des factures émises</p>
+          </div>
+          <div class="tbl-wrap" id="invoices-table"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">RIB (coordonnées bancaires)</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Nom banque</label><input type="text" id="rib-bank" placeholder="Ex. BNA, BEA"/></div>
+            <div class="field"><label>Numéro RIB</label><input type="text" id="rib-number" placeholder="20 chiffres"/></div>
+            <button class="btn-primary" onclick="app.addRib()">Ajouter</button>
+          </div>
+          <div id="rib-list" style="margin-top:12px;"></div>
+        </div>
+      </section>
+
     </div><!-- end content -->
   </main>
 
@@ -1277,7 +1364,7 @@
 <div class="toast" id="toast">✓ Enregistré</div>
 
 <script>
-const app = (() => {
+window.app = (() => {
   const K = {
     transactions: 'ipcm_v2_transactions',
     situations: 'ipcm_v2_situations',
@@ -1287,7 +1374,10 @@ const app = (() => {
     fournisseurNames: 'ipcm_v2_fournisseurNames',
     projects: 'ipcm_v2_projects',
     simPicks: 'ipcm_v2_simPicks',
-    simCustomAmounts: 'ipcm_v2_simCustomAmounts'
+    simCustomAmounts: 'ipcm_v2_simCustomAmounts',
+    invoices: 'ipcm_v2_invoices',
+    ribList: 'ipcm_v2_ribList',
+    clientDetails: 'ipcm_v2_clientDetails'
   };
 
   const state = {
@@ -1308,6 +1398,8 @@ const app = (() => {
     editingProjectIdx: null
   };
 
+  let _invLines = [];
+
   const PANEL_META = {
     overview: { title: "Vue d'ensemble", sub: "Le pouls de ton entreprise aujourd'hui" },
     alerts: { title: 'Alertes', sub: 'Tout ce qui demande ton attention' },
@@ -1319,7 +1411,8 @@ const app = (() => {
     forecast: { title: 'Prévisionnel', sub: 'Cash flow projeté' },
     charges: { title: 'Charges mensuelles', sub: 'Ton burn rate fixe' },
     fournisseurs: { title: 'Fournisseurs', sub: 'Dettes fournisseurs' },
-    simulateur: { title: 'Simulateur', sub: 'Planifie tes paiements et vois l\'impact sur ta trésorerie' }
+    simulateur: { title: 'Simulateur', sub: 'Planifie tes paiements et vois l\'impact sur ta trésorerie' },
+    facturation: { title: 'Facturation', sub: 'Émettre et gérer les factures clients' }
   };
 
   const fmt = (n) => n === null || n === undefined || isNaN(n) ? '—' : new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' DZD';
@@ -1357,6 +1450,9 @@ const app = (() => {
     state.projects = load(K.projects, []);
     state.simPicks = load(K.simPicks, {});
     state.simCustomAmounts = load(K.simCustomAmounts, {});
+    state.invoices = load(K.invoices, []);
+    state.ribList = load(K.ribList, []);
+    state.clientDetails = load(K.clientDetails, {});
     renderAll();
   }
 
@@ -1899,6 +1995,9 @@ const app = (() => {
     renderCharges();
     renderFournisseurs();
     renderTopPills();
+    renderFacturation();
+    renderInvoices();
+    renderRibs();
   }
 
   function updateTransSitDropdowns() {
@@ -2735,6 +2834,19 @@ const app = (() => {
     addFournisseur();
   });
 
+  // Wire up timbre fiscal dropdown to update invoice totals live
+  setTimeout(() => {
+    const timbre = document.getElementById('inv-timbre');
+    if (timbre) timbre.addEventListener('change', () => {
+      if (typeof invUpdateTotals === 'function') invUpdateTotals();
+    });
+    // Auto-load client fiscal details when picking client in fiscal form
+    const cdClient = document.getElementById('cd-client');
+    if (cdClient) cdClient.addEventListener('change', () => {
+      if (cdClient.value) loadClientDetailsToForm(cdClient.value);
+    });
+  }, 100);
+
   function switchModule(name) {
     if (name === 'pilotage') return; // always open
     const items = document.getElementById('items-' + name);
@@ -2990,7 +3102,10 @@ const app = (() => {
       fournisseurNames: state.fournisseurNames,
       projects: state.projects,
       simPicks: state.simPicks,
-      simCustomAmounts: state.simCustomAmounts
+      simCustomAmounts: state.simCustomAmounts,
+      invoices: state.invoices || [],
+      ribList: state.ribList || [],
+      clientDetails: state.clientDetails || {}
     };
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
@@ -3024,6 +3139,9 @@ const app = (() => {
         state.projects = data.projects || [];
         state.simPicks = data.simPicks || {};
         state.simCustomAmounts = data.simCustomAmounts || {};
+        state.invoices = data.invoices || [];
+        state.ribList = data.ribList || [];
+        state.clientDetails = data.clientDetails || {};
         save(K.transactions, state.transactions);
         save(K.situations, state.situations);
         save(K.charges, state.charges);
@@ -3033,6 +3151,9 @@ const app = (() => {
         save(K.projects, state.projects);
         save(K.simPicks, state.simPicks);
         save(K.simCustomAmounts, state.simCustomAmounts);
+        save(K.invoices, state.invoices);
+        save(K.ribList, state.ribList);
+        save(K.clientDetails, state.clientDetails);
         renderAll();
         alert('✅ Données importées avec succès — ' + (data.exportDate ? 'Sauvegarde du ' + new Date(data.exportDate).toLocaleDateString('fr-FR') : ''));
       } catch(err) {
@@ -3184,6 +3305,448 @@ const app = (() => {
     }, 300);
   }
 
+  // ========== FACTURATION ==========
+
+  function renderFacturation() {
+    const sel = document.getElementById('inv-client');
+    if (sel) {
+      sel.innerHTML = '<option value="">— Choisir —</option>' + state.clientNames.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+    const cdSel = document.getElementById('cd-client');
+    if (cdSel) {
+      const currentVal = cdSel.value;
+      cdSel.innerHTML = '<option value="">— Choisir —</option>' + state.clientNames.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (currentVal) cdSel.value = currentVal;
+    }
+    const numEl = document.getElementById('inv-number');
+    if (numEl && !numEl.value) {
+      const year = new Date().getFullYear();
+      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
+      const next = String(yearInvoices.length + 1).padStart(2, '0');
+      numEl.placeholder = `${next}/${year}`;
+    }
+    const dateEl = document.getElementById('inv-date');
+    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+    const ribSel = document.getElementById('inv-rib');
+    if (ribSel) {
+      ribSel.innerHTML = '<option value="">— Aucun —</option>' + (state.ribList || []).map((r, i) => `<option value="${i}">${r.bank} — ${r.number}</option>`).join('');
+    }
+    if (_invLines.length === 0) _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }];
+    const linesEl = document.getElementById('inv-lines');
+    if (linesEl) {
+      const units = ['kg', 'm²', 'm³', 'ml', 'U', 'ens', 'h'];
+      linesEl.innerHTML = _invLines.map((l, i) => {
+        const unit = l.unit || 'kg';
+        return `
+        <div style="display:grid; grid-template-columns:2fr 80px 80px 110px 110px 30px; gap:6px; margin-bottom:6px;">
+          <input type="text" placeholder="Désignation" value="${(l.desc||'').replace(/"/g, '&quot;')}" onchange="app.invSetLine(${i},'desc',this.value)"/>
+          <select onchange="app.invSetLine(${i},'unit',this.value)">
+            ${units.map(u => `<option value="${u}" ${u===unit?'selected':''}>${u}</option>`).join('')}
+          </select>
+          <input type="number" placeholder="Qté" value="${l.qty}" step="0.0001" onchange="app.invSetLine(${i},'qty',this.value)" class="num-input"/>
+          <input type="number" placeholder="P.U." value="${l.pu}" step="0.01" onchange="app.invSetLine(${i},'pu',this.value)" class="num-input"/>
+          <input type="text" value="${fmtDZD(l.qty * l.pu)}" disabled style="background:var(--bg-muted); text-align:right; font-variant-numeric:tabular-nums;"/>
+          <button class="ghost-btn" onclick="app.invDelLine(${i})">×</button>
+        </div>`;
+      }).join('');
+    }
+    renderClientDetailsList();
+    invUpdateTotals();
+  }
+
+  function invSetLine(i, key, val) {
+    if (!_invLines[i]) return;
+    if (key === 'qty' || key === 'pu') _invLines[i][key] = parseFloat(val) || 0;
+    else _invLines[i][key] = val;
+    invUpdateTotals();
+    const lineEl = document.getElementById('inv-lines').children[i];
+    if (lineEl && lineEl.children[4]) lineEl.children[4].value = fmtDZD(_invLines[i].qty * _invLines[i].pu);
+  }
+  function invAddLine() { _invLines.push({ desc: '', unit: 'kg', qty: 1, pu: 0 }); renderFacturation(); }
+  function invDelLine(i) { _invLines.splice(i, 1); if (_invLines.length === 0) _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }]; renderFacturation(); }
+  function invReset() {
+    _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }];
+    ['inv-number','inv-conditions','inv-project','inv-ouvrage','inv-site'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    renderFacturation();
+  }
+
+  // Client fiscal details management
+  function saveClientDetails() {
+    const client = document.getElementById('cd-client').value;
+    if (!client) { alert('Choisis un client'); return; }
+    const details = {
+      fullname: document.getElementById('cd-fullname').value.trim(),
+      address: document.getElementById('cd-address').value.trim(),
+      tin: document.getElementById('cd-tin').value.trim(),
+      nif: document.getElementById('cd-nif').value.trim(),
+      nis: document.getElementById('cd-nis').value.trim()
+    };
+    if (!state.clientDetails) state.clientDetails = {};
+    state.clientDetails[client] = details;
+    save(K.clientDetails, state.clientDetails);
+    ['cd-fullname','cd-address','cd-tin','cd-nif','cd-nis'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cd-client').value = '';
+    renderClientDetailsList();
+    alert('✅ Informations enregistrées pour ' + client);
+  }
+
+  function loadClientDetailsToForm(client) {
+    const d = state.clientDetails && state.clientDetails[client];
+    if (!d) {
+      ['cd-fullname','cd-address','cd-tin','cd-nif','cd-nis'].forEach(id => document.getElementById(id).value = '');
+      return;
+    }
+    document.getElementById('cd-fullname').value = d.fullname || '';
+    document.getElementById('cd-address').value = d.address || '';
+    document.getElementById('cd-tin').value = d.tin || '';
+    document.getElementById('cd-nif').value = d.nif || '';
+    document.getElementById('cd-nis').value = d.nis || '';
+  }
+
+  function deleteClientDetails(name) {
+    if (!confirm('Supprimer les infos fiscales de ' + name + ' ?')) return;
+    if (state.clientDetails && state.clientDetails[name]) delete state.clientDetails[name];
+    save(K.clientDetails, state.clientDetails);
+    renderClientDetailsList();
+  }
+
+  function renderClientDetailsList() {
+    const el = document.getElementById('client-details-list');
+    if (!el) return;
+    const entries = Object.entries(state.clientDetails || {});
+    if (entries.length === 0) {
+      el.innerHTML = '<p style="font-size:12px; color:var(--text-tertiary);">Aucune info fiscale enregistrée.</p>';
+      return;
+    }
+    el.innerHTML = entries.map(([name, d]) => `
+      <div style="padding:10px 12px; background:var(--bg-muted); border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <div style="flex:1; font-size:12px;">
+          <div style="font-weight:700; margin-bottom:2px;">${name}</div>
+          ${d.fullname ? `<div style="color:var(--text-secondary);">${d.fullname}</div>` : ''}
+          ${d.address ? `<div style="color:var(--text-tertiary); font-size:11px;">${d.address}</div>` : ''}
+          <div style="color:var(--text-tertiary); font-size:11px; margin-top:2px;">
+            ${d.tin ? 'TIN: ' + d.tin : ''} ${d.nif ? '· NIF: ' + d.nif : ''} ${d.nis ? '· NIS: ' + d.nis : ''}
+          </div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="btn-secondary" style="font-size:11px;" onclick="document.getElementById('cd-client').value='${name}'; app.loadClientDetailsToForm('${name}');">Modifier</button>
+          <button class="ghost-btn" onclick="app.deleteClientDetails('${name.replace(/'/g, '\\\'')}')">×</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function invUpdateTotals() {
+    const ht = _invLines.reduce((s, l) => s + l.qty * l.pu, 0);
+    const tva = ht * 0.19;
+    const timbre = (document.getElementById('inv-timbre')?.value === '1') ? Math.round(ht * 0.01) : 0;
+    const ttc = ht + tva + timbre;
+    const el = document.getElementById('inv-totals');
+    if (el) {
+      el.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">Total HT</span><span style="font-weight:600;">${fmtDZD(ht)}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">TVA 19%</span><span style="font-weight:600;">${fmtDZD(tva)}</span></div>
+        ${timbre > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">Timbre fiscal 1%</span><span style="font-weight:600;">${fmtDZD(timbre)}</span></div>` : ''}
+        <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid var(--border); font-size:15px;"><span style="font-weight:700;">Total TTC</span><span style="font-weight:700; color:var(--accent);">${fmtDZD(ttc)}</span></div>`;
+    }
+  }
+
+  function saveInvoice() {
+    const type = document.getElementById('inv-type').value;
+    let number = document.getElementById('inv-number').value.trim();
+    if (!number) {
+      const year = new Date().getFullYear();
+      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
+      number = String(yearInvoices.length + 1).padStart(2, '0') + '/' + year;
+    }
+    const date = document.getElementById('inv-date').value;
+    const place = document.getElementById('inv-place').value.trim() || 'Blida';
+    const client = document.getElementById('inv-client').value;
+    const project = document.getElementById('inv-project').value;
+    const ouvrage = document.getElementById('inv-ouvrage').value;
+    const site = document.getElementById('inv-site').value;
+    const timbreOn = document.getElementById('inv-timbre').value === '1';
+    const ribIdx = document.getElementById('inv-rib').value;
+    const conditions = document.getElementById('inv-conditions').value;
+
+    if (!client) { alert('Choisis un client'); return; }
+    const validLines = _invLines.filter(l => l.desc && l.qty > 0 && l.pu >= 0);
+    if (validLines.length === 0) { alert('Ajoute au moins une ligne valide'); return; }
+
+    const ht = validLines.reduce((s, l) => s + l.qty * l.pu, 0);
+    const tva = ht * 0.19;
+    const timbre = timbreOn ? Math.round(ht * 0.01) : 0;
+    const ttc = ht + tva + timbre;
+    const rib = ribIdx !== '' ? state.ribList[parseInt(ribIdx)] : null;
+    const clientDetails = (state.clientDetails && state.clientDetails[client]) || null;
+
+    const invoice = { id: Date.now(), type, number, date, place, client, clientDetails, project, ouvrage, site, lines: validLines, ht, tva, timbre, ttc, rib, conditions };
+    if (!state.invoices) state.invoices = [];
+    state.invoices.push(invoice);
+    save(K.invoices, state.invoices);
+
+    if (type !== 'proforma') {
+      state.situations.push({
+        id: Date.now() + 1,
+        client,
+        project: project || '',
+        number,
+        date,
+        amount: ttc,
+        payments: [],
+        contractType: 'formel',
+        invoiceId: invoice.id
+      });
+      save(K.situations, state.situations);
+    }
+
+    invReset();
+    renderAll();
+    alert(`✅ Facture ${number} enregistrée${type !== 'proforma' ? ' et situation client créée' : ''}`);
+  }
+
+  function deleteInvoice(idx) {
+    if (!confirm('Supprimer cette facture ?')) return;
+    const inv = state.invoices[idx];
+    if (inv && inv.id) {
+      state.situations = state.situations.filter(s => s.invoiceId !== inv.id);
+      save(K.situations, state.situations);
+    }
+    state.invoices.splice(idx, 1);
+    save(K.invoices, state.invoices);
+    renderAll();
+  }
+
+  function renderInvoices() {
+    const el = document.getElementById('invoices-table');
+    if (!el) return;
+    if (!state.invoices || state.invoices.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune facture émise.</div>';
+      return;
+    }
+    const sorted = state.invoices.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>N°</th><th>Date</th><th>Type</th><th>Client</th><th style="text-align:right">TTC</th><th></th></tr></thead>
+      <tbody>${sorted.map(inv => {
+        const realIdx = state.invoices.indexOf(inv);
+        return `<tr>
+          <td style="font-weight:600;">${inv.number}</td>
+          <td style="color:var(--text-secondary);">${inv.date}</td>
+          <td><span class="badge ${inv.type === 'proforma' ? 'b-info' : 'b-ok'}">${inv.type === 'proforma' ? 'Proforma' : 'Facture'}</span></td>
+          <td>${inv.client}</td>
+          <td style="text-align:right; font-weight:600;">${fmtDZD(inv.ttc)}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-secondary" style="font-size:11px;" onclick="app.printInvoice(${realIdx})">Imprimer</button>
+            <button class="ghost-btn" onclick="app.deleteInvoice(${realIdx})">×</button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  function addRib() {
+    const bank = document.getElementById('rib-bank').value.trim();
+    const number = document.getElementById('rib-number').value.trim();
+    if (!bank || !number) { alert('Remplir banque et RIB'); return; }
+    if (!state.ribList) state.ribList = [];
+    state.ribList.push({ bank, number });
+    save(K.ribList, state.ribList);
+    document.getElementById('rib-bank').value = '';
+    document.getElementById('rib-number').value = '';
+    renderRibs();
+    renderFacturation();
+  }
+
+  function deleteRib(idx) {
+    if (!confirm('Supprimer ce RIB ?')) return;
+    state.ribList.splice(idx, 1);
+    save(K.ribList, state.ribList);
+    renderRibs();
+    renderFacturation();
+  }
+
+  function renderRibs() {
+    const el = document.getElementById('rib-list');
+    if (!el) return;
+    if (!state.ribList || state.ribList.length === 0) {
+      el.innerHTML = '<p style="font-size:12px; color:var(--text-tertiary);">Aucun RIB enregistré.</p>';
+      return;
+    }
+    el.innerHTML = state.ribList.map((r, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-muted); border-radius:6px; margin-bottom:4px;">
+        <div><strong>${r.bank}</strong> <span style="font-family:monospace; color:var(--text-secondary);">${r.number}</span></div>
+        <button class="ghost-btn" onclick="app.deleteRib(${i})">×</button>
+      </div>`).join('');
+  }
+
+  // Convert number to French words (for "Arrête la présente facture à la somme de...")
+  function numberToFrenchWords(n) {
+    const ones = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+    const tens = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
+    function below1000(num) {
+      if (num === 0) return '';
+      let str = '';
+      const h = Math.floor(num / 100);
+      const r = num % 100;
+      if (h === 1) str += 'cent';
+      else if (h > 1) str += ones[h] + ' cent' + (r === 0 ? 's' : '');
+      if (r === 0) return str.trim();
+      if (str) str += ' ';
+      if (r < 20) str += ones[r];
+      else {
+        const t = Math.floor(r / 10);
+        const u = r % 10;
+        if (t === 7 || t === 9) {
+          str += tens[t] + (u === 1 && t === 7 ? ' et ' : '-') + ones[10 + u];
+        } else {
+          str += tens[t];
+          if (u === 1 && t < 8) str += ' et un';
+          else if (u > 0) str += '-' + ones[u];
+          else if (t === 8) str += 's';
+        }
+      }
+      return str.trim();
+    }
+    if (n === 0) return 'zéro';
+    n = Math.floor(Math.abs(n));
+    let result = '';
+    const millions = Math.floor(n / 1000000);
+    const thousands = Math.floor((n % 1000000) / 1000);
+    const rest = n % 1000;
+    if (millions > 0) result += (millions === 1 ? 'un million' : below1000(millions) + ' millions') + ' ';
+    if (thousands > 0) result += (thousands === 1 ? 'mille' : below1000(thousands) + ' mille') + ' ';
+    if (rest > 0) result += below1000(rest);
+    return result.trim();
+  }
+
+  function printInvoice(idx) {
+    const inv = state.invoices[idx];
+    if (!inv) return;
+    const typeLabel = { proforma: 'FACTURE PROFORMA', finale: 'FACTURE' }[inv.type] || 'FACTURE';
+    const w = window.open('', '_blank');
+    if (!w) {
+      alert('⚠ Le navigateur a bloqué la nouvelle fenêtre. Autorise les pop-ups pour ce site et réessaie.');
+      return;
+    }
+    const cd = inv.clientDetails || {};
+    const dateFmt = inv.date ? new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const place = inv.place || 'Blida';
+    const totalWords = numberToFrenchWords(Math.round(inv.ttc)) + ' dinars algériens';
+
+    // Get the EXACT header HTML used by the rest of the app (with real logo embedded)
+    const headerEl = document.querySelector('.print-header');
+    let headerHtml = '';
+    if (headerEl) {
+      const clone = headerEl.cloneNode(true);
+      // Update title
+      const pageInfo = clone.querySelector('#print-page-info');
+      if (pageInfo) pageInfo.textContent = `${typeLabel} N° ${inv.number} — ${place}, le ${dateFmt}`;
+      headerHtml = clone.outerHTML;
+    }
+
+    const linesHtml = inv.lines.map((l, i) => `
+      <tr>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px; color:#4B5563; text-align:center;">${String(i + 1).padStart(2, '0')}</td>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px;">${l.desc}</td>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px; text-align:center; color:#4B5563;">${l.unit || ''}</td>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums;">${l.qty}</td>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums;">${fmtDZD(l.pu)}</td>
+        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums; font-weight:600;">${fmtDZD(l.qty * l.pu)}</td>
+      </tr>`).join('');
+
+    w.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title> </title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'DM Sans', Arial, sans-serif; font-size: 12px; color: #111827; padding: 15mm; margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; width: 100%; }
+  @page { margin: 10mm; }
+  .print-header { display: block !important; text-align: left; margin-bottom: 14px; }
+</style></head><body>
+
+  <!-- IPCM BOUTEMA Header (real logo, same as other prints) -->
+  ${headerHtml}
+
+  <!-- Two-column meta block -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:18px; margin-bottom:18px;">
+    <div>
+      <p style="font-size:10px; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin:0 0 6px;">Émetteur</p>
+      <p style="margin:0; font-weight:700; font-size:13px;">IPCM Boutema</p>
+      ${inv.project ? `<p style="margin:6px 0 0; font-size:11px; color:#4B5563;"><strong>Projet :</strong> ${inv.project}</p>` : ''}
+      ${inv.ouvrage ? `<p style="margin:2px 0 0; font-size:11px; color:#4B5563;"><strong>Ouvrage :</strong> ${inv.ouvrage}</p>` : ''}
+      ${inv.site ? `<p style="margin:2px 0 0; font-size:11px; color:#4B5563;"><strong>Site :</strong> ${inv.site}</p>` : ''}
+    </div>
+    <div style="background:#F0F2F7; padding:12px 14px; border-radius:8px;">
+      <p style="font-size:10px; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin:0 0 6px;">Client</p>
+      <p style="margin:0; font-weight:700; font-size:13px;">${inv.client}</p>
+      ${cd.fullname ? `<p style="margin:4px 0 0; font-size:11px; color:#4B5563;">${cd.fullname}</p>` : ''}
+      ${cd.address ? `<p style="margin:4px 0 0; font-size:10.5px; color:#6B7280;">${cd.address}</p>` : ''}
+      ${(cd.tin || cd.nif || cd.nis) ? `<div style="margin-top:6px; font-size:10px; color:#6B7280; line-height:1.5;">
+        ${cd.tin ? `<div><strong>TIN :</strong> ${cd.tin}</div>` : ''}
+        ${cd.nif ? `<div><strong>NIF :</strong> ${cd.nif}</div>` : ''}
+        ${cd.nis ? `<div><strong>NIS :</strong> ${cd.nis}</div>` : ''}
+      </div>` : ''}
+    </div>
+  </div>
+
+  <!-- Lines table -->
+  <table style="margin-top:8px; border-radius:8px; overflow:hidden;">
+    <thead>
+      <tr style="background:#F0F2F7;">
+        <th style="padding:10px; text-align:center; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">N°</th>
+        <th style="padding:10px; text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Désignation</th>
+        <th style="padding:10px; text-align:center; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">U</th>
+        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Quantité</th>
+        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Prix unitaire</th>
+        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Montant</th>
+      </tr>
+    </thead>
+    <tbody>${linesHtml}</tbody>
+  </table>
+
+  <!-- Totals box -->
+  <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+    <table style="width:300px; font-size:12px;">
+      <tr>
+        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">Montant HT</td>
+        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.ht)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">TVA 19%</td>
+        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.tva)}</td>
+      </tr>
+      ${inv.timbre > 0 ? `<tr>
+        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">Timbre fiscal 1%</td>
+        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.timbre)}</td>
+      </tr>` : ''}
+      <tr style="background:#EFF6FF;">
+        <td style="padding:10px 12px; font-weight:700; font-size:13px; color:#1F2937;">Montant TTC</td>
+        <td style="padding:10px 12px; text-align:right; font-weight:700; font-size:14px; color:#2563EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.ttc)}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Total in words BELOW the totals box -->
+  <div style="margin-top:14px; padding:12px 14px; background:#F0F2F7; border-radius:8px; font-size:11.5px; font-style:italic; color:#1F2937;">
+    <strong style="font-style:normal;">Arrêtée la présente ${typeLabel.toLowerCase()} à la somme de :</strong><br>
+    ${totalWords}.
+  </div>
+
+  ${inv.conditions ? `<div style="margin-top:18px; padding:10px 14px; background:#FFFBEB; border-radius:6px; font-size:11px; border-left:3px solid #D97706;"><strong>Conditions de paiement :</strong> ${inv.conditions}</div>` : ''}
+  ${inv.rib ? `<div style="margin-top:8px; padding:10px 14px; background:#EFF6FF; border-radius:6px; font-size:11px; border-left:3px solid #2563EB;"><strong>${inv.rib.bank}</strong> — RIB : <span style="font-family:monospace;">${inv.rib.number}</span></div>` : ''}
+
+  <!-- Signature -->
+  <div style="margin-top:50px; display:flex; justify-content:flex-end;">
+    <div style="text-align:center; min-width:200px;">
+      <p style="margin:0 0 4px; font-size:11px; color:#4B5563; font-weight:600;">Le Gérant</p>
+      <div style="border-bottom:1px solid #333; margin-top:50px;"></div>
+    </div>
+  </div>
+
+</body></html>`);
+    w.document.close();
+    setTimeout(() => { w.focus(); w.print(); }, 600);
+  }
+  // ========== END FACTURATION ==========
+
   return {
     openTransactionModal,
     closeTransactionModal,
@@ -3227,6 +3790,18 @@ const app = (() => {
     simDeleteSupplier,
     simSetAmount,
     printSimulator,
+    invSetLine,
+    invAddLine,
+    invDelLine,
+    invReset,
+    saveInvoice,
+    deleteInvoice,
+    printInvoice,
+    addRib,
+    deleteRib,
+    saveClientDetails,
+    loadClientDetailsToForm,
+    deleteClientDetails,
     deleteSituationPayment,
     deleteFournisseurPayment,
     addProject,
