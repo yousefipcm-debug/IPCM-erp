@@ -5507,8 +5507,8 @@ window.app = (() => {
   function savePtgData() {
     clearTimeout(savePtgData._t);
     savePtgData._t = setTimeout(() => {
-      try { localStorage.setItem(K.adminPointage,  JSON.stringify(state.adminPointage));  } catch(e) {}
-      try { localStorage.setItem(K.adminPtgLegend, JSON.stringify(state.adminPtgLegend)); } catch(e) {}
+      save(K.adminPointage,  state.adminPointage);
+      save(K.adminPtgLegend, state.adminPtgLegend);
     }, 500);
   }
 
@@ -5517,6 +5517,7 @@ window.app = (() => {
     if (!root) return;
 
     const currentWs = state.currentPtgWsIdx !== null ? state.workSites[state.currentPtgWsIdx] : null;
+    const wsName = currentWs ? currentWs.name : 'Tous les chantiers';
     // ── POINTAGE TAB ──
     if (state.adminPointageMonth === undefined || state.adminPointageMonth === null) {
       const now = new Date();
