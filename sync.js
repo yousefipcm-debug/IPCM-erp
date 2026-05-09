@@ -94,8 +94,21 @@
     });
   }
 
+  // Default empty values per key (arrays vs objects)
+  const KEY_DEFAULTS = {
+    'ipcm_v2_transactions': '[]', 'ipcm_v2_situations': '[]',
+    'ipcm_v2_charges': '[]', 'ipcm_v2_fournisseurs': '[]',
+    'ipcm_v2_clientNames': '[]', 'ipcm_v2_fournisseurNames': '[]',
+    'ipcm_v2_projects': '[]', 'ipcm_v2_simPicks': '{}',
+    'ipcm_v2_simCustomAmounts': '{}', 'ipcm_v2_invoices': '[]',
+    'ipcm_v2_ribList': '[]', 'ipcm_v2_clientDetails': '{}',
+    'ipcm_v2_workers': '[]', 'ipcm_v2_workSites': '[]',
+    'ipcm_v2_hrDocuments': '[]', 'ipcm_v2_hrFolders': '[]',
+    'ipcm_v2_techWorkSites': '[]', 'ipcm_v2_adminPointage': '{}'
+  };
+
   function clearAppLocalStorage() {
-    Object.keys(LS_TO_SHORT).forEach(k => _origSet(k, JSON.stringify(null)));
+    Object.keys(LS_TO_SHORT).forEach(k => _origSet(k, KEY_DEFAULTS[k] || '[]'));
   }
 
   function reloadApp() {
