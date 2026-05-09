@@ -4,11 +4,10 @@
 (function () {
   'use strict';
 
-  const TOKEN_KEY   = 'ipcm_token';
-  const ROLE_KEY    = 'ipcm_role';
-  const DNAME_KEY   = 'ipcm_dname';
+  const TOKEN_KEY = 'ipcm_token';
+  const ROLE_KEY  = 'ipcm_role';
+  const DNAME_KEY = 'ipcm_dname';
 
-  // Map between full localStorage keys and short server keys
   const LS_TO_SHORT = {
     'ipcm_v2_transactions':     'transactions',
     'ipcm_v2_situations':       'situations',
@@ -27,13 +26,13 @@
     'ipcm_v2_hrDocuments':      'hrDocuments',
     'ipcm_v2_hrFolders':        'hrFolders',
     'ipcm_v2_techWorkSites':    'techWorkSites',
-    'ipcm_v2_adminPointage':    'adminPointage'
+    'ipcm_v2_adminPointage':    'adminPointage',
+    'ipcm_v2_adminPtgLegend':   'adminPtgLegend'
   };
 
   const SHORT_TO_LS = {};
   Object.entries(LS_TO_SHORT).forEach(([ls, s]) => (SHORT_TO_LS[s] = ls));
 
-  // Modules visible per role
   const ROLE_MODULES = {
     admin:     ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin'],
     finance:   ['module-finance'],
@@ -46,30 +45,67 @@
   };
 
   // ── localStorage intercept ──────────────────────────────────────────────────
-  // Wrap setItem so every save also goes to the server (fire-and-forget)
-  const _origSet = localStorage.setItem.bind(localStorage);
-  const _origGet = localStorage.getItem.bind(localStorage);
+  const _origSet    = localStorage.setItem.bind(localStorage);
+  const _origGet    = localStorage.getItem.bind(localStorage);
   const _origRemove = localStorage.removeItem.bind(localStorage);
+
+  let syncOk = null; // null = unknown, true = working, false = failed
+
+  function setSyncStatus(ok, msg) {
+    syncOk = ok;
+    const el = document.getElementById('save-status');
+    const dot = document.querySelector('.save-pulse');
+    if (el) {
+      el.textContent = ok ? '✓ Serveur connecté' : '⚠ Hors ligne (local)';
+      el.style.color = ok ? '#16a34a' : '#dc2626';
+    }
+    if (dot) dot.style.background = ok ? '#16a34a' : '#dc2626';
+    if (!ok && msg) {
+      // Show a toast-like warning
+      const t = document.getElementById('toast');
+      if (t) {
+        t.textContent = '⚠ Données non sauvegardées sur le serveur';
+        t.style.background = '#dc2626';
+        t.classList.add('show');
+        setTimeout(() => { t.classList.remove('show'); t.style.background = ''; }, 4000);
+      }
+    }
+  }
+
+  function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
+  function getRole()  { return sessionStorage.getItem(ROLE_KEY); }
 
   localStorage.setItem = function (key, value) {
     _origSet(key, value);
     const shortKey = LS_TO_SHORT[key];
     if (!shortKey) return;
-    const token = sessionStorage.getItem(TOKEN_KEY);
+    const token = getToken();
     if (!token) return;
     let parsed;
     try { parsed = JSON.parse(value); } catch { return; }
+
     fetch('/api/data/' + shortKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ value: parsed })
-    }).catch(() => {});
+    })
+    .then(r => {
+      if (r.ok) {
+        setSyncStatus(true);
+      } else if (r.status === 401) {
+        // Token expired — force re-login
+        sessionStorage.clear();
+        window.location.reload();
+      } else {
+        setSyncStatus(false, 'Server error ' + r.status);
+      }
+    })
+    .catch(err => {
+      setSyncStatus(false, err.message);
+    });
   };
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
-
-  function getToken()   { return sessionStorage.getItem(TOKEN_KEY); }
-  function getRole()    { return sessionStorage.getItem(ROLE_KEY); }
 
   function applyRoleUI(role, displayName) {
     const allowed = ROLE_MODULES[role] || [];
@@ -77,7 +113,6 @@
       const el = document.getElementById(id);
       if (el) el.style.display = allowed.includes(id) ? '' : 'none';
     });
-
     const nameEl = document.getElementById('sidebar-user-name');
     const roleEl = document.getElementById('sidebar-user-role');
     if (nameEl) nameEl.textContent = displayName || '';
@@ -85,7 +120,6 @@
   }
 
   function populateLocalStorage(serverData) {
-    // Write server data into localStorage (using original setItem, no sync-back)
     Object.entries(serverData).forEach(([shortKey, value]) => {
       const lsKey = SHORT_TO_LS[shortKey];
       if (lsKey && value !== null && value !== undefined) {
@@ -94,7 +128,6 @@
     });
   }
 
-  // Default empty values per key (arrays vs objects)
   const KEY_DEFAULTS = {
     'ipcm_v2_transactions': '[]', 'ipcm_v2_situations': '[]',
     'ipcm_v2_charges': '[]', 'ipcm_v2_fournisseurs': '[]',
@@ -104,7 +137,8 @@
     'ipcm_v2_ribList': '[]', 'ipcm_v2_clientDetails': '{}',
     'ipcm_v2_workers': '[]', 'ipcm_v2_workSites': '[]',
     'ipcm_v2_hrDocuments': '[]', 'ipcm_v2_hrFolders': '[]',
-    'ipcm_v2_techWorkSites': '[]', 'ipcm_v2_adminPointage': '{}'
+    'ipcm_v2_techWorkSites': '[]', 'ipcm_v2_adminPointage': '{}',
+    'ipcm_v2_adminPtgLegend': '[]'
   };
 
   function clearAppLocalStorage() {
@@ -112,28 +146,20 @@
   }
 
   function reloadApp() {
-    if (window.app && typeof window.app.loadAll === 'function') {
-      window.app.loadAll();
-    }
+    if (window.app && typeof window.app.loadAll === 'function') window.app.loadAll();
   }
 
   function navigateToRole(role) {
     if (!window.app) return;
-    if (role === 'finance') {
-      window.app.switchModule && window.app.switchModule('finance');
-    } else if (role === 'hr') {
-      window.app.switchModule && window.app.switchModule('rh');
-    } else if (role === 'technique') {
-      window.app.switchModule && window.app.switchModule('technique');
-    }
-    // admin stays on overview
+    if (role === 'finance')   window.app.switchModule && window.app.switchModule('finance');
+    else if (role === 'hr')   window.app.switchModule && window.app.switchModule('rh');
+    else if (role === 'technique') window.app.switchModule && window.app.switchModule('technique');
   }
 
   // ── Login ───────────────────────────────────────────────────────────────────
-
   async function doLogin(username, password) {
-    const btn    = document.getElementById('login-btn');
-    const errEl  = document.getElementById('login-error');
+    const btn   = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
     btn.disabled = true;
     btn.textContent = 'Connexion en cours…';
     errEl.textContent = '';
@@ -154,6 +180,7 @@
       const r2 = await fetch('/api/data', {
         headers: { 'Authorization': 'Bearer ' + session.token }
       });
+      if (!r2.ok) throw new Error('Erreur chargement données');
       const serverData = await r2.json();
 
       clearAppLocalStorage();
@@ -163,6 +190,7 @@
       navigateToRole(session.role);
 
       document.getElementById('login-overlay').style.display = 'none';
+      setSyncStatus(true);
 
       if (session.role === 'admin') loadUsersPanel();
 
@@ -174,15 +202,13 @@
   }
 
   // ── Logout ──────────────────────────────────────────────────────────────────
-
   function doLogout() {
     sessionStorage.clear();
     clearAppLocalStorage();
     window.location.reload();
   }
 
-  // ── Admin: Users panel ──────────────────────────────────────────────────────
-
+  // ── Admin Users panel ────────────────────────────────────────────────────────
   async function loadUsersPanel() {
     const el = document.getElementById('admin-users-content');
     if (!el) return;
@@ -221,7 +247,6 @@
           </button>
         </td>
       </tr>`).join('');
-
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
         <span style="font-size:13px;color:#525252;">${users.length} utilisateur${users.length!==1?'s':''}</span>
@@ -241,17 +266,17 @@
               <th style="border-bottom:1px solid #ededed;"></th>
             </tr>
           </thead>
-          <tbody style="divide-y:#f3f3f3;">${rows}</tbody>
+          <tbody>${rows}</tbody>
         </table>
       </div>`;
   }
 
   function esc(s) {
-    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   window.__syncAddUser = async function () {
-    const username     = prompt('Login (nom d\'utilisateur):');
+    const username     = prompt("Login (nom d'utilisateur):");
     if (!username) return;
     const display_name = prompt('Nom complet affiché:');
     if (!display_name) return;
@@ -259,7 +284,6 @@
     if (!['admin','finance','hr','technique'].includes(role)) { alert('Rôle invalide.'); return; }
     const password = prompt('Mot de passe (min 6 caractères):');
     if (!password || password.length < 6) { alert('Mot de passe trop court.'); return; }
-
     try {
       const r = await fetch('/api/users', {
         method: 'POST',
@@ -276,7 +300,6 @@
     const newName = prompt('Nom complet:', displayName);
     const newRole = prompt('Rôle (admin / finance / hr / technique):', currentRole);
     const newPwd  = prompt('Nouveau mot de passe (laisser vide pour ne pas changer):');
-
     const body = {};
     if (newName && newName !== displayName) body.display_name = newName;
     if (newRole && ['admin','finance','hr','technique'].includes(newRole)) body.role = newRole;
@@ -285,7 +308,6 @@
       body.password = newPwd;
     }
     if (!Object.keys(body).length) return;
-
     try {
       const r = await fetch('/api/users/' + id, {
         method: 'PUT',
@@ -312,9 +334,7 @@
   };
 
   // ── Boot ────────────────────────────────────────────────────────────────────
-
   document.addEventListener('DOMContentLoaded', function () {
-    // Wire login form
     const form = document.getElementById('login-form');
     if (form) {
       form.addEventListener('submit', e => {
@@ -325,17 +345,13 @@
       });
     }
 
-    // Wire logout button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
 
-    // Wire admin users nav
-    const adminUsersBtn = document.querySelectorAll('[data-panel="admin-users"]');
-    adminUsersBtn.forEach(btn => btn.addEventListener('click', () => {
-      loadUsersPanel();
-    }));
+    document.querySelectorAll('[data-panel="admin-users"]').forEach(btn => {
+      btn.addEventListener('click', () => loadUsersPanel());
+    });
 
-    // Check existing session
     const token = getToken();
     const role  = getRole();
     const dname = sessionStorage.getItem(DNAME_KEY);
@@ -353,6 +369,7 @@
           reloadApp();
           navigateToRole(role);
           document.getElementById('login-overlay').style.display = 'none';
+          setSyncStatus(true);
           if (role === 'admin') loadUsersPanel();
         })
         .catch(() => {
@@ -360,7 +377,6 @@
           // login overlay remains visible
         });
     }
-    // No token → overlay stays visible, user must log in
   });
 
 })();
