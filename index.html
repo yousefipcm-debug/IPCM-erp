@@ -2086,14 +2086,67 @@ window.app = (() => {
   const todayISO = () => new Date().toISOString().slice(0,10);
   const parseD = (s) => s ? new Date(s) : null;
 
+  // Key → server short name mapping
+  const SERVER_KEYS = {
+    [K.transactions]:     'transactions',
+    [K.situations]:       'situations',
+    [K.charges]:          'charges',
+    [K.fournisseurs]:     'fournisseurs',
+    [K.clientNames]:      'clientNames',
+    [K.fournisseurNames]: 'fournisseurNames',
+    [K.projects]:         'projects',
+    [K.simPicks]:         'simPicks',
+    [K.simCustomAmounts]: 'simCustomAmounts',
+    [K.invoices]:         'invoices',
+    [K.ribList]:          'ribList',
+    [K.clientDetails]:    'clientDetails',
+    [K.workers]:          'workers',
+    [K.workSites]:        'workSites',
+    [K.hrDocuments]:      'hrDocuments',
+    [K.hrFolders]:        'hrFolders',
+    [K.techWorkSites]:    'techWorkSites',
+    [K.adminPointage]:    'adminPointage',
+    [K.adminPtgLegend]:   'adminPtgLegend'
+  };
+
+  function getAuthToken() { return sessionStorage.getItem('ipcm_token'); }
+
   function load(k, fb) {
     try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
     catch(e) { return fb; }
   }
+
   function save(k, v) {
-    try { localStorage.setItem(k, JSON.stringify(v)); showToast('✓ Enregistré'); }
-    catch(e) { console.error(e); }
+    // Always save locally first (instant)
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+
+    // Save to server directly
+    const shortKey = SERVER_KEYS[k];
+    const token = getAuthToken();
+    if (shortKey && token) {
+      fetch('/api/data/' + shortKey, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ value: v })
+      })
+      .then(r => {
+        if (r.ok) {
+          showToast('✓ Enregistré');
+          const el = document.getElementById('save-status');
+          if (el) { el.textContent = '✓ Serveur connecté'; el.style.color = '#16a34a'; }
+        } else if (r.status === 401) {
+          sessionStorage.clear();
+          window.location.reload();
+        } else {
+          showToast('⚠ Erreur sauvegarde serveur');
+        }
+      })
+      .catch(() => showToast('✓ Enregistré (local)'));
+    } else {
+      showToast('✓ Enregistré');
+    }
   }
+
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
