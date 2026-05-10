@@ -244,6 +244,16 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   catch (e) { res.status(500).json({ error: 'Erreur serveur' }); }
 });
 
+// ── Health ─────────────────────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    db: db ? db.type : 'starting',
+    persistent: db ? db.type === 'postgres' : false,
+    database_url_set: !!process.env.DATABASE_URL
+  });
+});
+
 // ── Boot ───────────────────────────────────────────────────────────────────────
 async function start() {
   if (process.env.DATABASE_URL) {
@@ -252,11 +262,12 @@ async function start() {
       db = await buildPgDB();
       console.log('PostgreSQL connected — data will persist.');
     } catch (e) {
-      console.warn('PostgreSQL failed, using in-memory store:', e.message);
+      console.error('PostgreSQL FAILED:', e.message);
+      console.warn('Falling back to in-memory store — DATA WILL BE LOST ON RESTART.');
       db = buildMemDB();
     }
   } else {
-    console.warn('No DATABASE_URL — using in-memory store. Data will not persist across restarts.');
+    console.error('NO DATABASE_URL SET — using in-memory store. DATA WILL BE LOST ON EVERY DEPLOY.');
     db = buildMemDB();
   }
 

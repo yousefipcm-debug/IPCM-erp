@@ -272,11 +272,39 @@
 
       if (session.role === 'admin') loadUsersPanel();
 
+      // Check if running without a real database and warn loudly
+      fetch('/api/health').then(r => r.json()).then(h => {
+        if (!h.persistent) showMemoryWarning();
+      }).catch(() => {});
+
+
     } catch (e) {
       errEl.textContent = e.message;
       btn.disabled = false;
       btn.textContent = 'Se connecter';
     }
+  }
+
+  // ── Memory mode warning ─────────────────────────────────────────────────────
+  function showMemoryWarning() {
+    const existing = document.getElementById('db-warning-banner');
+    if (existing) return;
+    const banner = document.createElement('div');
+    banner.id = 'db-warning-banner';
+    banner.innerHTML = `
+      <div style="
+        position:fixed;top:0;left:0;right:0;z-index:99999;
+        background:#DC2626;color:#fff;
+        padding:10px 20px;
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+        font-size:13px;font-weight:600;
+        display:flex;align-items:center;justify-content:space-between;gap:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,.25);
+      ">
+        <span>⚠️ BASE DE DONNÉES NON CONNECTÉE — Les données sont en mémoire et seront perdues au prochain redémarrage. Connectez PostgreSQL dans Railway.</span>
+        <button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">OK</button>
+      </div>`;
+    document.body.prepend(banner);
   }
 
   // ── Logout ──────────────────────────────────────────────────────────────────
