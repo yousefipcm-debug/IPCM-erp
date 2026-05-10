@@ -36,8 +36,8 @@
   const ROLE_MODULES = {
     admin:     ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin'],
     finance:   ['module-finance'],
-    hr:        ['module-rh'],
-    technique: ['module-technique']
+    hr:        ['module-rh', 'module-pilotage'],
+    technique: ['module-technique', 'module-pilotage']
   };
 
   const ROLE_LABELS = {
@@ -55,13 +55,17 @@
     syncOk = ok;
     const el = document.getElementById('save-status');
     const dot = document.querySelector('.save-pulse');
+    const mhdSync = document.getElementById('mhd-sync');
     if (el) {
       el.textContent = ok ? '✓ Serveur connecté' : '⚠ Hors ligne (local)';
       el.style.color = ok ? '#16a34a' : '#dc2626';
     }
     if (dot) dot.style.background = ok ? '#16a34a' : '#dc2626';
+    if (mhdSync) {
+      mhdSync.className = 'mhd-sync' + (ok ? '' : ' offline');
+      mhdSync.title = ok ? 'Connecté' : 'Hors ligne';
+    }
     if (!ok && msg) {
-      // Show a toast-like warning
       const t = document.getElementById('toast');
       if (t) {
         t.textContent = '⚠ Données non sauvegardées sur le serveur';
@@ -70,6 +74,71 @@
         setTimeout(() => { t.classList.remove('show'); t.style.background = ''; }, 4000);
       }
     }
+  }
+
+  function updateMobileHeader(displayName, role) {
+    const initial  = document.getElementById('mhd-initial');
+    const dname    = document.getElementById('mhd-dname');
+    const roleEl   = document.getElementById('mhd-role-label');
+    if (initial) initial.textContent = (displayName || '?')[0].toUpperCase();
+    if (dname)   dname.textContent   = displayName || '';
+    if (roleEl)  roleEl.textContent  = ROLE_LABELS[role] || role;
+  }
+
+  function updateMobileNav(role) {
+    const nav = document.getElementById('mobile-nav');
+    if (!nav) return;
+    const SVG = {
+      home:    '<rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>',
+      wallet:  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+      cal:     '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      users:   '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      user1:   '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
+      bell:    '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+      house:   '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+      clock:   '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+      doc:     '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>',
+      money:   '<path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+      gear:    '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>',
+    };
+    const NAVS = {
+      admin:     [
+        { panel: 'overview',        label: 'Accueil',  svg: SVG.home },
+        { panel: 'journaux',        label: 'Finance',  svg: SVG.money },
+        { panel: 'workers',         label: 'RH',       svg: SVG.user1 },
+        { panel: 'tech-work-sites', label: 'Technique',svg: SVG.house },
+        { panel: 'admin-users',     label: 'Admin',    svg: SVG.gear },
+      ],
+      finance:   [
+        { panel: 'overview',        label: 'Accueil',    svg: SVG.home },
+        { panel: 'journaux',        label: 'Journaux',   svg: SVG.wallet },
+        { panel: 'situations',      label: 'Situations', svg: SVG.cal },
+        { panel: 'clients-summary', label: 'Clients',    svg: SVG.users },
+        { panel: 'alerts',          label: 'Alertes',    svg: SVG.bell, id: 'mobile-nav-alerts', badge: true },
+      ],
+      hr:        [
+        { panel: 'overview',          label: 'Accueil',  svg: SVG.home },
+        { panel: 'workers',           label: 'Personnel',svg: SVG.users },
+        { panel: 'work-sites',        label: 'Chantiers',svg: SVG.house },
+        { panel: 'rh-daily-pointage', label: 'Pointage', svg: SVG.clock },
+        { panel: 'hr-documents',      label: 'Docs RH',  svg: SVG.doc },
+      ],
+      technique: [
+        { panel: 'overview',            label: 'Accueil',  svg: SVG.home },
+        { panel: 'tech-work-sites',     label: 'Chantiers',svg: SVG.house },
+        { panel: 'tech-admin-pointage', label: 'Pointage', svg: SVG.clock },
+      ],
+    };
+    const tabs = NAVS[role] || NAVS.finance;
+    nav.innerHTML = tabs.map((t, i) => `
+      <button class="mobile-nav-btn${i === 0 ? ' active' : ''}" data-panel="${t.panel}"${t.id ? ` id="${t.id}"` : ''}>
+        ${t.badge ? '<span class="nav-badge"></span>' : ''}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${t.svg}</svg>
+        <span>${t.label}</span>
+      </button>`).join('');
+    nav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => window.app && window.app.switchPanel(btn.dataset.panel));
+    });
   }
 
   function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
@@ -117,6 +186,13 @@
     const roleEl = document.getElementById('sidebar-user-role');
     if (nameEl) nameEl.textContent = displayName || '';
     if (roleEl) roleEl.textContent = ROLE_LABELS[role] || role;
+
+    // HR and Technique see their own Pilotage dashboard — hide finance-only nav items
+    const isLimitedPilotage = role === 'hr' || role === 'technique';
+    ['nav-alerts', 'nav-projets'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentElement) el.parentElement.style.display = isLimitedPilotage ? 'none' : '';
+    });
   }
 
   function populateLocalStorage(serverData) {
@@ -186,6 +262,8 @@
       clearAppLocalStorage();
       populateLocalStorage(serverData);
       applyRoleUI(session.role, session.display_name);
+      updateMobileNav(session.role);
+      updateMobileHeader(session.display_name, session.role);
       reloadApp();
       navigateToRole(session.role);
 
@@ -366,6 +444,8 @@
           clearAppLocalStorage();
           populateLocalStorage(serverData);
           applyRoleUI(role, dname);
+          updateMobileNav(role);
+          updateMobileHeader(dname, role);
           reloadApp();
           navigateToRole(role);
           document.getElementById('login-overlay').style.display = 'none';

@@ -431,148 +431,216 @@
 
   /* ===== MOBILE APP EXPERIENCE ===== */
   @media (max-width: 900px) {
+    /* ── Layout ── */
     .app-shell { grid-template-columns: 1fr; min-height: 100vh; min-height: 100dvh; }
     .sidebar { display: none; }
     .topbar { display: none; }
-    .main { padding-bottom: 72px; }
-    .content { padding: 16px 16px 24px; }
+    .main { padding-bottom: 0; }
+    .content { padding: 14px 16px calc(24px + 72px + env(safe-area-inset-bottom, 10px)); }
 
-    /* Mobile header */
+    /* ── Mobile top header ── */
     .mobile-header {
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 0 14px;
-      margin-bottom: 8px;
+      padding: 0 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0; z-index: 50;
+      height: 54px;
+      flex-shrink: 0;
     }
-    .mobile-header h1 { font-size: 22px; font-weight: 700; margin: 0; }
-    .mobile-header .pill { font-size: 12px; }
+    .mhd-left { display: flex; flex-direction: column; justify-content: center; }
+    .mhd-brand {
+      font-size: 9px; font-weight: 800; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.1em; line-height: 1;
+    }
+    .mhd-title {
+      font-size: 16px; font-weight: 700; margin: 2px 0 0;
+      color: var(--gray-900); line-height: 1.2;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58vw;
+    }
+    .mhd-right { display: flex; align-items: center; gap: 10px; position: relative; }
+    .mhd-sync {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #16A34A; display: inline-block; flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .mhd-sync.offline { background: #DC2626; }
+    .mhd-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--gray-900); color: #fff;
+      border: none; cursor: pointer;
+      font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .mhd-avatar:active { opacity: 0.75; }
+    .mhd-dropdown {
+      position: absolute; top: 42px; right: 0;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.16);
+      z-index: 200; min-width: 200px;
+      display: none;
+    }
+    .mhd-dropdown.open { display: block; }
+    .mhd-user-info { padding: 10px 12px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .mhd-logout-btn {
+      display: block; width: 100%; padding: 10px 12px;
+      background: var(--danger-bg); color: var(--danger-text);
+      border: none; border-radius: 10px; font-family: inherit;
+      font-size: 13px; font-weight: 600; cursor: pointer; text-align: left;
+    }
+    .mhd-logout-btn:active { opacity: 0.8; }
 
-    /* Bottom tab bar */
+    /* ── Bottom tab bar ── */
     .mobile-nav {
-      display: flex;
+      display: flex !important;
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       background: var(--bg);
       border-top: 1px solid var(--border);
       z-index: 100;
-      padding: 6px 0 env(safe-area-inset-bottom, 8px);
-      justify-content: space-around;
+      padding: 0 4px;
+      padding-bottom: env(safe-area-inset-bottom, 10px);
+      min-height: 62px;
+      align-items: stretch;
+      box-shadow: 0 -2px 16px rgba(0,0,0,.07);
     }
     .mobile-nav-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       gap: 3px;
-      background: none;
-      border: none;
+      background: none; border: none;
       color: var(--text-tertiary);
-      font-size: 10px;
-      font-weight: 600;
+      font-size: 10px; font-weight: 600;
       font-family: inherit;
-      padding: 6px 8px;
+      padding: 8px 2px;
       cursor: pointer;
-      transition: color 0.15s;
-      min-width: 56px;
+      transition: color 0.12s;
+      flex: 1; min-width: 0;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav-btn svg { width: 22px; height: 22px; }
-    .mobile-nav-btn.active { color: var(--text-primary); }
-    .mobile-nav-btn .nav-badge {
-      position: absolute;
-      top: 2px;
-      right: 12px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #E24B4A;
-      display: none;
+    .mobile-nav-btn svg { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.12s; }
+    .mobile-nav-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .mobile-nav-btn.active { color: var(--gray-900); }
+    .mobile-nav-btn.active svg { transform: scale(1.06); }
+    .mobile-nav-btn.active::after {
+      content: '';
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 22px; height: 3px;
+      background: var(--gray-900);
+      border-radius: 0 0 3px 3px;
+    }
+    .nav-badge {
+      position: absolute; top: 6px;
+      right: calc(50% - 16px);
+      width: 8px; height: 8px;
+      border-radius: 50%; background: #E24B4A;
+      display: none; border: 1.5px solid var(--bg);
     }
     .mobile-nav-btn.has-alert .nav-badge { display: block; }
 
-    /* KPI cards - bigger on mobile */
+    /* ── KPI cards ── */
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi-card { padding: 14px 16px; }
-    .kpi-lbl { font-size: 10px; }
-    .kpi-val { font-size: 26px; font-weight: 700; }
-    .kpi-hint { font-size: 12px; }
-    .kpi-icon-chip { width: 28px; height: 28px; }
+    .kpi-card { padding: 14px 14px; border-radius: 14px; }
+    .kpi-lbl { font-size: 9.5px; }
+    .kpi-val { font-size: 24px; font-weight: 800; }
+    .kpi-hint { font-size: 11px; }
+    .kpi-icon-chip { width: 26px; height: 26px; }
 
-    /* Journal cards */
+    /* ── Journal cards ── */
     .journal-grid { grid-template-columns: 1fr; gap: 10px; }
-    .journal-card { padding: 16px 18px; }
-    .journal-balance { font-size: 26px; font-weight: 700; }
+    .journal-card { padding: 16px 18px; border-radius: 14px; }
+    .journal-balance { font-size: 26px; font-weight: 800; }
     .journal-title { font-size: 14px; }
-    .journal-action { font-size: 12px; padding: 6px 14px; }
+    .journal-action { font-size: 13px; padding: 8px 16px; height: 36px; }
 
-    /* Cards */
+    /* ── Cards ── */
     .card { padding: 16px; border-radius: 14px; }
-    .card-title { font-size: 15px; }
+    .card-title { font-size: 14px; }
     .grid-2 { grid-template-columns: 1fr; }
 
-    /* Tables */
-    table.mod { font-size: 13px; min-width: 100%; }
+    /* ── Tables ── */
+    .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.mod { font-size: 13px; }
     table.mod th { font-size: 10px; padding: 8px 10px; }
-    table.mod td { padding: 10px; }
+    table.mod td { padding: 10px; min-height: 44px; }
 
-    /* Forms */
-    .form-grid { grid-template-columns: 1fr; gap: 10px; }
+    /* ── Forms ── */
+    .form-grid { grid-template-columns: 1fr; gap: 12px; }
     input[type="text"], input[type="number"], input[type="date"], select, textarea {
-      height: 40px;
-      font-size: 14px;
-      border-radius: var(--radius-md);
-      padding: 0 12px;
+      height: 44px; font-size: 16px;
+      border-radius: 10px; padding: 0 14px;
     }
-    .btn-primary  { height: 40px; font-size: 14px; border-radius: var(--radius-md); width: 100%; }
-    .btn-secondary{ height: 32px; font-size: 12px; }
-    .field label { font-size: 11px; margin-bottom: 2px; }
+    textarea { height: auto; min-height: 80px; padding: 12px 14px; font-size: 14px; }
+    .btn-primary  { height: 44px; font-size: 15px; border-radius: 10px; width: 100%; }
+    .btn-secondary { height: 40px; font-size: 13px; border-radius: 10px; }
+    .field label { font-size: 12px; margin-bottom: 3px; }
 
-    /* Badges */
+    /* ── Badges ── */
     .badge { font-size: 11px; padding: 4px 10px; }
 
-    /* Modals */
-    .modal { border-radius: 16px; padding: 20px; max-height: 90vh; }
-    .modal-title { font-size: 18px; }
+    /* ── Modals — slide up as bottom sheet ── */
+    .modal-overlay {
+      align-items: flex-end;
+      padding: 0;
+      background: rgba(0,0,0,.38);
+    }
+    .modal {
+      border-radius: 20px 20px 0 0;
+      max-height: 92dvh; width: 100%; max-width: 100%;
+      padding: 0 20px 20px;
+      border: none;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+    .modal::before {
+      content: '';
+      display: block; width: 36px; height: 4px;
+      background: var(--border-strong); border-radius: 2px;
+      margin: 10px auto 16px;
+    }
+    .modal-head { margin-bottom: 14px; }
+    .modal-title { font-size: 17px; }
+    .modal-close { width: 30px; height: 30px; font-size: 22px; }
 
-    /* Aging table */
-    .aging-table { grid-template-columns: 1fr 1fr; gap: 1px; }
+    /* ── Ghost buttons ── */
+    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 44px; min-height: 44px; }
+
+    /* ── Aging ── */
+    .aging-table { grid-template-columns: 1fr 1fr; }
     .aging-cell { padding: 10px 12px; font-size: 13px; }
-    .aging-cell.num { text-align: right; }
 
-    /* Alerts */
-    .alert-li { font-size: 14px; padding: 12px 14px; border-radius: 10px; }
-    .al-t { font-size: 14px; }
-    .al-d { font-size: 12px; }
+    /* ── Empty state ── */
+    .empty-state { font-size: 13px; padding: 32px 20px; }
 
-    /* Ghost buttons bigger for touch */
-    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 40px; min-height: 40px; }
-
-    /* Stat rows */
-    .stat-row { font-size: 14px; padding: 10px 0; }
-
-    /* Empty state */
-    .empty-state { font-size: 14px; padding: 28px 16px; }
-
-    /* Informal banner */
-    .informal-banner { border-radius: 10px; padding: 14px 16px; font-size: 14px; }
+    /* ── Informal banner ── */
+    .informal-banner { border-radius: 12px; padding: 14px 16px; font-size: 14px; }
     .banner-body .bt { font-size: 14px; }
     .banner-body .bs { font-size: 13px; }
 
-    /* Toast */
-    .toast { bottom: 84px; right: 16px; left: 16px; text-align: center; border-radius: 10px; font-size: 14px; }
+    /* ── Toast ── */
+    .toast { bottom: 80px; right: 16px; left: 16px; text-align: center; border-radius: 10px; font-size: 13px; }
 
-    /* Pills on mobile header */
-    .top-pills-mobile { display: flex; gap: 6px; flex-wrap: wrap; }
+    /* ── Ptg table ── */
+    .ptg-toolbar { padding: 8px 12px; }
+    .ptg-month-label { font-size: 11px; min-width: 100px; }
   }
 
   /* Hide mobile elements on desktop */
   @media (min-width: 901px) {
-    .mobile-header { display: none; }
-    .mobile-nav { display: none; }
+    .mobile-header { display: none !important; }
+    .mobile-nav { display: none !important; }
+    .mhd-dropdown { display: none !important; }
   }
 
-  /* Mobile nav styling for both modes */
+  /* Mobile elements hidden by default (JS shows them) */
   .mobile-header { display: none; }
   .mobile-nav { display: none; }
 
@@ -945,7 +1013,7 @@
             Alertes
             <span class="nav-dot"></span>
           </button></li>
-          <li><button class="nav-btn" data-panel="projets">
+          <li><button class="nav-btn" data-panel="projets" id="nav-projets">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Projets / Chantiers
           </button></li>
@@ -1130,9 +1198,24 @@
         <p id="print-page-info" style="font-size:11px; font-weight:700; color:#1A1A17; margin:4px 0 0; letter-spacing:0.02em;">Rapport</p>
       </div>
 
-      <div class="mobile-header">
-        <h1 id="mobile-page-title">Vue d'ensemble</h1>
-        <div id="mobile-pills"></div>
+      <div class="mobile-header" id="mobile-header">
+        <div class="mhd-left">
+          <p class="mhd-brand">IPCM BOUTEMA</p>
+          <h1 class="mhd-title" id="mobile-page-title">Vue d'ensemble</h1>
+        </div>
+        <div class="mhd-right">
+          <span class="mhd-sync" id="mhd-sync" title="Connecté"></span>
+          <button class="mhd-avatar" id="mhd-avatar" aria-label="Profil">
+            <span id="mhd-initial">—</span>
+          </button>
+          <div class="mhd-dropdown" id="mhd-dropdown">
+            <div class="mhd-user-info">
+              <div id="mhd-dname" style="font-weight:700;font-size:13px;color:#171717;"></div>
+              <div id="mhd-role-label" style="font-size:11px;color:#999;margin-top:2px;"></div>
+            </div>
+            <button class="mhd-logout-btn" id="mhd-logout-btn">Se déconnecter</button>
+          </div>
+        </div>
       </div>
 
       <section class="panel active" data-panel="overview">
@@ -2306,6 +2389,10 @@ window.app = (() => {
   }
 
   function renderOverview() {
+    const role = sessionStorage.getItem('ipcm_role') || 'admin';
+    if (role === 'hr') { renderOverviewHR(); return; }
+    if (role === 'technique') { renderOverviewTech(); return; }
+
     const tres = journalBalance('caisse') + journalBalance('banque');
     const cr = totalCreances();
     const ch = chgTotal();
@@ -2318,7 +2405,6 @@ window.app = (() => {
 
     const runwayColor = r >= 7 ? 'ok' : r >= 4 ? 'warn' : 'danger';
     const dettesColor = dettesPct >= 0.5 ? 'danger' : dettes > 0 ? 'warn' : '';
-
     const tresColor = tres >= 20000000 ? 'ok' : tres >= 15000000 ? 'warn' : 'danger';
 
     const kpis = [
@@ -2345,6 +2431,120 @@ window.app = (() => {
         <p class="journal-balance">${fmtDZD(j.bal)}</p>
         <p class="journal-hint">${j.count} entrée(s)</p>
       </div>`).join('');
+  }
+
+  function renderOverviewHR() {
+    const now = new Date();
+    const todayMk   = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    const todayDay  = now.getDate();
+    const todayCells = (state.adminPointage[todayMk] && state.adminPointage[todayMk].cells) ? state.adminPointage[todayMk].cells : {};
+
+    let presentToday = 0, absentToday = 0, noDataToday = 0;
+    state.workers.forEach((w, wi) => {
+      const v = ((todayCells[wi+'_'+todayDay+'_0'] || {}).val || '').trim();
+      if (v.toUpperCase() === 'P') presentToday++;
+      else if (v === '') noDataToday++;
+      else absentToday++;
+    });
+    const totalWorkers = state.workers.length;
+    const pct = totalWorkers > 0 ? Math.round(presentToday / totalWorkers * 100) : 0;
+
+    // Month attendance rate (days elapsed so far)
+    let monthPresent = 0, monthTotal = 0;
+    for (let d = 1; d <= todayDay; d++) {
+      state.workers.forEach((w, wi) => {
+        const v = ((todayCells[wi+'_'+d+'_0'] || {}).val || '').trim();
+        monthTotal++;
+        if (v.toUpperCase() === 'P') monthPresent++;
+      });
+    }
+    const monthPct = monthTotal > 0 ? Math.round(monthPresent / monthTotal * 100) : 0;
+
+    const titleEl = document.getElementById('page-title');
+    const subEl   = document.getElementById('page-sub');
+    if (titleEl) titleEl.textContent = 'Tableau de Bord RH';
+    if (subEl)   subEl.textContent   = 'Présence, effectif et chantiers — ' + MONTH_NAMES[now.getMonth()] + ' ' + now.getFullYear();
+
+    const kpis = [
+      { label: 'Effectif total',        val: totalWorkers,      hint: 'travailleurs enregistrés',        color: '' },
+      { label: "Présents aujourd'hui",  val: presentToday,      hint: pct + "% de l'effectif",           color: presentToday > 0 ? 'ok' : '' },
+      { label: 'Absents / Autre',        val: absentToday,       hint: noDataToday + ' non renseignés',   color: absentToday > 0 ? 'warn' : '' },
+      { label: 'Chantiers actifs',       val: state.workSites.length,    hint: 'chantiers ouverts',       color: '' },
+      { label: 'Documents RH',           val: state.hrDocuments.length,  hint: 'dossiers créés',          color: '' },
+      { label: 'Présence ce mois',       val: monthPct + '%',    hint: MONTH_NAMES[now.getMonth()] + ' ' + now.getFullYear(), color: monthPct >= 80 ? 'ok' : monthPct >= 50 ? 'warn' : monthPct > 0 ? 'danger' : '' },
+    ];
+    document.getElementById('kpi-overview').innerHTML = kpis.map(k => `
+      <div class="kpi-card ${k.color === 'danger' ? 'danger' : k.color === 'warn' ? 'kpi-warn' : k.color === 'ok' ? 'kpi-ok' : ''}">
+        <div class="kpi-top"><p class="kpi-lbl">${k.label}</p></div>
+        <p class="kpi-val">${k.val}</p>
+        ${k.hint ? `<p class="kpi-hint">${k.hint}</p>` : ''}
+      </div>`).join('');
+
+    const wsCards = state.workSites.length === 0
+      ? `<div class="journal-card"><p class="journal-title">Chantiers</p><p class="journal-balance" style="font-size:24px;color:var(--text-tertiary);">—</p><p class="journal-hint">Aucun chantier créé</p></div>`
+      : state.workSites.slice(0, 3).map(ws => {
+          const wCount = (ws.workerIds || []).length;
+          return `<div class="journal-card">
+            <div class="journal-head"><p class="journal-title">${ws.name || 'Chantier'}</p></div>
+            <p class="journal-balance">${wCount}</p>
+            <p class="journal-hint">travailleur(s) affecté(s)</p>
+          </div>`;
+        }).join('');
+    document.getElementById('journal-summary').innerHTML = wsCards;
+  }
+
+  function renderOverviewTech() {
+    const now   = new Date();
+    const curMk = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    const tws   = state.techWorkSites;
+
+    let totalHoursMonth = 0, totalEntries = 0, totalRapports = 0;
+    const workerSet = new Set();
+    let lastDate = '';
+    tws.forEach(ws => {
+      totalRapports += (ws.rapports || []).length;
+      (ws.pointage || []).forEach(p => {
+        if (p.date && p.date.startsWith(curMk)) {
+          totalHoursMonth += parseFloat(p.hours) || 0;
+          totalEntries++;
+        }
+        if (p.worker) workerSet.add(p.worker);
+        if (p.date && p.date > lastDate) lastDate = p.date;
+      });
+    });
+
+    const titleEl = document.getElementById('page-title');
+    const subEl   = document.getElementById('page-sub');
+    if (titleEl) titleEl.textContent = 'Tableau de Bord Technique';
+    if (subEl)   subEl.textContent   = 'Chantiers, pointage et rapports — ' + MONTH_NAMES[now.getMonth()] + ' ' + now.getFullYear();
+
+    const kpis = [
+      { label: 'Chantiers techniques', val: tws.length,                      hint: 'chantiers enregistrés',        color: '' },
+      { label: 'Heures ce mois',        val: totalHoursMonth.toFixed(1) + ' h', hint: MONTH_NAMES[now.getMonth()], color: totalHoursMonth > 0 ? 'ok' : '' },
+      { label: 'Travailleurs actifs',   val: workerSet.size,                  hint: 'au moins 1 pointage',          color: workerSet.size > 0 ? 'ok' : '' },
+      { label: 'Entrées pointage',      val: totalEntries,                    hint: 'ce mois',                      color: '' },
+      { label: 'Rapports rédigés',      val: totalRapports,                   hint: 'sur tous les chantiers',       color: '' },
+      { label: 'Dernière activité',     val: lastDate || '—',                 hint: 'date du dernier pointage',     color: '' },
+    ];
+    document.getElementById('kpi-overview').innerHTML = kpis.map(k => `
+      <div class="kpi-card ${k.color === 'danger' ? 'danger' : k.color === 'warn' ? 'kpi-warn' : k.color === 'ok' ? 'kpi-ok' : ''}">
+        <div class="kpi-top"><p class="kpi-lbl">${k.label}</p></div>
+        <p class="kpi-val">${k.val}</p>
+        ${k.hint ? `<p class="kpi-hint">${k.hint}</p>` : ''}
+      </div>`).join('');
+
+    const twsCards = tws.length === 0
+      ? `<div class="journal-card"><p class="journal-title">Chantiers</p><p class="journal-balance" style="font-size:24px;color:var(--text-tertiary);">—</p><p class="journal-hint">Aucun chantier technique créé</p></div>`
+      : tws.slice(0, 3).map(ws => {
+          const monthHrs = (ws.pointage || []).filter(p => p.date && p.date.startsWith(curMk)).reduce((s, p) => s + (parseFloat(p.hours) || 0), 0);
+          const totalHrs = (ws.pointage || []).reduce((s, p) => s + (parseFloat(p.hours) || 0), 0);
+          return `<div class="journal-card">
+            <div class="journal-head"><p class="journal-title">${ws.name}</p></div>
+            <p class="journal-balance">${monthHrs.toFixed(1)} h</p>
+            <p class="journal-hint">${(ws.pointage||[]).length} entrées · ${(ws.rapports||[]).length} rapport(s) · ${totalHrs.toFixed(0)}h total</p>
+          </div>`;
+        }).join('');
+    document.getElementById('journal-summary').innerHTML = twsCards;
   }
 
   function renderAlerts() {
@@ -3613,6 +3813,22 @@ window.app = (() => {
   }
 
   loadAll();
+
+  // Close mobile dropdown when tapping outside
+  document.addEventListener('click', function(e) {
+    const dd = document.getElementById('mhd-dropdown');
+    const av = document.getElementById('mhd-avatar');
+    if (dd && av && !av.contains(e.target) && !dd.contains(e.target)) {
+      dd.classList.remove('open');
+    }
+  });
+  document.getElementById('mhd-avatar') && document.getElementById('mhd-avatar').addEventListener('click', function() {
+    document.getElementById('mhd-dropdown').classList.toggle('open');
+  });
+  document.getElementById('mhd-logout-btn') && document.getElementById('mhd-logout-btn').addEventListener('click', function() {
+    document.getElementById('mhd-dropdown').classList.remove('open');
+    document.getElementById('logout-btn').click();
+  });
 
   function renderSimulateur() {
     try {
