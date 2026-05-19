@@ -1,7 +1,7 @@
 {
   "name": "ipcm-erp",
   "version": "2.0.0",
-  "description": "IPCM BOUTEMA ERP - Multi-utilisateur",
+  "description": "ARCIS Enterprise Platform - Multi-utilisateur",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

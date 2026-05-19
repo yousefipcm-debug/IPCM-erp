@@ -49,6 +49,54 @@
   const _origGet    = localStorage.getItem.bind(localStorage);
   const _origRemove = localStorage.removeItem.bind(localStorage);
 
+  // ── OFFLINE MODE (file://) ─────────────────────────────────────────────────
+  if (window.location.protocol === 'file:') {
+    window.fetch = async function(url, options) {
+      if (typeof url !== 'string' || !url.startsWith('/api/')) return Response.error();
+      await new Promise(r => setTimeout(r, 200));
+      
+      if (url === '/api/login') {
+        const body = JSON.parse(options.body);
+        const users = {
+          'admin': { pwd: 'Admin2024!', role: 'admin', dname: 'Administrateur' },
+          'finance': { pwd: 'Finance2024!', role: 'finance', dname: 'Responsable DFC' },
+          'rh': { pwd: 'RH2024!', role: 'hr', dname: 'Responsable RH' },
+          'technique': { pwd: 'Tech2024!', role: 'technique', dname: 'Responsable Technique' }
+        };
+        const u = users[(body.username || '').toLowerCase()];
+        if (u && body.password === u.pwd) {
+          return new Response(JSON.stringify({ token: 'local-token', role: u.role, display_name: u.dname }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: "Nom d'utilisateur ou mot de passe incorrect" }), { status: 401 });
+      }
+      
+      if (url === '/api/data' && (!options || !options.method || options.method === 'GET')) {
+        const data = {};
+        Object.entries(LS_TO_SHORT).forEach(([ls, s]) => {
+          try { 
+            const val = _origGet(ls);
+            if (val) data[s] = JSON.parse(val); 
+          } catch { }
+        });
+        return new Response(JSON.stringify(data), { status: 200 });
+      }
+      
+      if (url.startsWith('/api/data/')) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      
+      if (url.startsWith('/api/users')) {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+      
+      if (url === '/api/health') {
+        return new Response(JSON.stringify({ status: 'ok', persistent: false }), { status: 200 });
+      }
+      
+      return new Response(JSON.stringify({}), { status: 200 });
+    };
+  }
+
   let syncOk = null; // null = unknown, true = working, false = failed
 
   function setSyncStatus(ok, msg) {

@@ -1,5 +1,5 @@
-// v12 - fix tabBar ReferenceError after tab removal
-const VERSION = 'v6-' + Date.now();
+// v13 - force reload for offline mock
+const VERSION = 'v13-' + Date.now();
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
