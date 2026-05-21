@@ -146,7 +146,7 @@ async function buildPgDB() {
 const ROLE_KEYS = {
   finance:   ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails'],
   hr:        ['workers','workSites','hrDocuments','hrFolders','adminPointage'],
-  technique: ['techWorkSites','workSites'],
+  technique: ['techWorkSites','workSites','workers'],
   admin:     ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend']
 };
 

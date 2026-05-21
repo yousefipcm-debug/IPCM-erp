@@ -165,11 +165,12 @@
         { panel: 'alerts',          label: 'Alertes',    svg: SVG.bell, id: 'mobile-nav-alerts', badge: true },
       ],
       hr:        [
-        { panel: 'overview',          label: 'Accueil',  svg: SVG.home },
-        { panel: 'workers',           label: 'Personnel',svg: SVG.users },
-        { panel: 'work-sites',        label: 'Chantiers',svg: SVG.house },
-        { panel: 'rh-daily-pointage', label: 'Pointage', svg: SVG.clock },
-        { panel: 'hr-documents',      label: 'Docs RH',  svg: SVG.doc },
+        { panel: 'overview',            label: 'Accueil',   svg: SVG.home },
+        { panel: 'workers',             label: 'Personnel', svg: SVG.users },
+        { panel: 'work-sites',          label: 'Chantiers', svg: SVG.house },
+        { panel: 'rh-daily-pointage',   label: 'Présence',  svg: SVG.clock },
+        { panel: 'tech-admin-pointage', label: 'Ptg. Admin',  svg: SVG.check },
+        { panel: 'hr-documents',        label: 'Docs RH',   svg: SVG.doc },
       ],
       technique: [
         { panel: 'overview',            label: 'Accueil',  svg: SVG.home },
