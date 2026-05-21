@@ -183,6 +183,83 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/logout', (req, res) => res.json({ ok: true }));
 
+// ── Public worker sheet (QR code target) ────────────────────────────────────────
+// Read-only, accessed by scanning the QR on a printed sheet. Uses a token to avoid enumeration.
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function calcAge(birth) {
+  if (!birth) return '—';
+  const b = new Date(birth), now = new Date();
+  let a = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < b.getDate())) a--;
+  return a >= 0 && a < 130 ? a : '—';
+}
+
+app.get('/fiche/:token', async (req, res) => {
+  try {
+    const data = await db.getData(['workers']);
+    const workers = data.workers || [];
+    // token format: index-firstSSdigits  (e.g. "3-046910")
+    const [idxStr, guard] = (req.params.token || '').split('-');
+    const idx = parseInt(idxStr);
+    const w = workers[idx];
+    if (!w) return res.status(404).send('<h1>Fiche introuvable</h1>');
+    // simple guard: first 6 chars of assurance number must match (prevents guessing by index alone)
+    const expectGuard = (w.ss || '').replace(/\D/g, '').slice(0, 6) || 'x';
+    if (guard !== expectGuard) return res.status(403).send('<h1>Accès refusé</h1>');
+
+    const age = calcAge(w.birth);
+    const e = escapeHtml;
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiche ${e(w.name)} ${e(w.surname)}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;background:#f4f6fa;padding:16px;line-height:1.8;}
+  .sheet{max-width:520px;margin:0 auto;background:#fff;border-radius:10px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+  .ph{width:90px;height:108px;border:1px solid #ccc;border-radius:6px;object-fit:cover;}
+  .ph-empty{width:90px;height:108px;border:1px solid #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;}
+  .cn{font-size:14px;font-weight:700;color:#C8782A;}
+  .ttl{text-align:center;font-size:20px;font-weight:700;margin:14px 0 18px;border-bottom:2px solid #C8782A;padding-bottom:8px;}
+  .row{margin:6px 0;}
+  .lbl{font-weight:700;color:#444;}
+  .divider{border:none;border-top:1px solid #ddd;margin:16px 0;}
+  .print-btn{display:block;width:100%;margin-top:20px;padding:12px;background:#0A0A0A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;}
+  @media print{body{background:#fff;padding:0;}.sheet{box-shadow:none;max-width:100%;}.print-btn{display:none;}}
+</style></head><body>
+<div class="sheet">
+  <div class="top">
+    <div><div class="cn">I.P.C.M BOUTEMA</div><div style="font-size:11px;color:#666;">Construction et Industrie</div></div>
+    ${w.photo ? `<img class="ph" src="${e(w.photo)}"/>` : '<div class="ph-empty">Photo</div>'}
+  </div>
+  <div class="ttl">Fiche de l'Employé</div>
+  <div class="row"><span class="lbl">Nom :</span> ${e(w.name)}</div>
+  <div class="row"><span class="lbl">Prénom :</span> ${e(w.surname)}</div>
+  <div class="row"><span class="lbl">Fonction :</span> ${e(w.function)}</div>
+  <div class="row"><span class="lbl">N° Assurance :</span> ${e(w.ss)}</div>
+  <div class="row"><span class="lbl">Âge :</span> ${age} ans</div>
+  <div class="row"><span class="lbl">Situation de santé :</span> ${e(w.health)}</div>
+  <div class="row"><span class="lbl">Situation familiale :</span> ${e(w.status)}</div>
+  <div class="row"><span class="lbl">Enfants :</span> ${e(w.kids || '0')}</div>
+  <div class="row"><span class="lbl">Adresse :</span> ${e(w.address)}</div>
+  <div class="row"><span class="lbl">Groupe sanguin :</span> ${e(w.blood)}</div>
+  <hr class="divider"/>
+  <div class="row"><span class="lbl">Contrat :</span> du ${e(w.entry || '...')} au ${e(w.contractEnd || '...')} — ${e(w.contract)}</div>
+  <div class="row"><span class="lbl">Certificat / Attestation :</span> ${e(w.cert) || '—'}</div>
+  <button class="print-btn" onclick="window.print()">Enregistrer en PDF / Imprimer</button>
+</div>
+</body></html>`;
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    console.error('GET /fiche:', err);
+    res.status(500).send('<h1>Erreur serveur</h1>');
+  }
+});
+
 // ── Data ───────────────────────────────────────────────────────────────────────
 app.get('/api/data', requireAuth, async (req, res) => {
   try {
