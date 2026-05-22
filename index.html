@@ -870,6 +870,7 @@
     table.mod td { border-bottom: 1px solid #ddd; }
     .badge { border: 0.5px solid #ccc; }
     .print-header { display: block !important; text-align: left; margin-bottom: 6px; padding-bottom: 0; border-bottom: none; }
+    #print-page-info, #print-page-info-clone { display: none !important; }
     .print-header h1 { font-size: 18px; margin: 0 0 4px; color: #1A1A17; }
     .print-header p { font-size: 11px; margin: 0; color: #333; }
     @page { margin: 5mm 8mm 10mm 8mm; size: auto; }
@@ -1547,7 +1548,7 @@
           </div>
         </div>
         <div style="border-bottom:2px solid #C8782A; margin-top:10px; margin-bottom:10px;"></div>
-        <p id="print-page-info" style="font-size:11px; font-weight:700; color:#1A1A17; margin:4px 0 0; letter-spacing:0.02em;">Rapport</p>
+        <p id="print-page-info" style="display:none;"></p>
       </div>
 
 <div class="app-shell">
@@ -2236,6 +2237,25 @@
               <div class="field"><label>Date d'entrée</label><input type="date" id="wnp-entry" onchange="app.updateWorkerPreview()"/></div>
               <div class="field"><label>Date de fin de contrat</label><input type="date" id="wnp-contract-end" onchange="app.updateWorkerPreview()"/></div>
               <div class="field" style="grid-column:1/-1;"><label>Adresse</label><input type="text" id="wnp-address" placeholder="Ex. Rue des Frères, Blida" oninput="app.updateWorkerPreview()"/></div>
+              <div class="field"><label>Téléphone</label><input type="tel" id="wnp-phone" placeholder="Ex. 0550 123 456"/></div>
+              <div class="field"><label>N° CIN</label><input type="text" id="wnp-cin" placeholder="Ex. 123456789"/></div>
+              <div class="field"><label>Date expiration CIN</label><input type="date" id="wnp-cin-exp"/></div>
+              <div class="field"><label>Permis de conduire</label>
+                <select id="wnp-permis">
+                  <option value="">— Aucun —</option>
+                  <option value="A">A (Moto)</option>
+                  <option value="B">B (Voiture)</option>
+                  <option value="C">C (Camion)</option>
+                  <option value="D">D (Bus)</option>
+                  <option value="B+C">B + C</option>
+                  <option value="Tous">Tous types</option>
+                </select>
+              </div>
+              <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
+              <div class="field"><label>RIB / Compte bancaire</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field"><label>Contact urgence — Nom</label><input type="text" id="wnp-emg-name" placeholder="Ex. BOUTEMA Mohamed"/></div>
+              <div class="field"><label>Contact urgence — Téléphone</label><input type="tel" id="wnp-emg-phone" placeholder="Ex. 0661 234 567"/></div>
+              <div class="field"><label>Lien de parenté</label><input type="text" id="wnp-emg-rel" placeholder="Ex. Père, Épouse, Frère..."/></div>
               <div class="field" style="grid-column:1/-1;"><label>Certificats / Attestations</label><textarea id="wnp-cert" rows="2" placeholder="Ex. Attestation de travail, Certificat médical, Diplôme..." oninput="app.updateWorkerPreview()" style="resize:vertical;"></textarea></div>
               <div class="field" style="grid-column:1/-1;"><label>Chantier affecté</label>
                 <select id="wnp-worksite"><option value="">— Aucun chantier —</option></select>
@@ -5299,6 +5319,7 @@ window.app = (() => {
   @page { margin: 10mm 10mm 18mm 10mm; size: A4; }
   @page :first { margin-top: 8mm; }
   .print-header { display: block !important; text-align: left; margin-bottom: 8px; }
+  #print-page-info, #print-page-info-clone { display: none !important; }
 </style></head><body>
 
   <!-- IPCM BOUTEMA Header (real logo, same as other prints) -->
@@ -5724,7 +5745,8 @@ window.app = (() => {
   }
 
   function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-emg-name','wnp-emg-phone','wnp-emg-rel','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    const pm = document.getElementById('wnp-permis'); if(pm) pm.value='';
     const kids = document.getElementById('wnp-kids'); if(kids) kids.value='0';
     const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDI';
     const st = document.getElementById('wnp-status'); if(st) st.value='Célibataire';
@@ -5756,6 +5778,15 @@ window.app = (() => {
       entry: document.getElementById('wnp-entry').value,
       contractEnd: document.getElementById('wnp-contract-end').value,
       address: document.getElementById('wnp-address').value.trim(),
+      phone: document.getElementById('wnp-phone').value.trim(),
+      cin: document.getElementById('wnp-cin').value.trim(),
+      cinExp: document.getElementById('wnp-cin-exp').value,
+      permis: document.getElementById('wnp-permis').value,
+      salary: document.getElementById('wnp-salary').value || '0',
+      rib: document.getElementById('wnp-rib').value.trim(),
+      emgName: document.getElementById('wnp-emg-name').value.trim(),
+      emgPhone: document.getElementById('wnp-emg-phone').value.trim(),
+      emgRel: document.getElementById('wnp-emg-rel').value.trim(),
       cert: document.getElementById('wnp-cert').value.trim(),
       photo: state._newWorkerPhoto || (existing ? existing.photo : null),
       history: existing ? (existing.history || []) : []
@@ -5803,6 +5834,15 @@ window.app = (() => {
     document.getElementById('wnp-entry').value = w.entry || '';
     document.getElementById('wnp-contract-end').value = w.contractEnd || '';
     document.getElementById('wnp-address').value = w.address || '';
+    document.getElementById('wnp-phone').value = w.phone || '';
+    document.getElementById('wnp-cin').value = w.cin || '';
+    document.getElementById('wnp-cin-exp').value = w.cinExp || '';
+    document.getElementById('wnp-permis').value = w.permis || '';
+    document.getElementById('wnp-salary').value = w.salary || '';
+    document.getElementById('wnp-rib').value = w.rib || '';
+    document.getElementById('wnp-emg-name').value = w.emgName || '';
+    document.getElementById('wnp-emg-phone').value = w.emgPhone || '';
+    document.getElementById('wnp-emg-rel').value = w.emgRel || '';
     document.getElementById('wnp-cert').value = w.cert || '';
     const curWs = state.workSites.findIndex(ws => (ws.workerIds||[]).includes(idx));
     const selWs = document.getElementById('wnp-worksite');
@@ -5830,6 +5870,15 @@ window.app = (() => {
       entry: document.getElementById('wnp-entry')?.value||'',
       contractEnd: document.getElementById('wnp-contract-end')?.value||'',
       address: document.getElementById('wnp-address')?.value||'',
+      phone: document.getElementById('wnp-phone')?.value||'',
+      cin: document.getElementById('wnp-cin')?.value||'',
+      cinExp: document.getElementById('wnp-cin-exp')?.value||'',
+      permis: document.getElementById('wnp-permis')?.value||'',
+      salary: document.getElementById('wnp-salary')?.value||'',
+      rib: document.getElementById('wnp-rib')?.value||'',
+      emgName: document.getElementById('wnp-emg-name')?.value||'',
+      emgPhone: document.getElementById('wnp-emg-phone')?.value||'',
+      emgRel: document.getElementById('wnp-emg-rel')?.value||'',
       cert: document.getElementById('wnp-cert')?.value||'',
       photo: state._newWorkerPhoto||null,
       history: []
@@ -5839,10 +5888,6 @@ window.app = (() => {
   function printWorkerSheetFromData(w) {
     if (!w) return;
     const age = calculateAge(w.birth);
-    const _wIdx = state.workers.indexOf(w);
-    const _guard = (w.ss||'').replace(/\D/g,'').slice(0,6) || 'x';
-    const _origin = (location.protocol === 'file:') ? 'https://ipcm-erp-production-0eee.up.railway.app' : location.origin;
-    const qrData = _wIdx >= 0 ? `${_origin}/fiche/${_wIdx}-${_guard}` : `NOM:${w.name} ${w.surname}|ASSURANCE:${w.ss||''}`;
     const logoSrc = document.querySelector('.print-header img')?.src || '';
     const expiringSoon = w.contractEnd && new Date(w.contractEnd) < new Date(Date.now()+15*86400000);
 
@@ -5865,11 +5910,11 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche ${w.name} ${w.surname}</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+
 <style>${css}<\/style>
 </head><body>
 <div class="top">
-  <div class="qrb" id="qr"></div>
+  
   <div class="phb">${w.photo ? `<img src="${w.photo}"/>` : 'Photo'}</div>
 </div>
 
@@ -5880,12 +5925,19 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 <div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
 <div class="row"><span class="lbl">N&#176; Assurance :</span> ${w.ss||''}</div>
 <div class="row"><span class="lbl">&#194;ge :</span> ${age} ans</div>
+<div class="row"><span class="lbl">Téléphone :</span> ${w.phone||''}</div>
+<div class="row"><span class="lbl">N° CIN :</span> ${w.cin||''} ${w.cinExp ? `<span style="font-size:12px;color:#666;">(exp. ${w.cinExp})</span>` : ''}</div>
+<div class="row"><span class="lbl">Permis de conduire :</span> ${w.permis||'—'}</div>
 <div class="row"><span class="lbl">Situation de sant&#233; :</span> ${w.health||''}</div>
 <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
 <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
 <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
 <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
 
+<div class="row"><span class="lbl">Salaire de base :</span> ${w.salary ? Number(w.salary).toLocaleString('fr-DZ') + ' DZD' : '—'}</div>
+<div class="row"><span class="lbl">RIB / Compte :</span> ${w.rib||'—'}</div>
+<hr class="divider"/>
+<div class="row"><span class="lbl">Contact urgence :</span> ${w.emgName||'—'} ${w.emgRel ? `(${w.emgRel})` : ''} ${w.emgPhone ? `— ${w.emgPhone}` : ''}</div>
 <hr class="divider"/>
 
 <div class="sec"><span class="lbl">Contrat :</span> du ${w.entry||'...'} au ${w.contractEnd||'...'} &mdash; ${w.contract||''}</div>
@@ -5894,14 +5946,6 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 
 <script>
 window.onload = function() {
-  try {
-    new QRCode(document.getElementById('qr'), {
-      text: ${JSON.stringify(qrData)},
-      width: 78, height: 78,
-      colorDark: '#000000', colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  } catch(e) {}
   setTimeout(function(){ window.print(); window.close(); }, 900);
 };
 <\/script>
@@ -6017,7 +6061,7 @@ window.onload = function() {
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche — ${w.name} ${w.surname}</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; font-size: 12px; color: #111; background: white; padding: 12mm; }
@@ -7209,7 +7253,6 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
 </style>
 </head><body>
 ${headerEl.outerHTML}
-<div style="border-bottom:2px solid #C8782A; margin: 6px 0 8px;"></div>
 <p style="font-size:11px; font-weight:700; color:#1A1A17; margin:0 0 12px;">${title}</p>
 ${contentClone.outerHTML}
 </body></html>`);
