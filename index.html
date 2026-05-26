@@ -1002,10 +1002,10 @@
   Object.entries(LS_TO_SHORT).forEach(([ls, s]) => (SHORT_TO_LS[s] = ls));
 
   const ROLE_MODULES = {
-    admin:     ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin'],
-    finance:   ['module-finance'],
+    admin:     ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'],
+    finance:   ['module-finance', 'module-commercial'],
     hr:        ['module-rh', 'module-pilotage'],
-    technique: ['module-technique', 'module-pilotage']
+    technique: ['module-technique', 'module-pilotage', 'module-commercial']
   };
 
   const ROLE_LABELS = {
@@ -1194,7 +1194,7 @@
 
   function applyRoleUI(role, displayName) {
     const allowed = ROLE_MODULES[role] || [];
-    ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin'].forEach(id => {
+    ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = allowed.includes(id) ? '' : 'none';
     });
@@ -1635,10 +1635,12 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Facturation
           </button></li>
+          <li><button class="nav-btn" data-panel="hr-documents">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Documents
+          </button></li>
         </ul>
       </div>
-
-      <!-- RH -->
       <div class="module-group" id="module-rh">
         <button class="module-btn" onclick="app.switchModule('rh')">
           <span class="mod-icon">
@@ -1700,6 +1702,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             Pointage Général
           </button></li>
+          <li><button class="nav-btn" data-panel="hr-documents">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Documents
+          </button></li>
         </ul>
       </div>
 
@@ -1715,6 +1721,26 @@
           <li><button class="nav-btn" data-panel="admin-users">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             Utilisateurs
+          </button></li>
+        </ul>
+      </div>
+
+      <!-- COMMERCIAL -->
+      <div class="module-group" id="module-commercial">
+        <button class="module-btn" onclick="app.switchModule('commercial')">
+          <span class="mod-icon">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M3 10h18v11H3z"/><line x1="8" y1="10" x2="8" y2="21"/></svg>
+          </span>
+          <span>Commercial</span>
+        </button>
+        <ul class="nav-list module-items" id="items-commercial" style="display:none;">
+          <li><button class="nav-btn" data-panel="commercial-contacts">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Contacts
+          </button></li>
+          <li><button class="nav-btn" data-panel="hr-documents">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Documents
           </button></li>
         </ul>
       </div>
@@ -1742,7 +1768,6 @@
           Importer
           <input type="file" accept=".json" onchange="app.importData(this)" style="display:none;"/>
         </label>
-      </div>
     </div>
   </aside>
 
@@ -2354,6 +2379,60 @@
         <div id="tech-project-content"></div>
       </section>
 
+      <section class="panel" data-panel="commercial-contacts">
+        <div class="card">
+          <div class="card-head">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="ct-tab active" id="ct-tab-fourn" onclick="app.switchContactTab('fournisseur')" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--gray-900);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Fournisseurs</button>
+              <button class="ct-tab" id="ct-tab-client" onclick="app.switchContactTab('client')" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;">Clients</button>
+            </div>
+            <button class="btn-primary" onclick="app.openContactModal()">+ Nouveau contact</button>
+          </div>
+          <input type="text" id="contact-search" placeholder="Rechercher par nom, téléphone, type..." oninput="app.renderContacts()" style="width:100%;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;margin:4px 0 16px;"/>
+          <div id="contacts-list" class="grid-2"></div>
+        </div>
+      </section>
+
+      <!-- Contact Modal -->
+      <div class="modal-overlay" id="contact-modal">
+        <div class="modal" style="max-width:560px;">
+          <div class="modal-head">
+            <h3 id="contact-modal-title">Nouveau contact</h3>
+            <button class="modal-close" onclick="app.closeContactModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;">
+              <div class="field" style="grid-column:1/-1;"><label>Nom de l'entreprise / contact *</label><input type="text" id="ct-name" placeholder="Ex. SARL ACIER BLIDA"/></div>
+              <div class="field"><label>Personne de contact</label><input type="text" id="ct-person" placeholder="Ex. M. Karim"/></div>
+              <div class="field"><label>Type / Activité</label><input type="text" id="ct-type" placeholder="Ex. Acier, Ciment, Transport..."/></div>
+              <div class="field"><label>Téléphone</label><input type="tel" id="ct-phone" placeholder="Ex. 0550 12 34 56"/></div>
+              <div class="field"><label>Téléphone 2 (optionnel)</label><input type="tel" id="ct-phone2" placeholder="Ex. 025 41 22 33"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>Email</label><input type="email" id="ct-email" placeholder="Ex. contact@entreprise.dz"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>Adresse</label><input type="text" id="ct-address" placeholder="Ex. Zone industrielle, Blida"/></div>
+              <div class="field"><label>NIF</label><input type="text" id="ct-nif" placeholder="Numéro NIF"/></div>
+              <div class="field"><label>RC</label><input type="text" id="ct-rc" placeholder="Numéro RC"/></div>
+              <div class="field"><label>NIS</label><input type="text" id="ct-nis" placeholder="Numéro NIS"/></div>
+              <div class="field"><label>Conditions de paiement</label>
+                <select id="ct-payment">
+                  <option value="">— Non défini —</option>
+                  <option value="Comptant">Comptant</option>
+                  <option value="30 jours">30 jours</option>
+                  <option value="60 jours">60 jours</option>
+                  <option value="90 jours">90 jours</option>
+                  <option value="À la livraison">À la livraison</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1;"><label>RIB / Compte bancaire</label><input type="text" id="ct-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>Notes / Remarques</label><textarea id="ct-notes" rows="2" placeholder="Ex. Bon fournisseur, livraison rapide..." style="resize:vertical;"></textarea></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn-secondary" onclick="app.closeContactModal()">Annuler</button>
+            <button class="btn-primary" onclick="app.saveContact()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
       <section class="panel" data-panel="hr-documents">
         <div class="card">
           <div class="card-head">
@@ -2671,10 +2750,10 @@
       <button class="modal-close" onclick="app.closeHrDocumentModal()">×</button>
     </div>
     <div class="form-grid">
-      <div class="field" style="grid-column: 1 / 2;"><label>Titre du Document</label><input type="text" id="doc-title" placeholder="Ex. Attestation de travail"/></div>
+      <div class="field" style="grid-column: 1 / 2;"><label>Titre du Document <span id="doc-title-hint" style="font-size:10px;color:var(--text-tertiary);font-weight:400;">— sera auto-numéroté si dossier sélectionné</span></label><input type="text" id="doc-title" placeholder="Ex. Attestation de travail"/></div>
       <div class="field" style="grid-column: 2 / 3;">
         <label>Dossier</label>
-        <select id="doc-folder" style="height:38px; width:100%; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); padding:0 10px; font-family:inherit; font-size:14px;">
+        <select id="doc-folder" onchange="app.onDocFolderChange(this.value)" style="height:38px; width:100%; border:2px solid var(--border-strong); border-radius:8px; background:var(--bg); color:var(--text-primary); padding:0 10px; font-family:inherit; font-size:14px;">
           <!-- Folder options populated here -->
         </select>
       </div>
@@ -2682,6 +2761,11 @@
       <div class="field"><label>Signataire gauche (optionnel)</label><input type="text" id="doc-signer-left" placeholder="Ex. L'Intéressé"/></div>
       <div class="field"><label>Signataire droite (optionnel)</label><input type="text" id="doc-signer-right" placeholder="Ex. La Direction"/></div>
       <div class="field" style="grid-column: 1 / -1;"><label>Contenu du Document (Infos)</label><textarea id="doc-content" style="min-height: 300px;" placeholder="Écrivez le contenu du document ici..."></textarea></div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <label>Images (optionnel)</label>
+        <input type="file" id="doc-images" accept="image/*" multiple onchange="app.previewDocImages(this)" style="margin-bottom:8px;"/>
+        <div id="doc-images-preview" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;"></div>
+      </div>
     </div>
     <div style="margin-top:20px; display:flex; gap:10px;">
       <button class="btn-primary" onclick="app.saveHrDocument()">Enregistrer</button>
@@ -2771,7 +2855,8 @@ window.app = (() => {
     hrFolders: 'ipcm_v2_hrFolders',
     techWorkSites: 'ipcm_v2_techWorkSites',
     adminPointage: 'ipcm_v2_adminPointage',
-    adminPtgLegend: 'ipcm_v2_adminPtgLegend'
+    adminPtgLegend: 'ipcm_v2_adminPtgLegend',
+    commercialContacts: 'ipcm_v2_commercialContacts'
   };
 
   const state = {
@@ -2809,6 +2894,9 @@ window.app = (() => {
     rhDailyYear: null,
     adminPointage: {},
     adminPtgLegend: [],
+    commercialContacts: [],
+    currentContactTab: 'fournisseur',
+    editingContactIdx: null,
     adminPtgActiveColor: null
   };
 
@@ -2842,6 +2930,7 @@ window.app = (() => {
     'worker-new': { title: 'Nouvel Employé', sub: 'Créer une fiche employé complète avec photo et QR Code' },
     workers: { title: 'Personnel', sub: 'Gestion des ressources humaines' },
     'work-sites': { title: 'Chantiers (RH)', sub: 'Gestion des chantiers et affectation du personnel' },
+    'commercial-contacts': { title: 'Contacts Commerciaux', sub: 'Répertoire des fournisseurs et clients' },
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
     'hr-contracts': { title: 'Suivi Contrat', sub: 'Historique et suivi des contrats du personnel' },
     'hr-notifications': { title: 'Notification', sub: 'Alertes et notifications importantes' },
@@ -2950,6 +3039,7 @@ window.app = (() => {
     state.techWorkSites = load(K.techWorkSites, []);
     state.adminPointage  = load(K.adminPointage,  {});
     state.adminPtgLegend = load(K.adminPtgLegend, []);
+    state.commercialContacts = load(K.commercialContacts, []);
     const _now = new Date();
     state.adminPointageMonth = _now.getMonth();
     state.adminPointageYear  = _now.getFullYear();
@@ -4480,6 +4570,7 @@ window.app = (() => {
       if (sel) sel.innerHTML = '<option value="">— Aucun chantier —</option>' + state.workSites.map((ws,i)=>`<option value="${i}">${ws.name}</option>`).join('');
       updateWorkerPreview();
     }
+    if (p === 'commercial-contacts') renderContacts();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -4536,6 +4627,7 @@ window.app = (() => {
     if (btn) btn.classList.toggle('active', !isOpen);
     // For admin module, open and switch to users panel
     if (name === 'admin' && !isOpen) switchPanel('admin-users');
+    if (name === 'commercial' && !isOpen) switchPanel('commercial-contacts');
   }
 
   loadAll();
@@ -5913,6 +6005,7 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 
 <style>${css}<\/style>
 </head><body>
+<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:0 0 10px;">Date : ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
 <div class="top">
   
   <div class="phb">${w.photo ? `<img src="${w.photo}"/>` : 'Photo'}</div>
@@ -6338,12 +6431,274 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     renderAll();
   }
 
+  function switchContactTab(tab) {
+    state.currentContactTab = tab;
+    document.getElementById('ct-tab-fourn').style.background = tab === 'fournisseur' ? 'var(--gray-900)' : 'var(--bg)';
+    document.getElementById('ct-tab-fourn').style.color = tab === 'fournisseur' ? '#fff' : 'var(--text-secondary)';
+    document.getElementById('ct-tab-client').style.background = tab === 'client' ? 'var(--gray-900)' : 'var(--bg)';
+    document.getElementById('ct-tab-client').style.color = tab === 'client' ? '#fff' : 'var(--text-secondary)';
+    renderContacts();
+  }
+
+  function renderContacts() {
+    const el = document.getElementById('contacts-list');
+    if (!el) return;
+    const search = (document.getElementById('contact-search')?.value || '').toLowerCase();
+    const tab = state.currentContactTab;
+
+    // Merge: start with existing commercial contacts for this tab
+    let list = (state.commercialContacts || []).map((c, i) => ({ ...c, _idx: i })).filter(c => c.category === tab);
+
+    // Auto-import DFC fournisseurs/clients that are not yet in commercial contacts
+    const existingNames = list.map(c => (c.name || '').toUpperCase());
+    const sourceNames = tab === 'fournisseur' ? (state.fournisseurNames || []) : (state.clientNames || []);
+    const dfcNames = [];
+    sourceNames.forEach(name => {
+      if (!existingNames.includes(name.toUpperCase())) {
+        dfcNames.push(name);
+        list.push({ name, category: tab, _idx: -1, _fromDfc: true, _dfcIdx: dfcNames.length - 1 });
+      }
+    });
+    window._dfcNames = dfcNames;
+
+    if (search) {
+      list = list.filter(c =>
+        (c.name||'').toLowerCase().includes(search) ||
+        (c.person||'').toLowerCase().includes(search) ||
+        (c.phone||'').toLowerCase().includes(search) ||
+        (c.type||'').toLowerCase().includes(search) ||
+        (c.email||'').toLowerCase().includes(search)
+      );
+    }
+    if (list.length === 0) {
+      el.innerHTML = `<div class="empty-state">Aucun ${tab === 'fournisseur' ? 'fournisseur' : 'client'} enregistré.</div>`;
+      return;
+    }
+    el.innerHTML = list.map(c => `
+      <div class="card" style="margin-bottom:0;${c._fromDfc ? 'border-left:3px solid var(--warn-text);' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:700;color:var(--gray-900);">${c.name}</div>
+            ${c.type ? `<span class="badge b-info" style="font-size:10px;margin-top:3px;display:inline-block;">${c.type}</span>` : ''}
+            ${c._fromDfc ? '<span class="badge b-warn" style="font-size:9px;margin-top:3px;margin-left:4px;">DFC — cliquer ✎ pour compléter</span>' : ''}
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="ghost-btn" title="${c._fromDfc ? 'Compléter les infos' : 'Modifier'}" onclick="app.editContact(${c._idx >= 0 ? c._idx : -1}, ${c._fromDfc ? c._dfcIdx : 'null'})">${c._fromDfc ? '+' : '&#9998;'}</button>
+            ${c._idx >= 0 ? `<button class="ghost-btn" title="Imprimer" onclick="app.printContact(${c._idx})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
+            ${c._idx >= 0 ? `<button class="ghost-btn" title="Supprimer" onclick="app.deleteContact(${c._idx})">&times;</button>` : ''}
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;">
+          ${c.person ? `<div style="color:var(--text-secondary);"><strong>Contact:</strong> ${c.person}</div>` : ''}
+          ${c.phone ? `<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <a href="tel:${c.phone}" style="color:var(--accent);text-decoration:none;">${c.phone}</a>${c.phone2 ? ` · <a href="tel:${c.phone2}" style="color:var(--accent);text-decoration:none;">${c.phone2}</a>` : ''}</div>` : ''}
+          ${c.email ? `<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg> <a href="mailto:${c.email}" style="color:var(--accent);text-decoration:none;">${c.email}</a></div>` : ''}
+          ${c.address ? `<div style="color:var(--text-secondary);display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${c.address}</div>` : ''}
+          ${c.payment ? `<div style="color:var(--text-secondary);"><strong>Paiement:</strong> ${c.payment}</div>` : ''}
+          ${(c.nif||c.rc||c.nis) ? `<div style="color:var(--text-tertiary);font-size:11px;margin-top:2px;">${c.nif ? 'NIF: '+c.nif : ''} ${c.rc ? '· RC: '+c.rc : ''} ${c.nis ? '· NIS: '+c.nis : ''}</div>` : ''}
+          ${c.rib ? `<div style="color:var(--text-tertiary);font-size:11px;">RIB: ${c.rib}</div>` : ''}
+          ${c.notes ? `<div style="color:var(--text-secondary);font-style:italic;font-size:11.5px;margin-top:4px;border-top:1px solid var(--border);padding-top:6px;">${c.notes}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  function openContactModal() {
+    state.editingContactIdx = null;
+    document.getElementById('contact-modal-title').textContent = state.currentContactTab === 'fournisseur' ? 'Nouveau fournisseur' : 'Nouveau client';
+    ['ct-name','ct-person','ct-type','ct-phone','ct-phone2','ct-email','ct-address','ct-nif','ct-rc','ct-nis','ct-rib','ct-notes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    document.getElementById('ct-payment').value = '';
+    document.getElementById('contact-modal').classList.add('active');
+  }
+
+  function closeContactModal() {
+    document.getElementById('contact-modal').classList.remove('active');
+    state.editingContactIdx = null;
+  }
+
+  function saveContact() {
+    const name = document.getElementById('ct-name').value.trim();
+    if (!name) { alert('Le nom est requis'); return; }
+    const contact = {
+      category: state.currentContactTab,
+      name,
+      person: document.getElementById('ct-person').value.trim(),
+      type: document.getElementById('ct-type').value.trim(),
+      phone: document.getElementById('ct-phone').value.trim(),
+      phone2: document.getElementById('ct-phone2').value.trim(),
+      email: document.getElementById('ct-email').value.trim(),
+      address: document.getElementById('ct-address').value.trim(),
+      nif: document.getElementById('ct-nif').value.trim(),
+      rc: document.getElementById('ct-rc').value.trim(),
+      nis: document.getElementById('ct-nis').value.trim(),
+      payment: document.getElementById('ct-payment').value,
+      rib: document.getElementById('ct-rib').value.trim(),
+      notes: document.getElementById('ct-notes').value.trim()
+    };
+    if (state.editingContactIdx !== null) {
+      state.commercialContacts[state.editingContactIdx] = contact;
+    } else {
+      state.commercialContacts.push(contact);
+    }
+    save(K.commercialContacts, state.commercialContacts);
+
+    // Sync to DFC: add name to fournisseurNames or clientNames if not already there
+    if (contact.category === 'fournisseur') {
+      if (!state.fournisseurNames.includes(name)) {
+        state.fournisseurNames.push(name);
+        save(K.fournisseurNames, state.fournisseurNames);
+      }
+    } else {
+      if (!state.clientNames.includes(name)) {
+        state.clientNames.push(name);
+        save(K.clientNames, state.clientNames);
+      }
+    }
+
+    closeContactModal();
+    renderContacts();
+    renderAll();
+  }
+
+  function editContact(idx, dfcIdxOrNull) {
+    if (idx >= 0) {
+      const c = state.commercialContacts[idx];
+      if (!c) return;
+      state.editingContactIdx = idx;
+      state.currentContactTab = c.category;
+      switchContactTab(c.category);
+      document.getElementById('contact-modal-title').textContent = 'Modifier le contact';
+      document.getElementById('ct-name').value = c.name || '';
+      document.getElementById('ct-person').value = c.person || '';
+      document.getElementById('ct-type').value = c.type || '';
+      document.getElementById('ct-phone').value = c.phone || '';
+      document.getElementById('ct-phone2').value = c.phone2 || '';
+      document.getElementById('ct-email').value = c.email || '';
+      document.getElementById('ct-address').value = c.address || '';
+      document.getElementById('ct-nif').value = c.nif || '';
+      document.getElementById('ct-rc').value = c.rc || '';
+      document.getElementById('ct-nis').value = c.nis || '';
+      document.getElementById('ct-payment').value = c.payment || '';
+      document.getElementById('ct-rib').value = c.rib || '';
+      document.getElementById('ct-notes').value = c.notes || '';
+    } else if (dfcIdxOrNull !== null && dfcIdxOrNull !== undefined && window._dfcNames) {
+      const dfcName = window._dfcNames[dfcIdxOrNull];
+      state.editingContactIdx = null;
+      document.getElementById('contact-modal-title').textContent = 'Compléter les infos';
+      ['ct-person','ct-type','ct-phone','ct-phone2','ct-email','ct-address','ct-nif','ct-rc','ct-nis','ct-rib','ct-notes'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+      document.getElementById('ct-payment').value = '';
+      document.getElementById('ct-name').value = dfcName || '';
+    }
+    document.getElementById('contact-modal').classList.add('active');
+  }
+
+  function deleteContact(idx) {
+    if (!confirm('Supprimer ce contact ?')) return;
+    state.commercialContacts.splice(idx, 1);
+    save(K.commercialContacts, state.commercialContacts);
+    renderContacts();
+  }
+
+  function printContact(idx) {
+    const c = state.commercialContacts[idx];
+    if (!c) return;
+    const label = c.category === 'fournisseur' ? 'Fournisseur' : 'Client';
+    const win = window.open('', '_blank', 'width=800,height=600');
+    if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
+
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Fiche ${label} — ${c.name}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;font-size:14px;color:#111;background:white;padding:14mm 16mm;line-height:1.8;}
+@page{size:A4 portrait;margin:10mm;}
+@media print{body{padding:0;}}
+.ttl{text-align:center;font-size:18px;font-weight:700;text-decoration:underline;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 24px;}
+.row{margin:6px 0;font-size:14px;}
+.row .lbl{font-weight:600;display:inline-block;width:200px;}
+.divider{border:none;border-top:1px solid #333;margin:16px 0;}
+.badge{display:inline-block;padding:2px 10px;border:1px solid #ccc;border-radius:4px;font-size:12px;font-weight:600;background:#f5f5f5;margin-left:8px;}
+.date{text-align:right;font-size:11px;color:#111;font-weight:600;margin-bottom:16px;}
+</style></head><body>
+<p class="date">Date : ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+<div class="ttl">Fiche ${label}</div>
+
+<div class="row"><span class="lbl">Nom :</span> ${c.name}<span class="badge">${label}</span></div>
+${c.person ? `<div class="row"><span class="lbl">Personne de contact :</span> ${c.person}</div>` : ''}
+${c.type ? `<div class="row"><span class="lbl">Type / Activité :</span> ${c.type}</div>` : ''}
+${c.phone ? `<div class="row"><span class="lbl">Téléphone :</span> ${c.phone}${c.phone2 ? ' / ' + c.phone2 : ''}</div>` : ''}
+${c.email ? `<div class="row"><span class="lbl">Email :</span> ${c.email}</div>` : ''}
+${c.address ? `<div class="row"><span class="lbl">Adresse :</span> ${c.address}</div>` : ''}
+
+<hr class="divider"/>
+
+${c.nif ? `<div class="row"><span class="lbl">NIF :</span> ${c.nif}</div>` : ''}
+${c.rc ? `<div class="row"><span class="lbl">RC :</span> ${c.rc}</div>` : ''}
+${c.nis ? `<div class="row"><span class="lbl">NIS :</span> ${c.nis}</div>` : ''}
+${c.rib ? `<div class="row"><span class="lbl">RIB :</span> ${c.rib}</div>` : ''}
+${c.payment ? `<div class="row"><span class="lbl">Conditions de paiement :</span> ${c.payment}</div>` : ''}
+
+${c.notes ? `<hr class="divider"/><div class="row"><span class="lbl">Notes :</span> ${c.notes}</div>` : ''}
+
+<script>window.onload=function(){window.print();window.close();};<\\/script>
+</body></html>`);
+    win.document.close();
+  }
+
   function printWorkSites() {
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const panel = document.querySelector('.panel[data-panel="work-sites"]');
-    const container = document.createElement('div');
-    if (panel) panel.querySelectorAll('.card').forEach(c => container.appendChild(c.cloneNode(true)));
-    openPrintWindow(`Affectation du Personnel par Chantier — ${today}`, container);
+    const headerEl = document.querySelector('.print-header');
+    const headerHtml = headerEl ? headerEl.outerHTML : '';
+
+    const sitesHtml = state.workSites.map(ws => {
+      const workers = (ws.workerIds || []).map(id => state.workers[id]).filter(w => w);
+      const rows = workers.map(w => `<tr>
+        <td style="font-weight:600;">${w.name} ${w.surname}</td>
+        <td>${calculateAge(w.birth)} ans</td>
+        <td>${w.function||'—'}</td>
+        <td>${w.entry||'—'}</td>
+        <td>${w.contract||'—'}</td>
+        <td>${w.status||'—'}</td>
+        <td style="font-family:monospace;">${w.ss||'—'}</td>
+      </tr>`).join('');
+      return `
+        <div style="margin-bottom:18px;">
+          <h3 style="font-size:15px;font-weight:700;margin:0 0 2px;">${ws.name}</h3>
+          <p style="font-size:11px;color:#666;margin:0 0 8px;">${ws.desc||'Pas de description'}</p>
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px;">Personnel Affecté (${workers.length})</p>
+          ${workers.length > 0 ? `<table style="border-collapse:collapse;width:100%;font-size:10.5px;">
+            <thead><tr style="background:#f0f0f0;">
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">Nom & Prénom</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">Âge</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">Fonction</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">Entrée</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">Contrat</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">État Civil</th>
+              <th style="padding:5px 6px;border:1px solid #ddd;text-align:left;">N° Assurance</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>` : '<p style="font-size:11px;color:#999;">Aucun personnel affecté</p>'}
+        </div>`;
+    }).join('<hr style="border:none;border-top:1px solid #eee;margin:14px 0;"/>');
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Affectation du Personnel par Chantier</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;font-size:12px;color:#111;background:white;padding:10mm 12mm;}
+  @page{size:A4 portrait;margin:6mm 8mm;}
+  @media print{body{padding:0;}}
+  td{padding:5px 6px;border-bottom:1px solid #eee;vertical-align:middle;}
+  .print-header{display:block !important;margin-bottom:8px;}
+  .print-header img{height:48px;object-fit:contain;}
+  #print-page-info,#print-page-info-clone{display:none !important;}
+</style></head><body>
+${headerHtml}
+<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 12px;">Date : ${today}</p>
+${sitesHtml}
+<script>window.onload=function(){window.print();window.close();};<\/script>
+</body></html>`);
+    win.document.close();
   }
 
   // ========== HR DOCUMENTS MODULE ==========
@@ -6466,18 +6821,44 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     renderHrDocuments();
   }
 
+  function onDocFolderChange(folder) {
+    const titleInput = document.getElementById('doc-title');
+    const hint = document.getElementById('doc-title-hint');
+    if (!folder || state.editingHrDocumentIdx !== null) return;
+    // Count existing docs in this folder to get next number
+    const count = state.hrDocuments.filter(d => d.folder === folder).length + 1;
+    const num = String(count).padStart(3, '0');
+    titleInput.value = `${folder} N°${num}`;
+    titleInput.style.color = 'var(--text-secondary)';
+    titleInput.style.fontWeight = '600';
+    if (hint) hint.textContent = `— N°${num} (modifiable)`;
+    titleInput.focus();
+    titleInput.select();
+  }
+
   function openHrDocumentModal() {
     state.editingHrDocumentIdx = null;
     document.getElementById('hr-document-modal-title').textContent = 'Nouveau Document';
     document.getElementById('doc-title').value = '';
+    document.getElementById('doc-title').style.color = '';
+    document.getElementById('doc-title').style.fontWeight = '';
+    const hint = document.getElementById('doc-title-hint');
+    if (hint) hint.textContent = '— sera auto-numéroté si dossier sélectionné';
     document.getElementById('doc-date').value = todayISO();
+    state._docImages = [];
+    const imgInput = document.getElementById('doc-images');
+    if (imgInput) imgInput.value = '';
+    const imgPreview = document.getElementById('doc-images-preview');
+    if (imgPreview) imgPreview.innerHTML = '';
     
     // Populate folder dropdown
     const folderSel = document.getElementById('doc-folder');
     if (folderSel) {
-      folderSel.innerHTML = '<option value="">(Aucun)</option>' + 
+      folderSel.innerHTML = '<option value="">(Aucun dossier)</option>' + 
         state.hrFolders.map(f => `<option value="${f}">${f}</option>`).join('');
-      folderSel.value = state.currentHrFolder !== 'Tous' ? state.currentHrFolder : '';
+      const preFolder = state.currentHrFolder !== 'Tous' ? state.currentHrFolder : '';
+      folderSel.value = preFolder;
+      if (preFolder) onDocFolderChange(preFolder);
     }
 
     document.getElementById('doc-signer-left').value = "L'Intéressé";
@@ -6491,6 +6872,34 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     state.editingHrDocumentIdx = null;
   }
 
+  function previewDocImages(input) {
+    const preview = document.getElementById('doc-images-preview');
+    if (!preview) return;
+    const files = Array.from(input.files);
+    // Load all as base64 and store in state
+    state._docImages = state._docImages || [];
+    let loaded = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        state._docImages.push(e.target.result);
+        // Show preview — natural size capped at 150px height, no stretch
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = 'max-height:120px; max-width:200px; width:auto; height:auto; object-fit:contain; border:1px solid var(--border); border-radius:4px; cursor:pointer;';
+        img.title = 'Cliquer pour supprimer';
+        const imgIdx = state._docImages.length - 1;
+        img.onclick = () => {
+          state._docImages.splice(imgIdx, 1);
+          img.parentNode.removeChild(img);
+        };
+        preview.appendChild(img);
+        loaded++;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   function saveHrDocument() {
     const title = document.getElementById('doc-title').value.trim();
     const date = document.getElementById('doc-date').value;
@@ -6501,7 +6910,8 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
 
     if (!title) { alert('Titre du document requis'); return; }
 
-    const doc = { title, date, content, signerLeft, signerRight, folder };
+    const images = state._docImages && state._docImages.length > 0 ? [...state._docImages] : (state.editingHrDocumentIdx !== null ? (state.hrDocuments[state.editingHrDocumentIdx].images || []) : []);
+    const doc = { title, date, content, signerLeft, signerRight, folder, images };
 
     if (state.editingHrDocumentIdx !== null) {
       state.hrDocuments[state.editingHrDocumentIdx] = doc;
@@ -6531,6 +6941,20 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     document.getElementById('doc-signer-left').value = doc.signerLeft || '';
     document.getElementById('doc-signer-right').value = doc.signerRight || '';
     document.getElementById('doc-content').value = doc.content || '';
+    // Load existing images into preview
+    state._docImages = [...(doc.images || [])];
+    const imgPreview = document.getElementById('doc-images-preview');
+    if (imgPreview) {
+      imgPreview.innerHTML = '';
+      (doc.images || []).forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.cssText = 'max-height:120px; max-width:200px; width:auto; height:auto; object-fit:contain; border:1px solid var(--border); border-radius:4px; cursor:pointer;';
+        img.title = 'Cliquer pour supprimer';
+        img.onclick = () => { state._docImages.splice(i, 1); img.parentNode.removeChild(img); };
+        imgPreview.appendChild(img);
+      });
+    }
     document.getElementById('hr-document-modal').classList.add('active');
   }
 
@@ -6548,17 +6972,20 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     // Create a specialized print container for the document
     const printContainer = document.createElement('div');
     printContainer.id = 'temp-print-container';
-    printContainer.className = 'card print-target';
-    printContainer.style.display = 'none';
+    printContainer.className = 'card';
     
     printContainer.innerHTML = `
-      <div style="text-align:center; margin-bottom: 30px;">
-        <h2 style="font-size:24px; text-decoration:underline; margin-bottom: 10px;">${doc.title.toUpperCase()}</h2>
-        <p style="font-size:14px; text-align:right;">Fait à Blida, le ${doc.date ? new Date(doc.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : today}</p>
+      <div style="text-align:center; margin: 20px 0 30px;">
+        <h2 class="doc-title" style="font-size:20px; font-weight:700; text-align:center; text-decoration:underline; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px;">${doc.title}</h2>
+        <p style="font-size:11px; text-align:right; color:#111; font-weight:600;">Date : ${doc.date ? new Date(doc.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : today}</p>
       </div>
       <div style="font-size:16px; line-height:1.6; white-space: pre-wrap; margin-top: 20px;">
         ${doc.content}
       </div>
+      ${doc.images && doc.images.length > 0 ? `
+      <div style="margin-top:24px; display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-start;">
+        ${doc.images.map(src => `<img src="${src}" style="max-width:45%; max-height:280px; width:auto; height:auto; object-fit:contain; display:block; border:1px solid #ddd; border-radius:4px;"/>`).join('')}
+      </div>` : ''}
       <div class="print-signature" style="margin-top: 60px;">
         <div class="print-signature-row">
           ${doc.signerLeft ? `
@@ -7243,8 +7670,9 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
   .print-header img { height: 48px; object-fit: contain; }
   hr, .divider { border: none; border-bottom: 2px solid #C8782A; margin: 6px 0 8px; }
   h2, .card-title { font-size: 13px; font-weight: 700; margin: 0 0 10px; color: #111; }
+  h2.doc-title { font-size: 20px !important; font-weight: 700 !important; text-align: center !important; text-decoration: underline !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; margin: 20px auto 14px !important; display: block !important; width: 100% !important; color: #111 !important; }
   .card-head { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+  .card { border: none !important; box-shadow: none !important; padding: 0 !important; display: block !important; }
   button { display: none !important; }
   .print-btn, .btn-primary, .btn-secondary, .ghost-btn { display: none !important; }
   /* Progress bars */
@@ -7253,7 +7681,7 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
 </style>
 </head><body>
 ${headerEl.outerHTML}
-<p style="font-size:11px; font-weight:700; color:#1A1A17; margin:0 0 12px;">${title}</p>
+<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 12px;">Date : ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
 ${contentClone.outerHTML}
 </body></html>`);
     w.document.close();
@@ -7798,6 +8226,8 @@ ${contentClone.outerHTML}
     deleteWorkSite,
     printWorkSites,
     openHrDocumentModal,
+    onDocFolderChange,
+    previewDocImages,
     closeHrDocumentModal,
     saveHrDocument,
     editHrDocument,
@@ -7819,6 +8249,14 @@ ${contentClone.outerHTML}
     editTechWorkSite,
     deleteTechWorkSite,
     switchModule,
+    switchContactTab,
+    renderContacts,
+    openContactModal,
+    closeContactModal,
+    saveContact,
+    editContact,
+    deleteContact,
+    printContact,
     renderAdminPointage,
     onAdminDateChange,
     onAttStatusChange,
