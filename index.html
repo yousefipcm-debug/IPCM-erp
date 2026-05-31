@@ -2276,8 +2276,8 @@
                   <option value="Tous">Tous types</option>
                 </select>
               </div>
-              <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
-              <div class="field"><label>RIB / Compte bancaire</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
+              <div class="field"><label>RIP / Compte bancaire</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
               <div class="field"><label>Contact urgence — Nom</label><input type="text" id="wnp-emg-name" placeholder="Ex. BOUTEMA Mohamed"/></div>
               <div class="field"><label>Contact urgence — Téléphone</label><input type="tel" id="wnp-emg-phone" placeholder="Ex. 0661 234 567"/></div>
               <div class="field"><label>Lien de parenté</label><input type="text" id="wnp-emg-rel" placeholder="Ex. Père, Épouse, Frère..."/></div>
@@ -2422,7 +2422,7 @@
                   <option value="À la livraison">À la livraison</option>
                 </select>
               </div>
-              <div class="field" style="grid-column:1/-1;"><label>RIB / Compte bancaire</label><input type="text" id="ct-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>RIP / Compte bancaire</label><input type="text" id="ct-rib" placeholder="Ex. CPA 00012345678"/></div>
               <div class="field" style="grid-column:1/-1;"><label>Notes / Remarques</label><textarea id="ct-notes" rows="2" placeholder="Ex. Bon fournisseur, livraison rapide..." style="resize:vertical;"></textarea></div>
             </div>
           </div>
@@ -5485,7 +5485,7 @@ window.app = (() => {
   </div>
 
   ${inv.conditions ? `<div style="margin-top:18px; padding:10px 14px; background:#FFFBEB; border-radius:6px; font-size:12px; border-left:3px solid #D97706;"><strong>Conditions de paiement :</strong> ${inv.conditions}</div>` : ''}
-  ${inv.rib ? `<div style="margin-top:8px; padding:10px 14px; background:#f3f3f3; border-radius:6px; font-size:12px; border-left:3px solid #383838;"><strong>${inv.rib.bank}</strong> — RIB : <span style="font-family:monospace;">${inv.rib.number}</span></div>` : ''}
+  ${inv.rib ? `<div style="margin-top:8px; padding:10px 14px; background:#f3f3f3; border-radius:6px; font-size:12px; border-left:3px solid #383838;"><strong>${inv.rib.bank}</strong> — RIP : <span style="font-family:monospace;">${inv.rib.number}</span></div>` : ''}
 
   <!-- Signature -->
   <div style="margin-top:50px; display:flex; justify-content:flex-end;">
@@ -6027,7 +6027,7 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
 <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
 
-<div class="row"><span class="lbl">Salaire de base :</span> ${w.salary ? Number(w.salary).toLocaleString('fr-DZ') + ' DZD' : '—'}</div>
+<div class="row"><span class="lbl">Net à payer :</span> ${w.salary ? Number(w.salary).toLocaleString('fr-DZ') + ' DZD' : '—'}</div>
 <div class="row"><span class="lbl">RIB / Compte :</span> ${w.rib||'—'}</div>
 <hr class="divider"/>
 <div class="row"><span class="lbl">Contact urgence :</span> ${w.emgName||'—'} ${w.emgRel ? `(${w.emgRel})` : ''} ${w.emgPhone ? `— ${w.emgPhone}` : ''}</div>
@@ -6633,7 +6633,7 @@ ${c.address ? `<div class="row"><span class="lbl">Adresse :</span> ${c.address}<
 ${c.nif ? `<div class="row"><span class="lbl">NIF :</span> ${c.nif}</div>` : ''}
 ${c.rc ? `<div class="row"><span class="lbl">RC :</span> ${c.rc}</div>` : ''}
 ${c.nis ? `<div class="row"><span class="lbl">NIS :</span> ${c.nis}</div>` : ''}
-${c.rib ? `<div class="row"><span class="lbl">RIB :</span> ${c.rib}</div>` : ''}
+${c.rib ? `<div class="row"><span class="lbl">RIP :</span> ${c.rib}</div>` : ''}
 ${c.payment ? `<div class="row"><span class="lbl">Conditions de paiement :</span> ${c.payment}</div>` : ''}
 
 ${c.notes ? `<hr class="divider"/><div class="row"><span class="lbl">Notes :</span> ${c.notes}</div>` : ''}
