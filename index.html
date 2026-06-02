@@ -783,6 +783,7 @@
 
   /* Auto-tint cells */
   .ptg-cell-p  { background: #DCFCE7 !important; color: #15803D !important; }
+  .ptg-cell-d  { background: #FEF9C3 !important; color: #A16207 !important; }
   .ptg-cell-hs { background: #F3E8FF !important; color: #7C3AED !important; }
   tr.ptg-row-top td { border-bottom: none !important; }
   tr.ptg-row-bot td { border-top: none !important; }
@@ -2277,7 +2278,7 @@
                 </select>
               </div>
               <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
-              <div class="field"><label>RIP / Compte bancaire</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field"><label>RIP / Compte postal</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
               <div class="field"><label>Contact urgence — Nom</label><input type="text" id="wnp-emg-name" placeholder="Ex. BOUTEMA Mohamed"/></div>
               <div class="field"><label>Contact urgence — Téléphone</label><input type="tel" id="wnp-emg-phone" placeholder="Ex. 0661 234 567"/></div>
               <div class="field"><label>Lien de parenté</label><input type="text" id="wnp-emg-rel" placeholder="Ex. Père, Épouse, Frère..."/></div>
@@ -2422,7 +2423,7 @@
                   <option value="À la livraison">À la livraison</option>
                 </select>
               </div>
-              <div class="field" style="grid-column:1/-1;"><label>RIP / Compte bancaire</label><input type="text" id="ct-rib" placeholder="Ex. CPA 00012345678"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>RIP / Compte postal</label><input type="text" id="ct-rib" placeholder="Ex. CPA 00012345678"/></div>
               <div class="field" style="grid-column:1/-1;"><label>Notes / Remarques</label><textarea id="ct-notes" rows="2" placeholder="Ex. Bon fournisseur, livraison rapide..." style="resize:vertical;"></textarea></div>
             </div>
           </div>
@@ -3225,7 +3226,7 @@ window.app = (() => {
     let presentToday = 0, absentToday = 0, noDataToday = 0;
     state.workers.forEach((w, wi) => {
       const v = ((todayCells[wi+'_'+todayDay+'_0'] || {}).val || '').trim();
-      if (v.toUpperCase() === 'P') presentToday++;
+      if (v.toUpperCase() === 'P') presentToday++; else if (v.toUpperCase() === 'D') presentToday += 0.5;
       else if (v === '') noDataToday++;
       else absentToday++;
     });
@@ -5982,66 +5983,83 @@ window.app = (() => {
     const age = calculateAge(w.birth);
     const logoSrc = document.querySelector('.print-header img')?.src || '';
     const expiringSoon = w.contractEnd && new Date(w.contractEnd) < new Date(Date.now()+15*86400000);
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
-    const css = `*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;padding:14mm 16mm;line-height:1.9;}
-@page{size:A4 portrait;margin:10mm;}
-@media print{body{padding:0;}}
-.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
-.qrb{width:80px;height:80px;display:flex;align-items:center;justify-content:center;}
-.phb{width:80px;height:95px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;overflow:hidden;}
-.phb img{width:100%;height:100%;object-fit:cover;}
-.ttl{text-align:center;font-size:18px;font-weight:700;margin:10px 0 22px;text-decoration:underline;}
-.row{margin:7px 0;font-size:14px;}
-.row .lbl{font-weight:600;}
-.divider{border:none;border-top:1px solid #333;margin:16px 0;}
-.sec{margin:6px 0;font-size:14px;}`;
-
+    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
+    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
+    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche ${w.name} ${w.surname}</title>
-
-<style>${css}<\/style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;padding:10mm 12mm;line-height:1.8;}
+@page{size:A4 portrait;margin:8mm;}
+@media print{body{padding:0;}}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #C8782A;padding-bottom:8px;margin-bottom:6px;}
+.cn{font-size:13px;font-weight:700;}
+.ci{font-size:9px;color:#555;line-height:1.7;}
+.date{text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 10px;}
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px;}
+.phb{width:110px;height:135px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;overflow:hidden;flex-shrink:0;}
+.phb img{width:100%;height:100%;object-fit:cover;}
+.infos{flex:1;}
+.ttl{text-align:center;font-size:17px;font-weight:700;margin:0 0 14px;text-decoration:underline;text-transform:uppercase;letter-spacing:.04em;}
+.row{margin:5px 0;font-size:13px;}
+.row .lbl{font-weight:700;display:inline-block;min-width:190px;}
+.divider{border:none;border-top:1px solid #ccc;margin:12px 0;}
+</style>
 </head><body>
-<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:0 0 10px;">Date : ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-<div class="top">
-  
-  <div class="phb">${w.photo ? `<img src="${w.photo}"/>` : 'Photo'}</div>
+
+<div class="hdr">
+  <div>
+    <div class="cn">I.P.C.M BOUTEMA</div>
+    <div class="ci">Entreprise industrielle production d'ensemble construction métallique<br>
+    Adresse: Rue des Frères Djennadi, 3ème étage, Lot 35 Div 96, Blida<br>
+    RC: 09/00-4108712A23 &nbsp;|&nbsp; NIF: 16922040023019500900 &nbsp;|&nbsp; NIS: 196922040023050 &nbsp;|&nbsp; BP: 1001369786<br>
+    Tél: 0550700196 &nbsp;|&nbsp; Email: direction.ipcmboutema@gmail.com</div>
+  </div>
+  ${logoSrc ? '<img src="'+logoSrc+'" style="height:48px;object-fit:contain;"/>' : ''}
 </div>
+
+<p class="date">Date : ${today}</p>
 
 <div class="ttl">Fiche de l&#x27;Employ&#233;</div>
 
-<div class="row"><span class="lbl">Nom :</span> ${w.name}</div>
-<div class="row"><span class="lbl">Pr&#233;nom :</span> ${w.surname}</div>
-<div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
-<div class="row"><span class="lbl">N&#176; Assurance :</span> ${w.ss||''}</div>
-<div class="row"><span class="lbl">&#194;ge :</span> ${age} ans</div>
-<div class="row"><span class="lbl">Téléphone :</span> ${w.phone||''}</div>
-<div class="row"><span class="lbl">N° CIN :</span> ${w.cin||''} ${w.cinExp ? `<span style="font-size:12px;color:#666;">(exp. ${w.cinExp})</span>` : ''}</div>
-<div class="row"><span class="lbl">Permis de conduire :</span> ${w.permis||'—'}</div>
-<div class="row"><span class="lbl">Situation de sant&#233; :</span> ${w.health||''}</div>
-<div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
-<div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
-<div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
-<div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
+<div class="top">
+  <div class="infos">
+    <div class="row"><span class="lbl">Nom :</span> ${w.name}</div>
+    <div class="row"><span class="lbl">Prénom :</span> ${w.surname}</div>
+    <div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
+    <div class="row"><span class="lbl">N° Assurance :</span> ${w.ss||''}</div>
+    <div class="row"><span class="lbl">Âge :</span> ${age} ans</div>
+    <div class="row"><span class="lbl">Téléphone :</span> ${w.phone||''}</div>
+    <div class="row"><span class="lbl">N° CIN :</span> ${_cin}</div>
+    <div class="row"><span class="lbl">Permis de conduire :</span> ${w.permis||''}</div>
+    <div class="row"><span class="lbl">Situation de santé :</span> ${w.health||''}</div>
+    <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
+    <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
+    <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
+    <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
+  </div>
+  <div class="phb">${w.photo ? '<img src="'+w.photo+'"/>' : 'Photo'}</div>
+</div>
 
-<div class="row"><span class="lbl">Net à payer :</span> ${w.salary ? Number(w.salary).toLocaleString('fr-DZ') + ' DZD' : '—'}</div>
-<div class="row"><span class="lbl">RIB / Compte :</span> ${w.rib||'—'}</div>
 <hr class="divider"/>
-<div class="row"><span class="lbl">Contact urgence :</span> ${w.emgName||'—'} ${w.emgRel ? `(${w.emgRel})` : ''} ${w.emgPhone ? `— ${w.emgPhone}` : ''}</div>
+<div class="row"><span class="lbl">Net à payer :</span> ${_salary}</div>
+<div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
+<div class="row"><span class="lbl">Contact urgence :</span> ${_emg}</div>
+
 <hr class="divider"/>
+<div class="row"><span class="lbl">Contrat :</span> ${_contrat}</div>
+<div class="row"><span class="lbl">Certificat / Attestation :</span> ${w.cert||''}</div>
+${_expWarn}
 
-<div class="sec"><span class="lbl">Contrat :</span> du ${w.entry||'...'} au ${w.contractEnd||'...'} &mdash; ${w.contract||''}</div>
-<div class="sec"><span class="lbl">Certificat / Attestation :</span> ${w.cert||'____________________'}</div>
-<div class="sec"><span class="lbl">Comportement :</span> ${expiringSoon ? '&#9888; Contrat expire dans moins de 15 jours' : '____________________'}</div>
-
-<script>
-window.onload = function() {
-  setTimeout(function(){ window.print(); window.close(); }, 900);
-};
-<\/script>
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},600);};<\/script>
 </body></html>`);
     win.document.close();
   }
@@ -6152,6 +6170,11 @@ window.onload = function() {
     const qrData = `NOM:${w.name} ${w.surname}|FONCTION:${w.function}|ASSURANCE:${w.ss}|ENTRE:${w.entry}|FIN:${w.contractEnd}`;
     const win = window.open('', '_blank', 'width=900,height=650');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
+    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
+    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
+    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche — ${w.name} ${w.surname}</title>
 
@@ -6189,7 +6212,7 @@ window.onload = function() {
   <img src="${document.querySelector('.print-header img') ? document.querySelector('.print-header img').src : ''}" style="height:36px; object-fit:contain;"/>
 </div>
 
-<div class="sheet-title">Fiche de l'Employé</div>
+<div class="sheet-title">Fiche de l&#x27;Employ&#233;</div>
 
 <div class="top-row">
   <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
@@ -6604,6 +6627,11 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     const win = window.open('', '_blank', 'width=800,height=600');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
+    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
+    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
+    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche ${label} — ${c.name}</title>
 <style>
@@ -6681,6 +6709,11 @@ ${c.notes ? `<hr class="divider"/><div class="row"><span class="lbl">Notes :</sp
 
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
+    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
+    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
+    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Affectation du Personnel par Chantier</title>
 <style>
@@ -7244,7 +7277,8 @@ ${sitesHtml}
     let thDays = '';
     for (let d = 1; d <= daysInMonth; d++) {
       const dow = new Date(year, month, d).getDay();
-      const isWE = dow === 0 || dow === 6;
+      // Admin (no worksite): Fri(5)+Sat(6) off. Worksite: Fri(5) only off.
+      const isWE = currentWs ? dow === 5 : (dow === 5 || dow === 6);
       thDays += `<th class="ptg-th-day${isWE ? ' weekend' : ''}" rowspan="1">
         <div class="dname">${DAY_SHORT[dow]}</div>
         <div class="dnum">${d}</div>
@@ -7265,10 +7299,12 @@ ${sitesHtml}
         const c1 = cells[k1] || { val: '', bg: '' };
         const bg0 = c0.bg || (isWE ? '#FEF9C3' : '#fff');
         const bg1 = c1.bg || (isWE ? '#FEF9C3' : '#fff');
-        if (c0.val && c0.val.trim().toUpperCase() === 'P') joursCount++;
+        const _v0 = c0.val ? c0.val.trim().toUpperCase() : '';
+        if (_v0 === 'P') joursCount++; else if (_v0 === 'D') joursCount += 0.5;
         const n1 = parseFloat(c1.val); if (!isNaN(n1)) hsSum += n1;
         const ptrStyle = inPaint ? 'pointer-events:none;' : '';
-        const autoTint0 = !c0.bg && c0.val && c0.val.trim().toUpperCase() === 'P' ? ' ptg-cell-p' : '';
+        const v0up = c0.val ? c0.val.trim().toUpperCase() : '';
+        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : '');
         const autoTint1 = !c1.bg && c1.val && c1.val.trim() !== '' && !isNaN(parseFloat(c1.val)) ? ' ptg-cell-hs' : '';
         topCells += `<td style="padding:0;background:${bg0};cursor:${inPaint?'crosshair':'text'};"
           onclick="app.ptgCellClick(event,'${k0}','${mk}')"
@@ -7390,6 +7426,7 @@ ${sitesHtml}
     if (!mData.cells[key].bg) { // only tint if no manual paint color
       input.classList.remove('ptg-cell-p', 'ptg-cell-hs');
       if (row === 0 && val.toUpperCase() === 'P') input.classList.add('ptg-cell-p');
+      else if (row === 0 && val.toUpperCase() === 'D') input.classList.add('ptg-cell-d');
       else if (row === 1 && val !== '' && !isNaN(parseFloat(val))) input.classList.add('ptg-cell-hs');
     }
     // Update row totals without full re-render
@@ -7404,7 +7441,8 @@ ${sitesHtml}
     for (let d = 1; d <= daysInMonth; d++) {
       const c0 = cells[wi+'_'+d+'_0']; const c1 = cells[wi+'_'+d+'_1'];
       const v0 = c0 ? c0.val : '', v1 = c1 ? c1.val : '';
-      if (v0 && v0.trim().toUpperCase() === 'P') joursCount++;
+      const _vx = v0 ? v0.trim().toUpperCase() : '';
+      if (_vx === 'P') joursCount++; else if (_vx === 'D') joursCount += 0.5;
       const n1 = parseFloat(v1); if (!isNaN(n1)) hsSum += n1;
     }
     const tot = +(joursCount + hsSum / 8).toFixed(2);
@@ -7527,7 +7565,8 @@ ${sitesHtml}
         const c1 = cells[wi+'_'+d+'_1'] || { val:'', bg:'' };
         const bg0 = c0.bg || (isWE ? '#FFF7ED' : '#fff');
         const bg1 = c1.bg || (isWE ? '#FFF7ED' : '#fff');
-        if (c0.val && c0.val.trim().toUpperCase() === 'P') joursCount++;
+        const _v0 = c0.val ? c0.val.trim().toUpperCase() : '';
+        if (_v0 === 'P') joursCount++; else if (_v0 === 'D') joursCount += 0.5;
         const n1 = parseFloat(c1.val); if (!isNaN(n1)) hsSum += n1;
         topCells += `<td style="width:24px;text-align:center;padding:2px 1px;font-size:10px;font-weight:700;
           background:${bg0};border:1px solid #ededed;color:#171717;">${c0.val||''}</td>`;
@@ -7717,7 +7756,7 @@ ${contentClone.outerHTML}
     let presentToday = 0, absentToday = 0, noDataToday = 0;
     state.workers.forEach((w, wi) => {
       const v = ((todayCells[wi+'_'+today+'_0'] || {}).val || '').trim();
-      if (v.toUpperCase() === 'P') presentToday++;
+      if (v.toUpperCase() === 'P') presentToday++; else if (v.toUpperCase() === 'D') presentToday += 0.5;
       else if (v === '') noDataToday++;
       else absentToday++;
     });
@@ -7787,7 +7826,7 @@ ${contentClone.outerHTML}
         const c0   = cells[wi+'_'+d+'_0'] || { val:'', bg:'' };
         const c1   = cells[wi+'_'+d+'_1'] || { val:'', bg:'' };
         const isP  = c0.val && c0.val.trim().toUpperCase() === 'P';
-        if (isP) joursCount++;
+        if (isP) joursCount++; else if (c0.val && c0.val.trim().toUpperCase() === "D") joursCount += 0.5;
         const n1 = parseFloat(c1.val); if (!isNaN(n1)) hsSum += n1;
         const bg0  = c0.bg || (isNow ? '#e2e2e2' : isWE ? '#FFF7ED' : '#fff');
         const bg1  = c1.bg || (isNow ? '#e2e2e2' : isWE ? '#FFF7ED' : '#fff');
