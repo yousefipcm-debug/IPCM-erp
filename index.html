@@ -826,9 +826,9 @@
   /* Print styles */
   @media print {
     .print-header img { max-height: 80px !important; }
-    * { animation: none !important; transition: none !important; font-family: Arial, Helvetica, sans-serif !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; animation: none !important; transition: none !important; font-family: Arial, Helvetica, sans-serif !important; }
     html, body { height: auto !important; min-height: auto !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; }
-    body { background: white !important; font-size: 12px; color: black !important; font-family: Arial, Helvetica, sans-serif !important; }
+    body { background: white !important; font-size: 12px; color: black !important; font-family: Arial, Helvetica, sans-serif !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
     .app-shell { display: block !important; height: auto !important; min-height: 0 !important; position: static !important; padding: 0 !important; margin: 0 !important; }
     .sidebar { display: none !important; }
     .topbar { display: none !important; }
@@ -1906,8 +1906,10 @@
               <span class="card-hint">Tous journaux confondus</span>
             </div>
           </div>
-          <div class="tbl-wrap" style="margin-bottom:10px;">
-            <input type="text" id="journal-search" placeholder="Rechercher par nom, description, fournisseur, client, N° chèque, date..." oninput="app.renderJournaux()" style="width:100%;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+          <div class="tbl-wrap" style="margin-bottom:10px;display:flex;gap:8px;">
+            <input type="text" id="journal-search" placeholder="Rechercher par nom, description, fournisseur, client, N° chèque, date..." oninput="if(window.app)app.renderJournaux();" onkeydown="if(event.key==='Enter'&&window.app)app.renderJournaux();" style="flex:1;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+            <button onclick="if(window.app)app.renderJournaux();" style="height:38px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:var(--gray-900);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Rechercher</button>
+            <button onclick="document.getElementById('journal-search').value='';if(window.app)app.renderJournaux();" style="height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-secondary);font-size:13px;cursor:pointer;">✕</button>
           </div>
           <div class="tbl-wrap" id="transactions-recent-table"></div>
         </div>
@@ -2141,7 +2143,10 @@
             <div class="field"><label>N° (auto: 01/2026)</label><input type="text" id="inv-number" placeholder="01/2026"/></div>
             <div class="field"><label>Date</label><input type="date" id="inv-date"/></div>
             <div class="field"><label>Lieu</label><input type="text" id="inv-place" value="Blida" placeholder="Ex. Blida"/></div>
-            <div class="field"><label>Client</label><select id="inv-client"></select></div>
+            <div class="field"><label>Client</label>
+              <input type="text" id="inv-client" list="inv-client-list" placeholder="Rechercher ou taper un client..." style="height:38px;width:100%;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+              <datalist id="inv-client-list"></datalist>
+            </div>
             <div class="field"><label>Projet</label><input type="text" id="inv-project" placeholder="Ex. SAFEX, BLOCOTELHA Steel..."/></div>
             <div class="field"><label>Ouvrage</label><input type="text" id="inv-ouvrage" placeholder="Ex. Couverture SKINZIP, Charpente..."/></div>
             <div class="field"><label>Site</label><input type="text" id="inv-site" placeholder="Ex. Mohamadia - Algérie"/></div>
@@ -2329,6 +2334,11 @@
               </label>
               <button class="btn-primary" onclick="app.openWorkerModal()">+ Ajouter un employé</button>
             </div>
+          </div>
+          <div class="tbl-wrap" style="margin-bottom:10px;display:flex;gap:8px;">
+            <input type="text" id="workers-search" placeholder="Rechercher par nom, prénom, fonction, N° assurance..." oninput="if(window.app)app.renderWorkers();" onkeydown="if(event.key==='Enter'&&window.app)app.renderWorkers();" style="flex:1;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+            <button onclick="if(window.app)app.renderWorkers();" style="height:38px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:var(--gray-900);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Rechercher</button>
+            <button onclick="document.getElementById('workers-search').value='';if(window.app)app.renderWorkers();" style="height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-secondary);font-size:13px;cursor:pointer;">✕</button>
           </div>
           <div class="tbl-wrap" id="workers-table"></div>
         </div>
@@ -5069,9 +5079,9 @@ window.app = (() => {
   // ========== FACTURATION ==========
 
   function renderFacturation() {
-    const sel = document.getElementById('inv-client');
+    const sel = document.getElementById('inv-client-list');
     if (sel) {
-      sel.innerHTML = '<option value="">— Choisir —</option>' + state.clientNames.map(c => `<option value="${c}">${c}</option>`).join('');
+      sel.innerHTML = state.clientNames.map(c => `<option value="${c}">`).join('');
     }
     const cdSel = document.getElementById('cd-client');
     if (cdSel) {
@@ -5533,8 +5543,21 @@ window.app = (() => {
   function renderWorkers() {
     const el = document.getElementById('workers-table');
     if (!el) return;
-    if (!state.workers || state.workers.length === 0) {
-      el.innerHTML = '<div class="empty-state">Aucun employé enregistré.</div>';
+    const search = (document.getElementById('workers-search')?.value || '').toLowerCase().trim();
+    let workers = (state.workers || []).map((w, i) => ({ ...w, _idx: i }));
+    if (search) {
+      workers = workers.filter(w =>
+        (w.name || '').toLowerCase().includes(search) ||
+        (w.surname || '').toLowerCase().includes(search) ||
+        (w.function || '').toLowerCase().includes(search) ||
+        (w.ss || '').toLowerCase().includes(search) ||
+        (w.cin || '').toLowerCase().includes(search)
+      );
+    }
+    if (workers.length === 0) {
+      el.innerHTML = search
+        ? `<div class="empty-state">Aucun employé trouvé pour "<strong>${search}</strong>".</div>`
+        : '<div class="empty-state">Aucun employé enregistré.</div>';
       return;
     }
 
@@ -5549,7 +5572,7 @@ window.app = (() => {
         <th>N° Assurance</th>
         <th></th>
       </tr></thead>
-      <tbody>${state.workers.map((w, i) => `
+      <tbody>${workers.map(w => `
         <tr>
           <td style="font-weight:600;">${w.name} ${w.surname}</td>
           <td>${calculateAge(w.birth)} ans</td>
@@ -5559,11 +5582,11 @@ window.app = (() => {
           <td>${w.status || '—'}</td>
           <td style="font-family:monospace;">${w.ss || '—'}</td>
           <td style="text-align:right; white-space:nowrap;">
-            <button class="ghost-btn" title="Modifier (fiche complète)" onclick="app.editWorkerInPanel(${i})">&#9998;</button>
-            <button class="ghost-btn" title="Imprimer la fiche" onclick="app.printWorkerSheet(${i})" style="color:var(--accent);">
+            <button class="ghost-btn" title="Modifier (fiche complète)" onclick="app.editWorkerInPanel(${w._idx})">&#9998;</button>
+            <button class="ghost-btn" title="Imprimer la fiche" onclick="app.printWorkerSheet(${w._idx})" style="color:var(--accent);">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             </button>
-            <button class="ghost-btn" title="Supprimer" onclick="app.deleteWorker(${i})">×</button>
+            <button class="ghost-btn" title="Supprimer" onclick="app.deleteWorker(${w._idx})">×</button>
           </td>
         </tr>`).join('')}</tbody></table>`;
   }
@@ -7713,26 +7736,52 @@ ${sitesHtml}
     w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>${title}</title>
 <style>
+  :root {
+    --ok-text: #16A34A;
+    --danger-text: #DC2626;
+    --warn-text: #D97706;
+    --accent: #C8782A;
+    --border: #e5e7eb;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --gray-900: #111827;
+    --bg: #ffffff;
+    --bg-muted: #f9fafb;
+  }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #111; margin: 0; padding: 10mm 12mm; background: white; }
   @page { margin: 8mm 10mm; size: A4 ${landscape ? 'landscape' : 'portrait'}; }
   @media print { body { padding: 0; } }
   table { border-collapse: collapse; width: 100%; font-size: 11px; }
   th { background: #f0f0f0 !important; font-size: 9px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border: 1px solid #ddd; font-weight: 700; }
   td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
-  tr:nth-child(even) td { background: #fafafa; }
-  .badge, .pill { border: 1px solid #ccc; border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 600; background: #f5f5f5; color: #333; }
+  tr:nth-child(even) td { background: #fafafa !important; }
+  /* Badges */
+  .badge, .pill { border: 1px solid #ccc; border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 600; background: #f5f5f5 !important; color: #333; }
+  .b-ok  { background: #dcfce7 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+  .b-warn{ background: #fef9c3 !important; color: #a16207 !important; border-color: #fde68a !important; }
+  .b-danger { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+  .b-info{ background: #f0f9ff !important; color: #0369a1 !important; border-color: #bae6fd !important; }
+  .b-neutral { background: #f3f4f6 !important; color: #374151 !important; }
+  /* Amount colors */
+  [style*="color:var(--ok-text)"], [style*="color: var(--ok-text)"] { color: #16A34A !important; }
+  [style*="color:var(--danger-text)"], [style*="color: var(--danger-text)"] { color: #DC2626 !important; }
+  [style*="color:var(--warn-text)"], [style*="color: var(--warn-text)"] { color: #D97706 !important; }
+  /* Direct color classes */
+  .ok-text, .text-green { color: #16A34A !important; }
+  .danger-text, .text-red { color: #DC2626 !important; }
+  .warn-text, .text-orange { color: #D97706 !important; }
+  /* Header */
   .print-header { margin-bottom: 8px; }
   .print-header img { height: 48px; object-fit: contain; }
-  hr, .divider { border: none; border-bottom: 2px solid #C8782A; margin: 6px 0 8px; }
+  hr, .divider { border: none; border-bottom: 2px solid #C8782A !important; margin: 6px 0 8px; }
   h2, .card-title { font-size: 13px; font-weight: 700; margin: 0 0 10px; color: #111; }
   h2.doc-title { font-size: 20px !important; font-weight: 700 !important; text-align: center !important; text-decoration: underline !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; margin: 20px auto 14px !important; display: block !important; width: 100% !important; color: #111 !important; }
   .card-head { margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
   .card { border: none !important; box-shadow: none !important; padding: 0 !important; display: block !important; }
-  button { display: none !important; }
-  .print-btn, .btn-primary, .btn-secondary, .ghost-btn { display: none !important; }
-  /* Progress bars */
-  .prog-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
-  .prog-fill { height: 100%; background: #2563EB; border-radius: 3px; }
+  button, .print-btn, .btn-primary, .btn-secondary, .ghost-btn { display: none !important; }
+  .prog-bar { height: 6px; background: #eee !important; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: #2563EB !important; border-radius: 3px; }
 </style>
 </head><body>
 ${headerEl.outerHTML}
@@ -8188,6 +8237,8 @@ ${contentClone.outerHTML}
 
   return {
     loadAll,
+    renderWorkers,
+    renderJournaux,
     filterJournalByFourn,
     filterJournalByClient,
     openTransactionModal,
