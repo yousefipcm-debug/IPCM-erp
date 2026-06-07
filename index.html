@@ -3070,10 +3070,10 @@ window.app = (() => {
     return (s.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
   }
   function sitRemaining(s) {
-    return (s.amount || 0) - sitPaid(s);
+    return Math.round(((s.amount || 0) - sitPaid(s)) * 100) / 100;
   }
   function sitIsPaid(s) {
-    return sitRemaining(s) <= 0;
+    return sitRemaining(s) <= 0.01;
   }
   function totalCreances() {
     return state.situations
@@ -3085,10 +3085,10 @@ window.app = (() => {
     return (f.payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
   }
   function fRemaining(f) {
-    return (f.amount || 0) - fPaid(f);
+    return Math.round(((f.amount || 0) - fPaid(f)) * 100) / 100;
   }
   function fIsPaid(f) {
-    return fRemaining(f) <= 0;
+    return fRemaining(f) <= 0.01;
   }
   function totalDettes() {
     return state.fournisseurs.filter(f => !fIsPaid(f)).reduce((sum, f) => sum + fRemaining(f), 0);
@@ -5044,7 +5044,7 @@ window.app = (() => {
         </tr></thead>
         <tbody>
           ${suppliers.map(([name, d]) => {
-            const rem = d.totalDue - d.totalPaid;
+            const rem = Math.round((d.totalDue - d.totalPaid) * 100) / 100;
             const pct = d.totalDue > 0 ? Math.round(100 * d.totalPaid / d.totalDue) : 0;
             return `<tr>
               <td style="font-weight:600">${name}</td>
@@ -5052,16 +5052,16 @@ window.app = (() => {
               <td style="text-align:center; color:${d.unpaid > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; font-weight:600;">${d.unpaid}</td>
               <td style="text-align:right">${fmtDZD(d.totalDue)}</td>
               <td style="text-align:right; color:var(--ok-text);">${fmtDZD(d.totalPaid)}</td>
-              <td style="text-align:right; font-weight:600; color:${rem > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(rem)}</td>
+              <td style="text-align:right; font-weight:600; color:${rem > 0.01 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(rem)}</td>
             </tr>`;
           }).join('')}
           <tr style="background:var(--bg-muted); font-weight:700;">
             <td>TOTAL</td>
             <td style="text-align:center">${totalFactures}</td>
-            <td style="text-align:center; color:var(--danger-text);">${totalUnpaid}</td>
+            <td style="text-align:center; color:${totalUnpaid > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${totalUnpaid}</td>
             <td style="text-align:right">${fmtDZD(grandTotalDue)}</td>
             <td style="text-align:right; color:var(--ok-text);">${fmtDZD(grandTotalPaid)}</td>
-            <td style="text-align:right; color:var(--danger-text);">${fmtDZD(grandRemaining)}</td>
+            <td style="text-align:right; color:${grandRemaining > 0.01 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(grandRemaining)}</td>
           </tr>
         </tbody>
       </table>`;
