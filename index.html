@@ -1678,6 +1678,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             Pointage Administration
           </button></li>
+          <li><button class="nav-btn" data-panel="hr-salaires">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Liste des Salaires
+          </button></li>
           <li><button class="nav-btn" data-panel="hr-notifications" id="nav-hr-notifications">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             Notification
@@ -2285,6 +2289,8 @@
                   <option value="Tous">Tous types</option>
                 </select>
               </div>
+              <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-salary-base" placeholder="Ex. 35000" min="0"/></div>
+              <div class="field"><label>Salaire cotisable (DZD)</label><input type="number" id="wnp-salary-cotisable" placeholder="Ex. 40000" min="0"/></div>
               <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
               <div class="field"><label>RIP / Compte postal</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
               <div class="field"><label>Contact urgence — Nom</label><input type="text" id="wnp-emg-name" placeholder="Ex. BOUTEMA Mohamed"/></div>
@@ -2363,6 +2369,30 @@
             <p class="card-title">Suivi des Contrats & Historique</p>
           </div>
           <div class="tbl-wrap" id="hr-contracts-table"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="hr-salaires">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Liste des Salaires</p>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="salaire-month" onchange="app.renderSalaires()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+                <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+                <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+                <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+              </select>
+              <select id="salaire-year" onchange="app.renderSalaires()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+              </select>
+              <button class="print-btn" onclick="app.printSalaires()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Imprimer
+              </button>
+            </div>
+          </div>
+          <div id="salaires-content"></div>
         </div>
       </section>
 
@@ -2944,6 +2974,7 @@ window.app = (() => {
     'worker-new': { title: 'Nouvel Employé', sub: 'Créer une fiche employé complète avec photo et QR Code' },
     workers: { title: 'Personnel', sub: 'Gestion des ressources humaines' },
     'work-sites': { title: 'Chantiers (RH)', sub: 'Gestion des chantiers et affectation du personnel' },
+    'hr-salaires': { title: 'Liste des Salaires', sub: 'Calcul automatique des salaires par pointage' },
     'commercial-contacts': { title: 'Contacts Commerciaux', sub: 'Répertoire des fournisseurs et clients' },
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
     'hr-contracts': { title: 'Suivi Contrat', sub: 'Historique et suivi des contrats du personnel' },
@@ -4598,6 +4629,13 @@ window.app = (() => {
       updateWorkerPreview();
     }
     if (p === 'commercial-contacts') renderContacts();
+    if (p === 'hr-salaires') {
+      const now = new Date();
+      const ms = document.getElementById('salaire-month');
+      const ys = document.getElementById('salaire-year');
+      if (ms && !ms.dataset.init) { ms.value = now.getMonth(); ys.value = now.getFullYear(); ms.dataset.init = '1'; }
+      renderSalaires();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -5877,7 +5915,7 @@ window.app = (() => {
   }
 
   function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-emg-name','wnp-emg-phone','wnp-emg-rel','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary-base','wnp-salary-cotisable','wnp-salary','wnp-rib','wnp-emg-name','wnp-emg-phone','wnp-emg-rel','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
     const pm = document.getElementById('wnp-permis'); if(pm) pm.value='';
     const kids = document.getElementById('wnp-kids'); if(kids) kids.value='0';
     const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDI';
@@ -5914,6 +5952,8 @@ window.app = (() => {
       cin: document.getElementById('wnp-cin').value.trim(),
       cinExp: document.getElementById('wnp-cin-exp').value,
       permis: document.getElementById('wnp-permis').value,
+      salaryBase: document.getElementById('wnp-salary-base').value || '0',
+      salaryCotisable: document.getElementById('wnp-salary-cotisable').value || '0',
       salary: document.getElementById('wnp-salary').value || '0',
       rib: document.getElementById('wnp-rib').value.trim(),
       emgName: document.getElementById('wnp-emg-name').value.trim(),
@@ -5970,6 +6010,8 @@ window.app = (() => {
     document.getElementById('wnp-cin').value = w.cin || '';
     document.getElementById('wnp-cin-exp').value = w.cinExp || '';
     document.getElementById('wnp-permis').value = w.permis || '';
+    document.getElementById('wnp-salary-base').value = w.salaryBase || '';
+    document.getElementById('wnp-salary-cotisable').value = w.salaryCotisable || '';
     document.getElementById('wnp-salary').value = w.salary || '';
     document.getElementById('wnp-rib').value = w.rib || '';
     document.getElementById('wnp-emg-name').value = w.emgName || '';
@@ -6006,6 +6048,8 @@ window.app = (() => {
       cin: document.getElementById('wnp-cin')?.value||'',
       cinExp: document.getElementById('wnp-cin-exp')?.value||'',
       permis: document.getElementById('wnp-permis')?.value||'',
+      salaryBase: document.getElementById('wnp-salary-base')?.value||'',
+      salaryCotisable: document.getElementById('wnp-salary-cotisable')?.value||'',
       salary: document.getElementById('wnp-salary')?.value||'',
       rib: document.getElementById('wnp-rib')?.value||'',
       emgName: document.getElementById('wnp-emg-name')?.value||'',
@@ -6089,6 +6133,8 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 </div>
 
 <hr class="divider"/>
+<div class="row"><span class="lbl">Salaire de base :</span> ${w.salaryBase ? Number(w.salaryBase).toLocaleString('fr-DZ')+' DZD' : '—'}</div>
+<div class="row"><span class="lbl">Salaire cotisable :</span> ${w.salaryCotisable ? Number(w.salaryCotisable).toLocaleString('fr-DZ')+' DZD' : '—'}</div>
 <div class="row"><span class="lbl">Net à payer :</span> ${_salary}</div>
 <div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
 <div class="row"><span class="lbl">Contact urgence :</span> ${_emg}</div>
@@ -6491,6 +6537,119 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     state.workSites.splice(idx, 1);
     save(K.workSites, state.workSites);
     renderAll();
+  }
+
+  function getWorkerJours(workerIdx, month, year) {
+    const mk = year + '-' + String(month + 1).padStart(2, '0');
+    const ptg = state.adminPointage[mk];
+    if (!ptg || !ptg.cells) return 0;
+    let jours = 0;
+    Object.entries(ptg.cells).forEach(([key, cell]) => {
+      const parts = key.split('_');
+      if (parseInt(parts[0]) === workerIdx && parts[2] === '0') {
+        const v = (cell.val || '').trim().toUpperCase();
+        if (v === 'P') jours += 1;
+        else if (v === 'D') jours += 0.5;
+      }
+    });
+    return jours;
+  }
+
+  function renderSalaires() {
+    const el = document.getElementById('salaires-content');
+    if (!el) return;
+    const month = parseInt(document.getElementById('salaire-month')?.value ?? new Date().getMonth());
+    const year = parseInt(document.getElementById('salaire-year')?.value ?? new Date().getFullYear());
+    const monthName = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+    // Identify admin workers (not in any worksite) vs chantier workers
+    const wsWorkerIds = new Set();
+    state.workSites.forEach(ws => (ws.workerIds || []).forEach(id => wsWorkerIds.add(id)));
+
+    const calcSalaire = (w, idx) => {
+      const jours = getWorkerJours(idx, month, year);
+      const net = parseFloat(w.salary) || 0;
+      const isAdmin = !wsWorkerIds.has(idx);
+      const divisor = isAdmin ? 22 : 26;
+      const salaire = net > 0 && jours > 0 ? Math.round((net / divisor) * jours * 100) / 100 : 0;
+      return { jours, net, divisor, salaire, isAdmin };
+    };
+
+    // Build sections: one per worksite + one admin
+    const sections = [];
+
+    // Administration (workers not in any worksite)
+    const adminWorkers = state.workers.map((w, i) => ({ w, i })).filter(({ i }) => !wsWorkerIds.has(i));
+    if (adminWorkers.length > 0) {
+      const rows = adminWorkers.map(({ w, i }) => ({ w, i, ...calcSalaire(w, i) }));
+      sections.push({ name: 'Administration', divisor: 22, rows, isAdmin: true });
+    }
+
+    // Each worksite
+    state.workSites.forEach(ws => {
+      const wsWorkers = (ws.workerIds || []).map(i => ({ w: state.workers[i], i })).filter(({ w }) => w);
+      if (wsWorkers.length === 0) return;
+      const rows = wsWorkers.map(({ w, i }) => ({ w, i, ...calcSalaire(w, i) }));
+      sections.push({ name: ws.name, divisor: 26, rows, isAdmin: false });
+    });
+
+    if (sections.length === 0 || state.workers.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun employé enregistré.</div>';
+      return;
+    }
+
+    const tableHtml = (rows) => `
+      <table class="mod" style="margin-bottom:0;">
+        <thead><tr>
+          <th>Nom & Prénom</th>
+          <th>Fonction</th>
+          <th style="text-align:center">Jours</th>
+          <th style="text-align:right">Net à payer</th>
+          <th style="text-align:center">Diviseur</th>
+          <th style="text-align:right">Salaire calculé</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td style="font-weight:600;">${r.w.name} ${r.w.surname}</td>
+            <td style="color:var(--text-secondary);">${r.w.function || '—'}</td>
+            <td style="text-align:center;">${r.jours}</td>
+            <td style="text-align:right;">${r.net > 0 ? fmtDZD(r.net) : '<span style="color:var(--text-tertiary)">Non renseigné</span>'}</td>
+            <td style="text-align:center;color:var(--text-secondary);">${r.divisor}</td>
+            <td style="text-align:right;font-weight:700;color:${r.salaire > 0 ? 'var(--ok-text)' : 'var(--text-tertiary)'};">${r.salaire > 0 ? fmtDZD(r.salaire) : '—'}</td>
+          </tr>`).join('')}
+          <tr style="background:var(--bg-muted);font-weight:700;">
+            <td colspan="2">Total</td>
+            <td style="text-align:center;">${rows.reduce((s, r) => s + r.jours, 0)}</td>
+            <td></td><td></td>
+            <td style="text-align:right;color:var(--ok-text);">${fmtDZD(rows.reduce((s, r) => s + r.salaire, 0))}</td>
+          </tr>
+        </tbody>
+      </table>`;
+
+    const grandTotal = sections.reduce((s, sec) => s + sec.rows.reduce((ss, r) => ss + r.salaire, 0), 0);
+
+    el.innerHTML = `
+      <div style="background:var(--bg-muted);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;">Période : ${monthName}</span>
+        <span style="font-size:15px;font-weight:700;color:var(--ok-text);">Total masse salariale : ${fmtDZD(grandTotal)}</span>
+      </div>
+      ${sections.map(sec => `
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <h3 style="font-size:14px;font-weight:700;margin:0;">${sec.name}</h3>
+            <span class="badge ${sec.isAdmin ? 'b-info' : 'b-warn'}">${sec.isAdmin ? 'Administration ÷22' : 'Chantier ÷26'}</span>
+            <span style="font-size:12px;color:var(--text-secondary);">${sec.rows.length} employé(s)</span>
+          </div>
+          ${tableHtml(sec.rows)}
+        </div>`).join('')}`;
+  }
+
+  function printSalaires() {
+    const month = parseInt(document.getElementById('salaire-month')?.value ?? new Date().getMonth());
+    const year = parseInt(document.getElementById('salaire-year')?.value ?? new Date().getFullYear());
+    const monthName = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const card = document.querySelector('.panel[data-panel="hr-salaires"] .card');
+    openPrintWindow(`Liste des Salaires — ${monthName}`, card);
   }
 
   function switchContactTab(tab) {
@@ -7287,15 +7446,18 @@ ${sitesHtml}
     const mData = getPtgMonthData(mk);
     const cells = mData.cells;
 
-    // Filter workers to current worksite
+    // Filter workers to current worksite OR admin workers only
+    const wsWorkerIds = new Set();
+    state.workSites.forEach(ws => (ws.workerIds || []).forEach(id => wsWorkerIds.add(id)));
+
     const workerList = currentWs
       ? (currentWs.workerIds || []).map(id => ({ w: state.workers[id], wi: id })).filter(x => x.w)
-      : state.workers.map((w, wi) => ({ w, wi }));
+      : state.workers.map((w, wi) => ({ w, wi })).filter(({ wi }) => !wsWorkerIds.has(wi));
 
     if (workerList.length === 0) {
       root.innerHTML = `<div class="ptg-card" style="padding:40px;text-align:center;">
-        <p style="color:var(--text-secondary);font-weight:600;margin:0 0 6px;">Aucun travailleur assigné à ce chantier</p>
-        <p style="font-size:12px;color:var(--text-tertiary);margin:0;">Assignez des travailleurs dans <strong>RH → Personnel</strong> ou <strong>RH → Chantiers</strong>.</p>
+        <p style="color:var(--text-secondary);font-weight:600;margin:0 0 6px;">${currentWs ? 'Aucun travailleur assigné à ce chantier' : 'Aucun travailleur administratif'}</p>
+        <p style="font-size:12px;color:var(--text-tertiary);margin:0;">${currentWs ? 'Assignez des travailleurs dans <strong>RH → Chantiers</strong>.' : 'Les travailleurs non assignés à un chantier apparaîtront ici.'}</p>
       </div>`;
       return;
     }
@@ -8239,6 +8401,8 @@ ${contentClone.outerHTML}
     loadAll,
     renderWorkers,
     renderJournaux,
+    renderSalaires,
+    printSalaires,
     filterJournalByFourn,
     filterJournalByClient,
     openTransactionModal,
