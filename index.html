@@ -6048,7 +6048,7 @@ window.app = (() => {
 
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _expWarn = '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche ${w.name} ${w.surname}</title>
@@ -6102,7 +6102,7 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
     <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
     <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
   </div>
-  <div class="phb">${w.photo ? '<img src="'+w.photo+'"/>' : 'Photo'}</div>
+  <div class="phb" id="ph-box">Photo</div>
 </div>
 
 <hr class="divider"/>
@@ -6114,7 +6114,18 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 <div class="row"><span class="lbl">Certificat / Attestation :</span> ${w.cert||''}</div>
 ${_expWarn}
 
-<script>window.onload=function(){setTimeout(function(){window.print();window.close();},600);};<\/script>
+<script>window._photoSrc = ${JSON.stringify(w.photo || '')};
+window.onload=function(){
+  var ph=document.getElementById('ph-box');
+  if(window._photoSrc && ph){
+    var img=new Image();
+    img.style.cssText='width:100%;height:100%;object-fit:cover;';
+    img.onload=function(){ph.innerHTML='';ph.appendChild(img);};
+    img.onerror=function(){ph.textContent='Photo';};
+    img.src=window._photoSrc;
+  }
+  setTimeout(function(){window.print();window.close();},1200);
+};<\/script>
 </body></html>`);
     win.document.close();
   }
@@ -6227,7 +6238,7 @@ ${_expWarn}
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _expWarn = '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche — ${w.name} ${w.surname}</title>
@@ -6796,7 +6807,7 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
 
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _expWarn = '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Fiche ${label} — ${c.name}</title>
@@ -6877,7 +6888,7 @@ ${c.notes ? `<hr class="divider"/><div class="row"><span class="lbl">Notes :</sp
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
+    const _expWarn = '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Affectation du Personnel par Chantier</title>
