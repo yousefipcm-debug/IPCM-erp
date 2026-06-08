@@ -1674,6 +1674,7 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
             Présence du Jour
           </button></li>
+
           <li><button class="nav-btn" data-panel="tech-admin-pointage">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             Pointage Administration
@@ -2278,24 +2279,11 @@
               <div class="field"><label>Téléphone</label><input type="tel" id="wnp-phone" placeholder="Ex. 0550 123 456"/></div>
               <div class="field"><label>N° CIN</label><input type="text" id="wnp-cin" placeholder="Ex. 123456789"/></div>
               <div class="field"><label>Date expiration CIN</label><input type="date" id="wnp-cin-exp"/></div>
-              <div class="field"><label>Permis de conduire</label>
-                <select id="wnp-permis">
-                  <option value="">— Aucun —</option>
-                  <option value="A">A (Moto)</option>
-                  <option value="B">B (Voiture)</option>
-                  <option value="C">C (Camion)</option>
-                  <option value="D">D (Bus)</option>
-                  <option value="B+C">B + C</option>
-                  <option value="Tous">Tous types</option>
-                </select>
-              </div>
-              <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-salary-base" placeholder="Ex. 35000" min="0"/></div>
-              <div class="field"><label>Salaire cotisable (DZD)</label><input type="number" id="wnp-salary-cotisable" placeholder="Ex. 40000" min="0"/></div>
               <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
               <div class="field"><label>RIP / Compte postal</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
-              <div class="field"><label>Contact urgence — Nom</label><input type="text" id="wnp-emg-name" placeholder="Ex. BOUTEMA Mohamed"/></div>
-              <div class="field"><label>Contact urgence — Téléphone</label><input type="tel" id="wnp-emg-phone" placeholder="Ex. 0661 234 567"/></div>
-              <div class="field"><label>Lien de parenté</label><input type="text" id="wnp-emg-rel" placeholder="Ex. Père, Épouse, Frère..."/></div>
+              
+              
+              
               <div class="field" style="grid-column:1/-1;"><label>Certificats / Attestations</label><textarea id="wnp-cert" rows="2" placeholder="Ex. Attestation de travail, Certificat médical, Diplôme..." oninput="app.updateWorkerPreview()" style="resize:vertical;"></textarea></div>
               <div class="field" style="grid-column:1/-1;"><label>Chantier affecté</label>
                 <select id="wnp-worksite"><option value="">— Aucun chantier —</option></select>
@@ -2370,6 +2358,10 @@
           </div>
           <div class="tbl-wrap" id="hr-contracts-table"></div>
         </div>
+      </section>
+
+      <section class="panel" data-panel="rh-admin-pointage">
+        <div id="rh-admin-ptg-root"></div>
       </section>
 
       <section class="panel" data-panel="hr-salaires">
@@ -2974,6 +2966,7 @@ window.app = (() => {
     'worker-new': { title: 'Nouvel Employé', sub: 'Créer une fiche employé complète avec photo et QR Code' },
     workers: { title: 'Personnel', sub: 'Gestion des ressources humaines' },
     'work-sites': { title: 'Chantiers (RH)', sub: 'Gestion des chantiers et affectation du personnel' },
+    'rh-admin-pointage': { title: 'Pointage Administration', sub: 'Feuille de présence — travailleurs administratifs' },
     'hr-salaires': { title: 'Liste des Salaires', sub: 'Calcul automatique des salaires par pointage' },
     'commercial-contacts': { title: 'Contacts Commerciaux', sub: 'Répertoire des fournisseurs et clients' },
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
@@ -4621,6 +4614,7 @@ window.app = (() => {
       if (mobileTitle) mobileTitle.textContent = meta.title;
     }
     if (p === 'tech-admin-pointage') renderAdminPointage();
+    if (p === 'rh-admin-pointage') renderRhAdminPointage();
     if (p === 'rh-daily-pointage') renderRhDailyPointage();
     if (p === 'tech-work-sites') renderTechWsMgmt();
     if (p === 'worker-new') {
@@ -5915,8 +5909,7 @@ window.app = (() => {
   }
 
   function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary-base','wnp-salary-cotisable','wnp-salary','wnp-rib','wnp-emg-name','wnp-emg-phone','wnp-emg-rel','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
-    const pm = document.getElementById('wnp-permis'); if(pm) pm.value='';
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
     const kids = document.getElementById('wnp-kids'); if(kids) kids.value='0';
     const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDI';
     const st = document.getElementById('wnp-status'); if(st) st.value='Célibataire';
@@ -5951,14 +5944,8 @@ window.app = (() => {
       phone: document.getElementById('wnp-phone').value.trim(),
       cin: document.getElementById('wnp-cin').value.trim(),
       cinExp: document.getElementById('wnp-cin-exp').value,
-      permis: document.getElementById('wnp-permis').value,
-      salaryBase: document.getElementById('wnp-salary-base').value || '0',
-      salaryCotisable: document.getElementById('wnp-salary-cotisable').value || '0',
       salary: document.getElementById('wnp-salary').value || '0',
       rib: document.getElementById('wnp-rib').value.trim(),
-      emgName: document.getElementById('wnp-emg-name').value.trim(),
-      emgPhone: document.getElementById('wnp-emg-phone').value.trim(),
-      emgRel: document.getElementById('wnp-emg-rel').value.trim(),
       cert: document.getElementById('wnp-cert').value.trim(),
       photo: state._newWorkerPhoto || (existing ? existing.photo : null),
       history: existing ? (existing.history || []) : []
@@ -6009,14 +5996,8 @@ window.app = (() => {
     document.getElementById('wnp-phone').value = w.phone || '';
     document.getElementById('wnp-cin').value = w.cin || '';
     document.getElementById('wnp-cin-exp').value = w.cinExp || '';
-    document.getElementById('wnp-permis').value = w.permis || '';
-    document.getElementById('wnp-salary-base').value = w.salaryBase || '';
-    document.getElementById('wnp-salary-cotisable').value = w.salaryCotisable || '';
     document.getElementById('wnp-salary').value = w.salary || '';
     document.getElementById('wnp-rib').value = w.rib || '';
-    document.getElementById('wnp-emg-name').value = w.emgName || '';
-    document.getElementById('wnp-emg-phone').value = w.emgPhone || '';
-    document.getElementById('wnp-emg-rel').value = w.emgRel || '';
     document.getElementById('wnp-cert').value = w.cert || '';
     const curWs = state.workSites.findIndex(ws => (ws.workerIds||[]).includes(idx));
     const selWs = document.getElementById('wnp-worksite');
@@ -6047,14 +6028,8 @@ window.app = (() => {
       phone: document.getElementById('wnp-phone')?.value||'',
       cin: document.getElementById('wnp-cin')?.value||'',
       cinExp: document.getElementById('wnp-cin-exp')?.value||'',
-      permis: document.getElementById('wnp-permis')?.value||'',
-      salaryBase: document.getElementById('wnp-salary-base')?.value||'',
-      salaryCotisable: document.getElementById('wnp-salary-cotisable')?.value||'',
       salary: document.getElementById('wnp-salary')?.value||'',
       rib: document.getElementById('wnp-rib')?.value||'',
-      emgName: document.getElementById('wnp-emg-name')?.value||'',
-      emgPhone: document.getElementById('wnp-emg-phone')?.value||'',
-      emgRel: document.getElementById('wnp-emg-rel')?.value||'',
       cert: document.getElementById('wnp-cert')?.value||'',
       photo: state._newWorkerPhoto||null,
       history: []
@@ -6072,7 +6047,6 @@ window.app = (() => {
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
     const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
@@ -6122,8 +6096,7 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
     <div class="row"><span class="lbl">Âge :</span> ${age} ans</div>
     <div class="row"><span class="lbl">Téléphone :</span> ${w.phone||''}</div>
     <div class="row"><span class="lbl">N° CIN :</span> ${_cin}</div>
-    <div class="row"><span class="lbl">Permis de conduire :</span> ${w.permis||''}</div>
-    <div class="row"><span class="lbl">Situation de santé :</span> ${w.health||''}</div>
+        <div class="row"><span class="lbl">Situation de santé :</span> ${w.health||''}</div>
     <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
     <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
     <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
@@ -6133,11 +6106,8 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 </div>
 
 <hr class="divider"/>
-<div class="row"><span class="lbl">Salaire de base :</span> ${w.salaryBase ? Number(w.salaryBase).toLocaleString('fr-DZ')+' DZD' : '—'}</div>
-<div class="row"><span class="lbl">Salaire cotisable :</span> ${w.salaryCotisable ? Number(w.salaryCotisable).toLocaleString('fr-DZ')+' DZD' : '—'}</div>
 <div class="row"><span class="lbl">Net à payer :</span> ${_salary}</div>
 <div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
-<div class="row"><span class="lbl">Contact urgence :</span> ${_emg}</div>
 
 <hr class="divider"/>
 <div class="row"><span class="lbl">Contrat :</span> ${_contrat}</div>
@@ -6256,7 +6226,6 @@ ${_expWarn}
     const win = window.open('', '_blank', 'width=900,height=650');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
     const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
@@ -6826,7 +6795,6 @@ ${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) 
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
     const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
@@ -6908,7 +6876,6 @@ ${c.notes ? `<hr class="divider"/><div class="row"><span class="lbl">Notes :</sp
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _emg = (w.emgName||'') + (w.emgRel ? ' ('+w.emgRel+')' : '') + (w.emgPhone ? ' - '+w.emgPhone : '');
     const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
     const _expWarn = expiringSoon ? '<div class="row" style="color:#DC2626;font-weight:700;">Contrat expire dans moins de 15 jours</div>' : '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
@@ -7423,6 +7390,114 @@ ${sitesHtml}
       save(K.adminPointage,  state.adminPointage);
       save(K.adminPtgLegend, state.adminPtgLegend);
     }, 500);
+  }
+
+  function renderRhAdminPointage() {
+    // Re-use the full admin pointage engine but scoped to admin workers only
+    // Temporarily override currentPtgWsIdx to null and redirect root element
+    const root = document.getElementById('rh-admin-ptg-root');
+    if (!root) return;
+
+    if (state.adminPointageMonth === undefined || state.adminPointageMonth === null) {
+      const now = new Date();
+      state.adminPointageMonth = now.getMonth();
+      state.adminPointageYear  = now.getFullYear();
+    }
+    if (state.adminPtgActiveColor === undefined) state.adminPtgActiveColor = null;
+
+    const year  = state.adminPointageYear;
+    const month = state.adminPointageMonth;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const mk = adminPtgKey();
+    const mData = getPtgMonthData(mk);
+    const cells = mData.cells;
+
+    // Only admin workers — not assigned to any worksite
+    const wsWorkerIds = new Set();
+    state.workSites.forEach(ws => (ws.workerIds || []).forEach(id => wsWorkerIds.add(id)));
+    const workerList = state.workers.map((w, wi) => ({ w, wi })).filter(({ wi }) => !wsWorkerIds.has(wi));
+
+    if (workerList.length === 0) {
+      root.innerHTML = `<div class="ptg-card" style="padding:40px;text-align:center;">
+        <p style="color:var(--text-secondary);font-weight:600;margin:0 0 6px;">Aucun travailleur administratif</p>
+        <p style="font-size:12px;color:var(--text-tertiary);margin:0;">Les travailleurs non assignés à un chantier apparaîtront ici automatiquement.</p>
+      </div>`;
+      return;
+    }
+
+    const inPaint = state.adminPtgActiveColor !== null;
+    const palBtns = PTG_PALETTE.map(c => `<button onclick="app.setPtgColor('${c}')" style="width:22px;height:22px;border-radius:4px;border:2px solid ${state.adminPtgActiveColor===c?'#000':'transparent'};background:${c};cursor:pointer;transition:border .1s;"></button>`).join('');
+
+    // Month navigation
+    const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+    // Build day headers — Fri+Sat are off for admin
+    let thDays = '';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(year, month, d).getDay();
+      const isWE = dow === 5 || dow === 6;
+      thDays += `<th class="ptg-th-day${isWE ? ' weekend' : ''}">${d}<br><span style="font-size:8px;">${['D','L','M','M','J','V','S'][dow]}</span></th>`;
+    }
+
+    // Build rows
+    let rows = '';
+    workerList.forEach(({ w, wi }) => {
+      let joursCount = 0;
+      let cells_html = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month, d).getDay();
+        const isWE = dow === 5 || dow === 6;
+        const key0 = `${wi}_${d}_0`;
+        const c0 = cells[key0] || { val: '', bg: '' };
+        const v0up = c0.val ? c0.val.trim().toUpperCase() : '';
+        if (v0up === 'P') joursCount++;
+        else if (v0up === 'D') joursCount += 0.5;
+        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : '');
+        const bg0 = c0.bg ? `background:${c0.bg};` : '';
+        cells_html += `<td class="ptg-cell${isWE ? ' weekend' : ''}${autoTint0}" style="${bg0}" data-wi="${wi}" data-d="${d}" data-row="0">
+          <input class="ptg-input" value="${c0.val||''}" maxlength="3"
+            style="${bg0}"
+            oninput="app.onPtgCellInput(this,${wi},${d},0)"
+            onclick="if(app.ptgCellClick)app.ptgCellClick(this,${wi},${d},0)"
+            oncontextmenu="if(app.ptgCellRightClick)app.ptgCellRightClick(event,${wi},${d},0);return false;"/>
+        </td>`;
+      }
+      rows += `<tr>
+        <td class="ptg-name-cell" style="white-space:nowrap;font-weight:600;padding:0 8px;">${w.name} ${w.surname}<br><span style="font-size:10px;color:var(--text-secondary);font-weight:400;">${w.function||''}</span></td>
+        ${cells_html}
+        <td class="ptg-total-cell" id="ptg-total-${wi}" style="text-align:center;font-weight:700;padding:0 8px;">${joursCount}</td>
+      </tr>`;
+    });
+
+    root.innerHTML = `<div class="ptg-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn-secondary" onclick="app.adminPtgPrevMonth()">◀</button>
+          <strong style="font-size:14px;">${monthNames[month]} ${year}</strong>
+          <button class="btn-secondary" onclick="app.adminPtgNextMonth()">▶</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${palBtns}
+          <button class="btn-secondary" style="font-size:11px;" onclick="app.setPtgColor(null)">✕ Couleur</button>
+          <button class="print-btn" onclick="app.printAdminPointage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimer
+          </button>
+        </div>
+      </div>
+      <div class="ptg-scroll">
+        <table class="ptg-table">
+          <thead>
+            <tr>
+              <th class="ptg-name-cell" style="padding:0 8px;">Travailleur</th>
+              ${thDays}
+              <th style="padding:0 8px;">Jours</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
   }
 
   function renderAdminPointage() {
@@ -8403,6 +8478,7 @@ ${contentClone.outerHTML}
     renderJournaux,
     renderSalaires,
     printSalaires,
+    renderRhAdminPointage,
     filterJournalByFourn,
     filterJournalByClient,
     openTransactionModal,
