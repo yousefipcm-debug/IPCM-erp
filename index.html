@@ -3778,6 +3778,688 @@ window.app = (() => {
     if (mobileAlerts) mobileAlerts.classList.toggle('has-alert', reds > 0);
   }
 
+  // ========== FACTURATION ==========
+
+  function renderWorkers() {
+    const el = document.getElementById('workers-table');
+    if (!el) return;
+    const search = (document.getElementById('workers-search')?.value || '').toLowerCase().trim();
+    let workers = (state.workers || []).map((w, i) => ({ ...w, _idx: i }));
+    if (search) {
+      workers = workers.filter(w =>
+        (w.name || '').toLowerCase().includes(search) ||
+        (w.surname || '').toLowerCase().includes(search) ||
+        (w.function || '').toLowerCase().includes(search) ||
+        (w.ss || '').toLowerCase().includes(search) ||
+        (w.cin || '').toLowerCase().includes(search)
+      );
+    }
+    if (workers.length === 0) {
+      el.innerHTML = search ? `<div class="empty-state">Aucun employé trouvé pour "<strong>${search}</strong>".</div>` : '<div class="empty-state">Aucun employé enregistré.</div>';
+      return;
+    }
+    el.innerHTML = `<table class="mod">
+      <thead><tr>
+        <th>Nom & Prénom</th><th>Âge</th><th>Fonction</th><th>Entrée</th>
+        <th>Contrat</th><th>État Civil</th><th>N° Assurance</th><th></th>
+      </tr></thead>
+      <tbody>${workers.map(w => `
+        <tr>
+          <td style="font-weight:600;">${w.name} ${w.surname}</td>
+          <td>${calculateAge(w.birth)} ans</td>
+          <td>${w.function || '—'}</td>
+          <td>${w.entry || '—'}</td>
+          <td><span class="badge b-info">${w.contract || '—'}</span></td>
+          <td>${w.status || '—'}</td>
+          <td style="font-family:monospace;">${w.ss || '—'}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="ghost-btn" title="Modifier (fiche complète)" onclick="app.editWorkerInPanel(${w._idx})">&#9998;</button>
+            <button class="ghost-btn" title="Imprimer la fiche" onclick="app.printWorkerSheet(${w._idx})" style="color:var(--accent);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </button>
+            <button class="ghost-btn" title="Supprimer" onclick="app.deleteWorker(${w._idx})">×</button>
+          </td>
+        </tr>`).join('')}</tbody></table>`;
+  }
+
+  function renderHrContracts() {
+    const el = document.getElementById('hr-contracts-table');
+    if (!el) return;
+    if (!state.workers || state.workers.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun employé enregistré.</div>';
+      return;
+    }
+    const today = new Date();
+    const parseD = s => s ? new Date(s) : null;
+    const tableHtml = `
+      <table class="mod">
+        <thead><tr>
+          <th>Employé</th><th>Type</th><th>Actions</th>
+          <th style="text-align:right">Début</th><th style="text-align:right">Fin</th>
+        </tr></thead>
+        <tbody>${state.workers.map((w, i) => {
+          const days = w.contractEnd ? daysBetween(today, parseD(w.contractEnd)) : null;
+          const statusClass = days !== null && days <= 15 ? 'color:var(--danger-text); font-weight:700;' : '';
+          return `<tr>
+            <td><strong>${w.name} ${w.surname}</strong><br><small style="color:var(--text-tertiary)">${w.function}</small></td>
+            <td><span class="badge b-info" style="font-size:11px;">${w.contract || '—'}</span></td>
+            <td style="text-align:right; white-space:nowrap;">
+              <button class="ghost-btn" onclick="app.archiveOnly(${i})" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Archiver
+              </button>
+              <button class="ghost-btn" onclick="app.archiveAndRenew(${i})" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+                Renouveler
+              </button>
+            </td>
+            <td style="font-size:12px; text-align:right; color:var(--text-secondary);">${w.entry || '—'}</td>
+            <td style="font-size:12px; text-align:right; ${statusClass}">${w.contractEnd || '—'}</td>
+          </tr>
+          ${w.history && w.history.length > 0 && w._showHistory ? `<tr><td colspan="5" style="padding:8px 12px; background:var(--bg-muted);"><strong>Historique :</strong> ${w.history.map(h=>`${h.from||'?'} → ${h.to||'?'} (${h.type||'?'})`).join(' | ')}</td></tr>` : ''}`;
+        }).join('')}</tbody>
+      </table>`;
+    el.innerHTML = tableHtml;
+    const panelBtn = document.querySelector('.nav-btn[data-panel="hr-contracts"]');
+    const expiringCount = state.workers.filter(w => {
+      if (!w.contractEnd) return false;
+      const d = daysBetween(today, new Date(w.contractEnd));
+      return d !== null && d <= 15;
+    }).length;
+    if (panelBtn) {
+      const badge = panelBtn.querySelector('.notif-badge');
+      if (expiringCount > 0) {
+        if (!badge) { const b = document.createElement('span'); b.className = 'notif-badge'; b.textContent = expiringCount; panelBtn.appendChild(b); }
+        else badge.textContent = expiringCount;
+      } else if (badge) badge.remove();
+    }
+  }
+
+  function renderHrNotifications() {
+    const el = document.getElementById('hr-notifications-list');
+    if (!el) return;
+    const today = new Date();
+    const notifs = [];
+    (state.workers || []).forEach((w, i) => {
+      if (!w.contractEnd) return;
+      const days = daysBetween(today, new Date(w.contractEnd));
+      if (days !== null && days <= 30) {
+        notifs.push({ w, i, days });
+      }
+    });
+    const countEl = document.getElementById('hr-notifications-count');
+    if (countEl) countEl.textContent = notifs.length;
+    const navBtn = document.getElementById('nav-hr-notifications');
+    if (navBtn) {
+      let badge = navBtn.querySelector('.notif-badge');
+      if (notifs.length > 0) {
+        if (!badge) { badge = document.createElement('span'); badge.className = 'notif-badge'; navBtn.appendChild(badge); }
+        badge.textContent = notifs.length;
+      } else if (badge) badge.remove();
+    }
+    if (notifs.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune notification — tous les contrats sont à jour.</div>';
+      return;
+    }
+    el.innerHTML = notifs.map(({ w, i, days }) => `
+      <div class="card" style="border-left:3px solid ${days <= 0 ? 'var(--danger-text)' : days <= 15 ? 'var(--danger-text)' : 'var(--warn-text)'}; margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <p style="font-weight:700;margin:0;">${w.name} ${w.surname}</p>
+            <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">${w.function || ''}</p>
+          </div>
+          <span class="badge ${days <= 0 ? 'b-danger' : days <= 15 ? 'b-danger' : 'b-warn'}" style="white-space:nowrap;">
+            ${days <= 0 ? `Expiré il y a ${Math.abs(days)}j` : `Expire dans ${days}j`}
+          </span>
+        </div>
+        <p style="font-size:12px;margin:6px 0 0;">Contrat ${w.contract || ''} — fin le <strong>${w.contractEnd}</strong></p>
+      </div>`).join('');
+  }
+
+  // ========== FACTURATION ==========
+
+  function printPage(event, title, landscape) {
+    const card = event?.target?.closest('.card') || document.querySelector('.panel.active .card');
+    if (card) openPrintWindow(title || document.getElementById('page-title')?.textContent || 'Document', card, landscape);
+  }
+
+  function printFournisseur(btn, name) {
+    const card = btn?.closest('.card') || btn?.parentElement?.closest('.card');
+    if (card) openPrintWindow(`Fournisseur — ${name}`, card);
+  }
+
+  function showFournisseurReport() {
+    switchPanel('fournisseurs');
+  }
+
+  function printFournisseurReport() {
+    const card = document.querySelector('.panel[data-panel="fournisseurs"] .card');
+    if (card) openPrintWindow('Rapport Fournisseurs', card);
+  }
+
+  // Worker sheet functions
+  function calculateAge(birth) {
+    if (!birth) return '—';
+    const b = new Date(birth);
+    const today = new Date();
+    let age = today.getFullYear() - b.getFullYear();
+    const m = today.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+    return age;
+  }
+
+  function openWorkerModal() { switchPanel('worker-new'); }
+  function closeWorkerModal() {}
+
+  function saveWorker() { saveWorkerFromPanel(); }
+
+  function editWorker(idx) { editWorkerInPanel(idx); }
+
+  function deleteWorker(idx) {
+    if (!confirm('Supprimer cet employé ?')) return;
+    state.workers.splice(idx, 1);
+    save(K.workers, state.workers);
+    renderAll();
+  }
+
+  function printWorkers() {
+    const card = document.querySelector('.panel[data-panel="workers"] .card');
+    if (card) openPrintWindow('Liste du Personnel', card);
+  }
+
+  function printWorkerSheet(idx) {
+    const w = state.workers[idx];
+    if (w) printWorkerSheetFromData(w);
+  }
+
+  function previewWorkerPhoto(input) { previewNewWorkerPhoto(input); }
+
+  function previewNewWorkerPhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('wnp-photo-preview');
+      if (preview) { preview.src = e.target.result; preview.style.display = 'block'; }
+      state._newWorkerPhoto = e.target.result;
+      updateWorkerPreview();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateWorkerPreview() {
+    const name = document.getElementById('wnp-name')?.value || '';
+    const surname = document.getElementById('wnp-surname')?.value || '';
+    const fn = document.getElementById('wnp-function')?.value || '';
+    const previewName = document.getElementById('wnp-preview-name');
+    const previewFn = document.getElementById('wnp-preview-function');
+    if (previewName) previewName.textContent = (name + ' ' + surname).trim() || 'Nom Prénom';
+    if (previewFn) previewFn.textContent = fn || 'Fonction';
+  }
+
+  function resetWorkerForm() {
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    const ks = document.getElementById('wnp-kids'); if(ks) ks.value='0';
+    const bl = document.getElementById('wnp-blood'); if(bl) bl.value='';
+    const st = document.getElementById('wnp-status'); if(st) st.value='';
+    const hl = document.getElementById('wnp-health'); if(hl) hl.value='';
+    const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDD';
+    const ph = document.getElementById('wnp-photo-preview'); if(ph) { ph.src=''; ph.style.display='none'; }
+    state._newWorkerPhoto = null;
+    state.editingWorkerIdx = null;
+    state._editingFromPanel = false;
+    updateWorkerPreview();
+  }
+
+  function saveWorkerFromPanel() {
+    const name = document.getElementById('wnp-name')?.value?.trim();
+    const surname = document.getElementById('wnp-surname')?.value?.trim();
+    if (!name || !surname) { alert('Nom et prénom requis'); return; }
+    const wsIdx = document.getElementById('wnp-worksite')?.value;
+    const worker = {
+      name: name.toUpperCase(),
+      surname,
+      birth: document.getElementById('wnp-birth')?.value || '',
+      function: document.getElementById('wnp-function')?.value?.trim() || '',
+      ss: document.getElementById('wnp-ss')?.value?.trim() || '',
+      kids: document.getElementById('wnp-kids')?.value || '0',
+      blood: document.getElementById('wnp-blood')?.value || '',
+      status: document.getElementById('wnp-status')?.value || '',
+      health: document.getElementById('wnp-health')?.value || '',
+      contract: document.getElementById('wnp-contract')?.value || 'CDD',
+      entry: document.getElementById('wnp-entry')?.value || '',
+      contractEnd: document.getElementById('wnp-contract-end')?.value || '',
+      address: document.getElementById('wnp-address')?.value?.trim() || '',
+      cert: document.getElementById('wnp-cert')?.value?.trim() || '',
+      phone: document.getElementById('wnp-phone')?.value?.trim() || '',
+      cin: document.getElementById('wnp-cin')?.value?.trim() || '',
+      cinExp: document.getElementById('wnp-cin-exp')?.value || '',
+      salary: document.getElementById('wnp-salary')?.value || '0',
+      rib: document.getElementById('wnp-rib')?.value?.trim() || '',
+      photo: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.photo || state._newWorkerPhoto || null) : (state._newWorkerPhoto || null),
+      history: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.history || []) : []
+    };
+    if (state._editingFromPanel && state.editingWorkerIdx !== null) {
+      state.workers[state.editingWorkerIdx] = worker;
+    } else {
+      state.workers.push(worker);
+      if (wsIdx !== '' && wsIdx !== undefined && state.workSites[parseInt(wsIdx)]) {
+        const idx = state.workers.length - 1;
+        if (!state.workSites[parseInt(wsIdx)].workerIds) state.workSites[parseInt(wsIdx)].workerIds = [];
+        state.workSites[parseInt(wsIdx)].workerIds.push(idx);
+        save(K.workSites, state.workSites);
+      }
+    }
+    save(K.workers, state.workers);
+    resetWorkerForm();
+    renderAll();
+    alert('✓ Employé enregistré.');
+  }
+
+  function editWorkerInPanel(idx) {
+    const w = state.workers[idx];
+    if (!w) return;
+    state.editingWorkerIdx = idx;
+    state._editingFromPanel = true;
+    state._newWorkerPhoto = null;
+    switchPanel('worker-new');
+    setTimeout(() => {
+      document.getElementById('wnp-name').value = w.name || '';
+      document.getElementById('wnp-surname').value = w.surname || '';
+      document.getElementById('wnp-birth').value = w.birth || '';
+      document.getElementById('wnp-function').value = w.function || '';
+      document.getElementById('wnp-ss').value = w.ss || '';
+      document.getElementById('wnp-kids').value = w.kids || '0';
+      document.getElementById('wnp-blood').value = w.blood || '';
+      document.getElementById('wnp-status').value = w.status || '';
+      document.getElementById('wnp-health').value = w.health || '';
+      document.getElementById('wnp-contract').value = w.contract || 'CDD';
+      document.getElementById('wnp-entry').value = w.entry || '';
+      document.getElementById('wnp-contract-end').value = w.contractEnd || '';
+      document.getElementById('wnp-address').value = w.address || '';
+      document.getElementById('wnp-cert').value = w.cert || '';
+      document.getElementById('wnp-phone').value = w.phone || '';
+      document.getElementById('wnp-cin').value = w.cin || '';
+      document.getElementById('wnp-cin-exp').value = w.cinExp || '';
+      document.getElementById('wnp-salary').value = w.salary || '';
+      document.getElementById('wnp-rib').value = w.rib || '';
+      if (w.photo) {
+        const ph = document.getElementById('wnp-photo-preview');
+        if (ph) { ph.src = w.photo; ph.style.display = 'block'; }
+      }
+      updateWorkerPreview();
+    }, 100);
+  }
+
+  function printNewWorkerSheet() {
+    const w = {
+      name: document.getElementById('wnp-name')?.value||'',
+      surname: document.getElementById('wnp-surname')?.value||'',
+      birth: document.getElementById('wnp-birth')?.value||'',
+      function: document.getElementById('wnp-function')?.value||'',
+      ss: document.getElementById('wnp-ss')?.value||'',
+      kids: document.getElementById('wnp-kids')?.value||'',
+      blood: document.getElementById('wnp-blood')?.value||'',
+      status: document.getElementById('wnp-status')?.value||'',
+      health: document.getElementById('wnp-health')?.value||'',
+      contract: document.getElementById('wnp-contract')?.value||'',
+      entry: document.getElementById('wnp-entry')?.value||'',
+      contractEnd: document.getElementById('wnp-contract-end')?.value||'',
+      address: document.getElementById('wnp-address')?.value||'',
+      cert: document.getElementById('wnp-cert')?.value||'',
+      phone: document.getElementById('wnp-phone')?.value||'',
+      cin: document.getElementById('wnp-cin')?.value||'',
+      cinExp: document.getElementById('wnp-cin-exp')?.value||'',
+      salary: document.getElementById('wnp-salary')?.value||'',
+      rib: document.getElementById('wnp-rib')?.value||'',
+      photo: state._newWorkerPhoto || null
+    };
+    printWorkerSheetFromData(w);
+  }
+
+  function archiveCurrentContract(idx) { archiveOnly(idx); }
+
+  function archiveOnly(idx) {
+    const w = state.workers[idx];
+    if (!w) return;
+    if (!w.history) w.history = [];
+    w.history.push({ from: w.entry, to: w.contractEnd, type: w.contract });
+    w.entry = ''; w.contractEnd = '';
+    save(K.workers, state.workers);
+    renderAll();
+    alert('Contrat archivé.');
+  }
+
+  function archiveAndRenew(idx) {
+    const w = state.workers[idx];
+    if (!w) return;
+    if (!w.history) w.history = [];
+    w.history.push({ from: w.entry, to: w.contractEnd, type: w.contract });
+    const newStart = w.contractEnd || new Date().toISOString().slice(0,10);
+    w.entry = newStart;
+    w.contractEnd = '';
+    save(K.workers, state.workers);
+    renderAll();
+    alert('Contrat renouvelé. Mettez à jour la date de fin.');
+  }
+
+  function toggleWorkerHistory(idx) {
+    if (state.workers[idx]) {
+      state.workers[idx]._showHistory = !state.workers[idx]._showHistory;
+      renderHrContracts();
+    }
+  }
+
+  function viewInSuivi(idx) { switchPanel('hr-contracts'); }
+
+  function saveClientDetails() {}
+  function loadClientDetailsToForm() {}
+  function deleteClientDetails() {}
+
+  function renderFacturation() {
+    const sel = document.getElementById('inv-client-list');
+    if (sel) sel.innerHTML = state.clientNames.map(c => `<option value="${c}">`).join('');
+    const numEl = document.getElementById('inv-number');
+    if (numEl && !numEl.value) {
+      const year = new Date().getFullYear();
+      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
+      const next = String(yearInvoices.length + 1).padStart(2, '0');
+      numEl.placeholder = `${next}/${year}`;
+    }
+    const dateEl = document.getElementById('inv-date');
+    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+    const ribSel = document.getElementById('inv-rib');
+    if (ribSel) ribSel.innerHTML = '<option value="">— Aucun —</option>' + (state.ribList || []).map((r, i) => `<option value="${i}">${r.bank} — ${r.number}</option>`).join('');
+    if (_invLines.length === 0) _invLines = [{ desc: '', qty: 1, pu: 0 }];
+    const linesEl = document.getElementById('inv-lines');
+    if (linesEl) {
+      linesEl.innerHTML = _invLines.map((l, i) => `
+        <div style="display:grid; grid-template-columns:2fr 80px 130px 130px 30px; gap:6px; margin-bottom:6px;">
+          <input type="text" placeholder="Désignation" value="${l.desc.replace(/"/g, '&quot;')}" onchange="app.invSetLine(${i},'desc',this.value)"/>
+          <input type="number" placeholder="Qté" value="${l.qty}" step="0.01" onchange="app.invSetLine(${i},'qty',this.value)" class="num-input"/>
+          <input type="number" placeholder="P.U." value="${l.pu}" step="0.01" onchange="app.invSetLine(${i},'pu',this.value)" class="num-input"/>
+          <input type="text" value="${fmtDZD(l.qty * l.pu)}" disabled style="background:var(--bg-muted); text-align:right;"/>
+          <button class="ghost-btn" onclick="app.invDelLine(${i})">×</button>
+        </div>`).join('');
+    }
+    invUpdateTotals();
+  }
+
+  function invSetLine(i, key, val) {
+    if (!_invLines[i]) return;
+    if (key === 'qty' || key === 'pu') _invLines[i][key] = parseFloat(val) || 0;
+    else _invLines[i][key] = val;
+    invUpdateTotals();
+    const el = document.getElementById('inv-lines');
+    if (el && el.children[i]) el.children[i].children[3].value = fmtDZD(_invLines[i].qty * _invLines[i].pu);
+  }
+  function invAddLine() { _invLines.push({ desc: '', qty: 1, pu: 0 }); renderFacturation(); }
+  function invDelLine(i) { _invLines.splice(i, 1); if (_invLines.length === 0) _invLines = [{ desc: '', qty: 1, pu: 0 }]; renderFacturation(); }
+  function invReset() { _invLines = [{ desc: '', qty: 1, pu: 0 }]; const n = document.getElementById('inv-number'); if(n) n.value = ''; renderFacturation(); }
+
+  function invUpdateTotals() {
+    const ht = _invLines.reduce((s, l) => s + l.qty * l.pu, 0);
+    const tva = ht * 0.19;
+    const timbre = (document.getElementById('inv-timbre')?.value === '1') ? Math.round(ht * 0.01) : 0;
+    const ttc = ht + tva + timbre;
+    const el = document.getElementById('inv-totals');
+    if (el) el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;"><span style="color:var(--text-secondary);">Total HT</span><span style="font-weight:600;">${fmtDZD(ht)}</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;"><span style="color:var(--text-secondary);">TVA 19%</span><span style="font-weight:600;">${fmtDZD(tva)}</span></div>
+      ${timbre > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;"><span style="color:var(--text-secondary);">Timbre fiscal 1%</span><span style="font-weight:600;">${fmtDZD(timbre)}</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:1px solid var(--border);font-size:15px;"><span style="font-weight:700;">Total TTC</span><span style="font-weight:700;color:var(--accent);">${fmtDZD(ttc)}</span></div>`;
+  }
+
+  function saveInvoice() {
+    const type = document.getElementById('inv-type').value;
+    let number = document.getElementById('inv-number').value.trim();
+    if (!number) {
+      const year = new Date().getFullYear();
+      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
+      number = String(yearInvoices.length + 1).padStart(2, '0') + '/' + year;
+    }
+    const date = document.getElementById('inv-date').value;
+    const place = document.getElementById('inv-place')?.value || '';
+    const client = document.getElementById('inv-client').value;
+    const project = document.getElementById('inv-project')?.value || '';
+    const ouvrage = document.getElementById('inv-ouvrage')?.value || '';
+    const site = document.getElementById('inv-site')?.value || '';
+    const timbreOn = document.getElementById('inv-timbre')?.value === '1';
+    const ribIdx = document.getElementById('inv-rib')?.value || '';
+    const conditions = document.getElementById('inv-conditions')?.value || '';
+    const clientDetails = document.getElementById('inv-client-details')?.value || '';
+    if (!client) { alert('Choisis un client'); return; }
+    const validLines = _invLines.filter(l => l.desc && l.qty > 0 && l.pu >= 0);
+    if (validLines.length === 0) { alert('Ajoute au moins une ligne valide'); return; }
+    const ht = validLines.reduce((s, l) => s + l.qty * l.pu, 0);
+    const tva = ht * 0.19;
+    const timbre = timbreOn ? Math.round(ht * 0.01) : 0;
+    const ttc = ht + tva + timbre;
+    const rib = ribIdx !== '' ? state.ribList[parseInt(ribIdx)] : null;
+    const invoice = { id: Date.now(), type, number, date, place, client, clientDetails, project, ouvrage, site, lines: validLines, ht, tva, timbre, ttc, rib, conditions };
+    if (!state.invoices) state.invoices = [];
+    state.invoices.push(invoice);
+    save(K.invoices, state.invoices);
+    if (type !== 'proforma') {
+      state.situations.push({ client, project: project || '', number, date, amount: ttc, payments: [], contractType: 'formel', invoiceId: invoice.id });
+      save(K.situations, state.situations);
+    }
+    invReset();
+    renderAll();
+    alert(`✅ Facture ${number} enregistrée${type !== 'proforma' ? ' et situation client créée' : ''}`);
+  }
+
+  function deleteInvoice(idx) {
+    if (!confirm('Supprimer cette facture ?')) return;
+    const inv = state.invoices[idx];
+    if (inv && inv.id) {
+      state.situations = state.situations.filter(s => s.invoiceId !== inv.id);
+      save(K.situations, state.situations);
+    }
+    state.invoices.splice(idx, 1);
+    save(K.invoices, state.invoices);
+    renderAll();
+  }
+
+  function renderInvoices() {
+    const el = document.getElementById('invoices-table');
+    if (!el) return;
+    if (!state.invoices || state.invoices.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune facture émise.</div>';
+      return;
+    }
+    const sorted = state.invoices.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>N°</th><th>Type</th><th>Client</th><th style="text-align:right">TTC</th><th></th><th style="text-align:right">Date</th></tr></thead>
+      <tbody>${sorted.map(inv => {
+        const realIdx = state.invoices.indexOf(inv);
+        return `<tr>
+          <td style="font-weight:600;">${inv.number}</td>
+          <td><span class="badge ${inv.type === 'proforma' ? 'b-info' : 'b-ok'}">${inv.type === 'proforma' ? 'Proforma' : 'Facture'}</span></td>
+          <td>${inv.client}</td>
+          <td style="text-align:right; font-weight:600;">${fmtDZD(inv.ttc)}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-secondary" style="font-size:11px;" onclick="app.printInvoice(${realIdx})">Imprimer</button>
+            <button class="ghost-btn" onclick="app.deleteInvoice(${realIdx})">×</button>
+          </td>
+          <td style="text-align:right; color:var(--text-secondary); font-size:11px;">${inv.date}</td>
+        </tr>`;}).join('')}</tbody></table>`;
+  }
+
+  function addRib() {
+    const bank = document.getElementById('rib-bank')?.value.trim();
+    const number = document.getElementById('rib-number')?.value.trim();
+    if (!bank || !number) { alert('Remplir banque et RIB'); return; }
+    if (!state.ribList) state.ribList = [];
+    state.ribList.push({ bank, number });
+    save(K.ribList, state.ribList);
+    document.getElementById('rib-bank').value = '';
+    document.getElementById('rib-number').value = '';
+    renderRibs(); renderFacturation();
+  }
+
+  function deleteRib(idx) {
+    if (!confirm('Supprimer ce RIB ?')) return;
+    state.ribList.splice(idx, 1);
+    save(K.ribList, state.ribList);
+    renderRibs(); renderFacturation();
+  }
+
+  function renderRibs() {
+    const el = document.getElementById('rib-list');
+    if (!el) return;
+    if (!state.ribList || state.ribList.length === 0) {
+      el.innerHTML = '<p style="font-size:12px; color:var(--text-tertiary);">Aucun RIB enregistré.</p>';
+      return;
+    }
+    el.innerHTML = state.ribList.map((r, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-muted);border-radius:6px;margin-bottom:4px;">
+        <div><strong>${r.bank}</strong> <span style="font-family:monospace;color:var(--text-secondary);">${r.number}</span></div>
+        <button class="ghost-btn" onclick="app.deleteRib(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function printInvoice(idx) {
+    const inv = state.invoices[idx];
+    if (!inv) return;
+    const typeLabel = { proforma: 'FACTURE PROFORMA', avancement: "FACTURE D'AVANCEMENT", finale: 'FACTURE' }[inv.type] || 'FACTURE';
+    const headerEl = document.querySelector('.print-header');
+    const headerHtml = headerEl ? headerEl.outerHTML : '';
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
+    const linesHtml = inv.lines.map((l, i) => `<tr>
+      <td style="border:1px solid #ddd;padding:8px;">${i+1}</td>
+      <td style="border:1px solid #ddd;padding:8px;">${l.desc}</td>
+      <td style="border:1px solid #ddd;padding:8px;text-align:right;">${l.qty}</td>
+      <td style="border:1px solid #ddd;padding:8px;text-align:right;">${fmtDZD(l.pu)}</td>
+      <td style="border:1px solid #ddd;padding:8px;text-align:right;font-weight:600;">${fmtDZD(l.qty*l.pu)}</td>
+    </tr>`).join('');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title> </title>
+<style>*{box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:12mm;margin:0;}@page{margin:8mm;size:A4;}table{border-collapse:collapse;width:100%;}-webkit-print-color-adjust:exact;print-color-adjust:exact;</style>
+</head><body>
+${headerHtml}
+<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 12px;">Date : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</p>
+<div style="display:flex;justify-content:space-between;margin:20px 0;">
+  <div><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;font-weight:700;">Client</p><p style="margin:0;font-weight:700;font-size:14px;">${inv.client}</p>${inv.project?`<p style="margin:4px 0 0;color:#666;font-size:11px;">Projet : ${inv.project}</p>`:''}</div>
+  <div style="text-align:right;"><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;font-weight:700;">${typeLabel}</p><p style="margin:0;font-weight:700;font-size:18px;color:#2563EB;">N° ${inv.number}</p><p style="margin:4px 0 0;color:#666;font-size:11px;">Date : ${inv.date}</p></div>
+</div>
+<table style="margin-top:14px;">
+  <thead><tr style="background:#f0f0f0;"><th style="border:1px solid #ddd;padding:8px;text-align:left;font-size:11px;">N°</th><th style="border:1px solid #ddd;padding:8px;text-align:left;font-size:11px;">Désignation</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">Qté</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">P.U. HT</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">Total HT</th></tr></thead>
+  <tbody>${linesHtml}</tbody>
+</table>
+<div style="display:flex;justify-content:flex-end;margin-top:16px;">
+  <table style="width:280px;font-size:13px;">
+    <tr><td style="padding:6px 12px;color:#666;">Total HT</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.ht)}</td></tr>
+    <tr><td style="padding:6px 12px;color:#666;">TVA 19%</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.tva)}</td></tr>
+    ${inv.timbre>0?`<tr><td style="padding:6px 12px;color:#666;">Timbre 1%</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.timbre)}</td></tr>`:''}
+    <tr style="border-top:2px solid #333;"><td style="padding:8px 12px;font-weight:700;font-size:14px;">Total TTC</td><td style="padding:8px 12px;text-align:right;font-weight:700;font-size:14px;color:#C8782A;">${fmtDZD(inv.ttc)}</td></tr>
+  </table>
+</div>
+${inv.rib?`<div style="margin-top:10px;padding:10px;background:#eff6ff;border-radius:6px;font-size:11px;"><strong>${inv.rib.bank}</strong> — RIB : ${inv.rib.number}</div>`:''}
+${inv.conditions?`<div style="margin-top:10px;padding:10px;background:#f0f0f0;border-radius:6px;font-size:11px;"><strong>Conditions de paiement :</strong> ${inv.conditions}</div>`:''}
+<div style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:60px;">
+  <div style="text-align:center;"><div style="border-bottom:1px solid #333;margin:40px 10px 6px;"></div><p style="font-size:10px;color:#555;margin:0;">Le Client</p></div>
+  <div style="text-align:center;"><div style="border-bottom:1px solid #333;margin:40px 10px 6px;"></div><p style="font-size:10px;color:#555;margin:0;">I.P.C.M BOUTEMA</p></div>
+</div>
+<script>window.onload=function(){window.print();window.close();};<\/script>
+</body></html>`);
+    w.document.close();
+  }
+  // ========== END FACTURATION ==========
+
+  function printWorkerSheetFromData(w) {
+    if (!w) return;
+    const age = calculateAge(w.birth);
+    const logoSrc = document.querySelector('.print-header img')?.src || '';
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
+    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _expWarn = '';
+    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' \u2014 ' + (w.contract||'');
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
+
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Fiche ${w.name} ${w.surname}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;padding:10mm 12mm;line-height:1.8;}
+@page{size:A4 portrait;margin:8mm;}
+@media print{body{padding:0;} *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #C8782A;padding-bottom:8px;margin-bottom:6px;}
+.cn{font-size:13px;font-weight:700;}
+.ci{font-size:9px;color:#555;line-height:1.7;}
+.date{text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 10px;}
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px;}
+.phb{width:110px;height:135px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;overflow:hidden;flex-shrink:0;}
+.phb img{width:100%;height:100%;object-fit:cover;}
+.infos{flex:1;}
+.ttl{text-align:center;font-size:17px;font-weight:700;margin:0 0 14px;text-decoration:underline;text-transform:uppercase;letter-spacing:.04em;}
+.row{margin:5px 0;font-size:13px;}
+.row .lbl{font-weight:700;display:inline-block;min-width:190px;}
+.divider{border:none;border-top:1px solid #ccc;margin:12px 0;}
+</style>
+</head><body>
+
+<div class="hdr">
+  <div>
+    <div class="cn">I.P.C.M BOUTEMA</div>
+    <div class="ci">Entreprise industrielle production d&#x27;ensemble construction m&#xe9;tallique<br>
+    Adresse: Rue des Fr&#xe8;res Djennadi, 3&#xe8;me &#xe9;tage, Lot 35 Div 96, Blida<br>
+    RC: 09/00-4108712A23 | NIF: 16922040023019500900 | NIS: 196922040023050 | BP: 1001369786<br>
+    T&#xe9;l: 0550700196 | Email: direction.ipcmboutema@gmail.com</div>
+  </div>
+  ${ logoSrc ? '<img src="'+logoSrc+'" style="height:48px;object-fit:contain;"/>' : '' }
+</div>
+
+<p class="date">Date : ${today}</p>
+
+<div class="ttl">Fiche de l&#x27;Employ&#xe9;</div>
+
+<div class="top">
+  <div class="infos">
+    <div class="row"><span class="lbl">Nom :</span> ${w.name}</div>
+    <div class="row"><span class="lbl">Pr&#xe9;nom :</span> ${w.surname}</div>
+    <div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
+    <div class="row"><span class="lbl">N&#xB0; Assurance :</span> ${w.ss||''}</div>
+    <div class="row"><span class="lbl">&#xc2;ge :</span> ${age} ans</div>
+    <div class="row"><span class="lbl">T&#xe9;l&#xe9;phone :</span> ${w.phone||''}</div>
+    <div class="row"><span class="lbl">N&#xB0; CIN :</span> ${_cin}</div>
+    <div class="row"><span class="lbl">Situation de sant&#xe9; :</span> ${w.health||''}</div>
+    <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
+    <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
+    <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
+    <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
+  </div>
+  <div class="phb" id="ph-box">Photo</div>
+</div>
+
+<hr class="divider"/>
+<div class="row"><span class="lbl">Net &#xe0; payer :</span> ${_salary}</div>
+<div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
+
+<hr class="divider"/>
+<div class="row"><span class="lbl">Contrat :</span> ${_contrat}</div>
+<div class="row"><span class="lbl">Certificat / Attestation :</span> ${w.cert||''}</div>
+${_expWarn}
+
+<script>window._photoSrc = ${ JSON.stringify(w.photo || '') };
+window.onload=function(){
+  var ph=document.getElementById('ph-box');
+  if(window._photoSrc && ph){
+    var img=new Image();
+    img.style.cssText='width:100%;height:100%;object-fit:cover;';
+    img.onload=function(){ph.innerHTML='';ph.appendChild(img);};
+    img.onerror=function(){ph.textContent='Photo';};
+    img.src=window._photoSrc;
+  }
+  setTimeout(function(){window.print();window.close();},1200);
+};<\/script>
+</body></html>`);
+    win.document.close();
+  }
+
   function renderAll() {
     document.getElementById('foot-date').textContent = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     renderOverview();
@@ -4960,1380 +5642,74 @@ window.app = (() => {
   function importData(input) {
     const file = input.files[0];
     if (!file) return;
-    if (!confirm('Importer ces données ? Cela va remplacer toutes vos données actuelles.')) {
-      input.value = '';
-      return;
-    }
     const reader = new FileReader();
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        if (data.version !== 2) { alert('Format de fichier non reconnu.'); return; }
-        state.transactions = data.transactions || [];
-        state.situations = data.situations || [];
-        state.charges = data.charges || [];
-        state.fournisseurs = data.fournisseurs || [];
-        state.clientNames = data.clientNames || [];
-        state.fournisseurNames = data.fournisseurNames || [];
-        state.projects = data.projects || [];
-        state.simPicks = data.simPicks || {};
-        state.simCustomAmounts = data.simCustomAmounts || {};
-        state.invoices = data.invoices || [];
-        state.ribList = data.ribList || [];
-        state.clientDetails = data.clientDetails || {};
-        state.workers = data.workers || [];
-        state.workSites = data.workSites || [];
-        save(K.transactions, state.transactions);
-        save(K.situations, state.situations);
-        save(K.charges, state.charges);
-        save(K.fournisseurs, state.fournisseurs);
-        save(K.clientNames, state.clientNames);
-        save(K.fournisseurNames, state.fournisseurNames);
-        save(K.projects, state.projects);
-        save(K.simPicks, state.simPicks);
-        save(K.simCustomAmounts, state.simCustomAmounts);
-        save(K.invoices, state.invoices);
-        save(K.ribList, state.ribList);
-        save(K.clientDetails, state.clientDetails);
-        save(K.workers, state.workers);
-        save(K.workSites, state.workSites);
-        renderAll();
-        alert('✅ Données importées avec succès — ' + (data.exportDate ? 'Sauvegarde du ' + new Date(data.exportDate).toLocaleDateString('fr-FR') : ''));
+        if (data.version !== 2) { alert('Format de fichier non reconnu.'); input.value = ''; return; }
+
+        // Build selection dialog
+        const available = [];
+        if (data.workers?.length)           available.push({ key: 'workers',           label: `Personnel (${data.workers.length} employés)`,             checked: true });
+        if (data.workSites?.length)         available.push({ key: 'workSites',          label: `Chantiers (${data.workSites.length})`,                    checked: true });
+        if (data.transactions?.length)      available.push({ key: 'transactions',        label: `Journaux (${data.transactions.length} mouvements)`,        checked: false });
+        if (data.situations?.length)        available.push({ key: 'situations',          label: `Situations clients (${data.situations.length})`,           checked: false });
+        if (data.fournisseurs?.length)      available.push({ key: 'fournisseurs',        label: `Fournisseurs (${data.fournisseurs.length})`,               checked: false });
+        if (data.invoices?.length)          available.push({ key: 'invoices',            label: `Factures (${data.invoices.length})`,                       checked: false });
+        if (data.hrDocuments?.length)       available.push({ key: 'hrDocuments',         label: `Documents RH (${data.hrDocuments.length})`,                checked: false });
+        if (data.clientNames?.length)       available.push({ key: 'clientNames',         label: `Noms clients (${data.clientNames.length})`,                checked: false });
+        if (data.fournisseurNames?.length)  available.push({ key: 'fournisseurNames',    label: `Noms fournisseurs (${data.fournisseurNames.length})`,       checked: false });
+        if (data.charges?.length)           available.push({ key: 'charges',             label: `Charges (${data.charges.length})`,                         checked: false });
+        if (data.projects?.length)          available.push({ key: 'projects',            label: `Projets (${data.projects.length})`,                        checked: false });
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = `
+          <div style="background:var(--bg);border-radius:12px;padding:24px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+            <h3 style="margin:0 0 6px;font-size:16px;">Importer les données</h3>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0 0 16px;">Sélectionnez ce que vous voulez restaurer. Les données non cochées restent intactes.</p>
+            <div id="import-checks" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+              ${available.map(a => `
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;border:1px solid var(--border);border-radius:8px;">
+                  <input type="checkbox" data-key="${a.key}" ${a.checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--gray-900);cursor:pointer;"/>
+                  <span style="font-size:13px;">${a.label}</span>
+                </label>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button id="import-cancel" class="btn-secondary">Annuler</button>
+              <button id="import-confirm" class="btn-primary">Importer la sélection</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+
+        document.getElementById('import-cancel').onclick = () => { document.body.removeChild(overlay); input.value = ''; };
+        document.getElementById('import-confirm').onclick = () => {
+          const checks = overlay.querySelectorAll('input[type=checkbox]');
+          const keyMap = {
+            workers: K.workers, workSites: K.workSites, transactions: K.transactions,
+            situations: K.situations, fournisseurs: K.fournisseurs, invoices: K.invoices,
+            hrDocuments: K.hrDocuments, clientNames: K.clientNames,
+            fournisseurNames: K.fournisseurNames, charges: K.charges, projects: K.projects
+          };
+          checks.forEach(cb => {
+            if (!cb.checked) return;
+            const key = cb.dataset.key;
+            if (data[key] !== undefined) {
+              state[key] = data[key];
+              save(keyMap[key], state[key]);
+            }
+          });
+          document.body.removeChild(overlay);
+          input.value = '';
+          renderAll();
+          alert('✓ Données importées avec succès.');
+        };
       } catch(err) {
-        alert('Erreur lors de l\'importation. Vérifiez que le fichier est correct.');
+        alert('Erreur lors de la lecture du fichier: ' + err.message);
+        input.value = '';
       }
-      input.value = '';
     };
     reader.readAsText(file);
-  }
-
-  function printPage(event, title, landscape) {
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    let card = null;
-    if (event && event.target) {
-      card = event.target.closest('.card');
-    } else {
-      card = document.querySelector('.panel.active .card');
-    }
-    openPrintWindow(`${title} — ${today}`, card, landscape);
-  }
-
-  function printFournisseur(btn, name) {
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const card = btn.closest('.fournisseur-card') || btn.closest('.card');
-    openPrintWindow(`Situation fournisseur : ${name} — ${today}`, card);
-  }
-
-  function showFournisseurReport() {
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const supplierMap = {};
-    state.fournisseurs.forEach(f => {
-      const name = f.name || 'Inconnu';
-      if (!supplierMap[name]) supplierMap[name] = { totalDue: 0, totalPaid: 0, count: 0, unpaid: 0 };
-      supplierMap[name].totalDue += (f.amount || 0);
-      supplierMap[name].totalPaid += fPaid(f);
-      supplierMap[name].count++;
-      if (!fIsPaid(f)) supplierMap[name].unpaid++;
-    });
-
-    const suppliers = Object.entries(supplierMap).sort((a, b) => (b[1].totalDue - b[1].totalPaid) - (a[1].totalDue - a[1].totalPaid));
-    const grandTotalDue = suppliers.reduce((s, [, d]) => s + d.totalDue, 0);
-    const grandTotalPaid = suppliers.reduce((s, [, d]) => s + d.totalPaid, 0);
-    const grandRemaining = grandTotalDue - grandTotalPaid;
-    const totalFactures = suppliers.reduce((s, [, d]) => s + d.count, 0);
-    const totalUnpaid = suppliers.reduce((s, [, d]) => s + d.unpaid, 0);
-
-    const el = document.getElementById('fournisseur-report-content');
-    el.innerHTML = `
-      <div style="margin-bottom:16px;">
-        <p style="font-size:12px; color:var(--text-secondary); margin:0 0 12px;">Rapport généré le ${today}</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
-          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
-            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Fournisseurs</p>
-            <p style="font-size:18px; font-weight:700; margin:0;">${suppliers.length}</p>
-          </div>
-          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
-            <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Factures</p>
-            <p style="font-size:18px; font-weight:700; margin:0;">${totalFactures} <span style="font-size:11px; color:var(--danger-text);">(${totalUnpaid} impayées)</span></p>
-          </div>
-          <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
-            <p style="font-size:10px; color:var(--ok-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Total payé</p>
-            <p style="font-size:18px; font-weight:700; margin:0; color:var(--ok-text);">${fmtDZD(grandTotalPaid)}</p>
-          </div>
-          <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
-            <p style="font-size:10px; color:var(--danger-text); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Reste à payer</p>
-            <p style="font-size:18px; font-weight:700; margin:0; color:var(--danger-text);">${fmtDZD(grandRemaining)}</p>
-          </div>
-        </div>
-      </div>
-      <table class="mod">
-        <thead><tr>
-          <th>Fournisseur</th>
-          <th style="text-align:center">Factures</th>
-          <th style="text-align:center">Impayées</th>
-          <th style="text-align:right">Total dû</th>
-          <th style="text-align:right">Payé</th>
-          <th style="text-align:right">Restant</th>
-        </tr></thead>
-        <tbody>
-          ${suppliers.map(([name, d]) => {
-            const rem = Math.round((d.totalDue - d.totalPaid) * 100) / 100;
-            const pct = d.totalDue > 0 ? Math.round(100 * d.totalPaid / d.totalDue) : 0;
-            return `<tr>
-              <td style="font-weight:600">${name}</td>
-              <td style="text-align:center">${d.count}</td>
-              <td style="text-align:center; color:${d.unpaid > 0 ? 'var(--danger-text)' : 'var(--ok-text)'}; font-weight:600;">${d.unpaid}</td>
-              <td style="text-align:right">${fmtDZD(d.totalDue)}</td>
-              <td style="text-align:right; color:var(--ok-text);">${fmtDZD(d.totalPaid)}</td>
-              <td style="text-align:right; font-weight:600; color:${rem > 0.01 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(rem)}</td>
-            </tr>`;
-          }).join('')}
-          <tr style="background:var(--bg-muted); font-weight:700;">
-            <td>TOTAL</td>
-            <td style="text-align:center">${totalFactures}</td>
-            <td style="text-align:center; color:${totalUnpaid > 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${totalUnpaid}</td>
-            <td style="text-align:right">${fmtDZD(grandTotalDue)}</td>
-            <td style="text-align:right; color:var(--ok-text);">${fmtDZD(grandTotalPaid)}</td>
-            <td style="text-align:right; color:${grandRemaining > 0.01 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(grandRemaining)}</td>
-          </tr>
-        </tbody>
-      </table>`;
-
-    document.getElementById('fournisseur-report-card').style.display = 'block';
-    document.getElementById('fournisseur-report-card').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function printFournisseurReport() {
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const card = document.getElementById('fournisseur-report-card');
-    openPrintWindow(`Rapport global — Dettes fournisseurs — ${today}`, card);
-  }
-
-  // ========== FACTURATION ==========
-
-  function renderFacturation() {
-    const sel = document.getElementById('inv-client-list');
-    if (sel) {
-      sel.innerHTML = state.clientNames.map(c => `<option value="${c}">`).join('');
-    }
-    const cdSel = document.getElementById('cd-client');
-    if (cdSel) {
-      const currentVal = cdSel.value;
-      cdSel.innerHTML = '<option value="">— Choisir —</option>' + state.clientNames.map(c => `<option value="${c}">${c}</option>`).join('');
-      if (currentVal) cdSel.value = currentVal;
-    }
-    const numEl = document.getElementById('inv-number');
-    if (numEl && !numEl.value) {
-      const year = new Date().getFullYear();
-      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
-      const next = String(yearInvoices.length + 1).padStart(2, '0');
-      numEl.placeholder = `${next}/${year}`;
-    }
-    const dateEl = document.getElementById('inv-date');
-    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
-    const ribSel = document.getElementById('inv-rib');
-    if (ribSel) {
-      ribSel.innerHTML = '<option value="">— Aucun —</option>' + (state.ribList || []).map((r, i) => `<option value="${i}">${r.bank} — ${r.number}</option>`).join('');
-    }
-    if (_invLines.length === 0) _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }];
-    const linesEl = document.getElementById('inv-lines');
-    if (linesEl) {
-      const units = ['kg', 'm²', 'm³', 'ml', 'U', 'ens', 'h'];
-      linesEl.innerHTML = _invLines.map((l, i) => {
-        const unit = l.unit || 'kg';
-        return `
-        <div style="display:grid; grid-template-columns:2fr 80px 80px 110px 110px 30px; gap:6px; margin-bottom:6px;">
-          <input type="text" placeholder="Désignation" value="${(l.desc||'').replace(/"/g, '&quot;')}" onchange="app.invSetLine(${i},'desc',this.value)"/>
-          <select onchange="app.invSetLine(${i},'unit',this.value)">
-            ${units.map(u => `<option value="${u}" ${u===unit?'selected':''}>${u}</option>`).join('')}
-          </select>
-          <input type="number" placeholder="Qté" value="${l.qty}" step="0.0001" onchange="app.invSetLine(${i},'qty',this.value)" class="num-input"/>
-          <input type="number" placeholder="P.U." value="${l.pu}" step="0.01" onchange="app.invSetLine(${i},'pu',this.value)" class="num-input"/>
-          <input type="text" value="${fmtDZD(l.qty * l.pu)}" disabled style="background:var(--bg-muted); text-align:right; font-variant-numeric:tabular-nums;"/>
-          <button class="ghost-btn" onclick="app.invDelLine(${i})">×</button>
-        </div>`;
-      }).join('');
-    }
-    renderClientDetailsList();
-    invUpdateTotals();
-  }
-
-  function invSetLine(i, key, val) {
-    if (!_invLines[i]) return;
-    if (key === 'qty' || key === 'pu') _invLines[i][key] = parseFloat(val) || 0;
-    else _invLines[i][key] = val;
-    invUpdateTotals();
-    const lineEl = document.getElementById('inv-lines').children[i];
-    if (lineEl && lineEl.children[4]) lineEl.children[4].value = fmtDZD(_invLines[i].qty * _invLines[i].pu);
-  }
-  function invAddLine() { _invLines.push({ desc: '', unit: 'kg', qty: 1, pu: 0 }); renderFacturation(); }
-  function invDelLine(i) { _invLines.splice(i, 1); if (_invLines.length === 0) _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }]; renderFacturation(); }
-  function invReset() {
-    _invLines = [{ desc: '', unit: 'kg', qty: 1, pu: 0 }];
-    ['inv-number','inv-conditions','inv-project','inv-ouvrage','inv-site'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
-    renderFacturation();
-  }
-
-  // Client fiscal details management
-  function saveClientDetails() {
-    const client = document.getElementById('cd-client').value;
-    if (!client) { alert('Choisis un client'); return; }
-    const details = {
-      fullname: document.getElementById('cd-fullname').value.trim(),
-      address: document.getElementById('cd-address').value.trim(),
-      tin: document.getElementById('cd-tin').value.trim(),
-      nif: document.getElementById('cd-nif').value.trim(),
-      nis: document.getElementById('cd-nis').value.trim(),
-      rc: document.getElementById('cd-rc').value.trim(),
-      ai: document.getElementById('cd-ai').value.trim()
-    };
-    if (!state.clientDetails) state.clientDetails = {};
-    state.clientDetails[client] = details;
-    save(K.clientDetails, state.clientDetails);
-    ['cd-fullname','cd-address','cd-tin','cd-nif','cd-nis','cd-rc','cd-ai'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('cd-client').value = '';
-    renderClientDetailsList();
-    alert('✅ Informations enregistrées pour ' + client);
-  }
-
-  function loadClientDetailsToForm(client) {
-    const d = state.clientDetails && state.clientDetails[client];
-    if (!d) {
-      ['cd-fullname','cd-address','cd-tin','cd-nif','cd-nis'].forEach(id => document.getElementById(id).value = '');
-      return;
-    }
-    document.getElementById('cd-fullname').value = d.fullname || '';
-    document.getElementById('cd-address').value = d.address || '';
-    document.getElementById('cd-tin').value = d.tin || '';
-    document.getElementById('cd-nif').value = d.nif || '';
-    document.getElementById('cd-nis').value = d.nis || '';
-    document.getElementById('cd-rc').value = d.rc || '';
-    document.getElementById('cd-ai').value = d.ai || '';
-  }
-
-  function deleteClientDetails(name) {
-    if (!confirm('Supprimer les infos fiscales de ' + name + ' ?')) return;
-    if (state.clientDetails && state.clientDetails[name]) delete state.clientDetails[name];
-    save(K.clientDetails, state.clientDetails);
-    renderClientDetailsList();
-  }
-
-  function renderClientDetailsList() {
-    const el = document.getElementById('client-details-list');
-    if (!el) return;
-    const entries = Object.entries(state.clientDetails || {});
-    if (entries.length === 0) {
-      el.innerHTML = '<p style="font-size:12px; color:var(--text-tertiary);">Aucune info fiscale enregistrée.</p>';
-      return;
-    }
-    el.innerHTML = entries.map(([name, d]) => `
-      <div style="padding:10px 12px; background:var(--bg-muted); border-radius:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-        <div style="flex:1; font-size:12px;">
-          <div style="font-weight:700; margin-bottom:2px;">${name}</div>
-          ${d.fullname ? `<div style="color:var(--text-secondary);">${d.fullname}</div>` : ''}
-          ${d.address ? `<div style="color:var(--text-tertiary); font-size:11px;">${d.address}</div>` : ''}
-          <div style="color:var(--text-tertiary); font-size:11px; margin-top:2px;">
-            ${d.tin ? 'TIN: ' + d.tin : ''} ${d.nif ? '· NIF: ' + d.nif : ''} ${d.nis ? '· NIS: ' + d.nis : ''} ${d.rc ? '· RC: ' + d.rc : ''} ${d.ai ? '· AI: ' + d.ai : ''}
-          </div>
-        </div>
-        <div style="display:flex; gap:4px;">
-          <button class="btn-secondary" style="font-size:11px;" onclick="document.getElementById('cd-client').value='${name}'; app.loadClientDetailsToForm('${name}');">Modifier</button>
-          <button class="ghost-btn" onclick="app.deleteClientDetails('${name.replace(/'/g, '\\\'')}')">×</button>
-        </div>
-      </div>`).join('');
-  }
-
-  function invUpdateTotals() {
-    const ht = _invLines.reduce((s, l) => s + l.qty * l.pu, 0);
-    const tva = ht * 0.19;
-    const timbre = (document.getElementById('inv-timbre')?.value === '1') ? Math.round(ht * 0.02) : 0;
-    const ttc = ht + tva + timbre;
-    const el = document.getElementById('inv-totals');
-    if (el) {
-      el.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">Total HT</span><span style="font-weight:600;">${fmtDZD(ht)}</span></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">TVA 19%</span><span style="font-weight:600;">${fmtDZD(tva)}</span></div>
-        ${timbre > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:13px;"><span style="color:var(--text-secondary);">Timbre fiscal 2%</span><span style="font-weight:600;">${fmtDZD(timbre)}</span></div>` : ''}
-        <div style="display:flex; justify-content:space-between; padding-top:6px; border-top:1px solid var(--border); font-size:15px;"><span style="font-weight:700;">Total TTC</span><span style="font-weight:700; color:var(--accent);">${fmtDZD(ttc)}</span></div>`;
-    }
-  }
-
-  function saveInvoice() {
-    const type = document.getElementById('inv-type').value;
-    let number = document.getElementById('inv-number').value.trim();
-    if (!number) {
-      const year = new Date().getFullYear();
-      const yearInvoices = (state.invoices || []).filter(i => (i.number || '').endsWith('/' + year));
-      number = String(yearInvoices.length + 1).padStart(2, '0') + '/' + year;
-    }
-    const date = document.getElementById('inv-date').value;
-    const place = document.getElementById('inv-place').value.trim() || 'Blida';
-    const client = document.getElementById('inv-client').value;
-    const project = document.getElementById('inv-project').value;
-    const ouvrage = document.getElementById('inv-ouvrage').value;
-    const site = document.getElementById('inv-site').value;
-    const timbreOn = document.getElementById('inv-timbre').value === '1';
-    const ribIdx = document.getElementById('inv-rib').value;
-    const conditions = document.getElementById('inv-conditions').value;
-
-    if (!client) { alert('Choisis un client'); return; }
-    const validLines = _invLines.filter(l => l.desc && l.qty > 0 && l.pu >= 0);
-    if (validLines.length === 0) { alert('Ajoute au moins une ligne valide'); return; }
-
-    const ht = validLines.reduce((s, l) => s + l.qty * l.pu, 0);
-    const tva = ht * 0.19;
-    const timbre = timbreOn ? Math.round(ht * 0.02) : 0;
-    const ttc = ht + tva + timbre;
-    const rib = ribIdx !== '' ? state.ribList[parseInt(ribIdx)] : null;
-    const clientDetails = (state.clientDetails && state.clientDetails[client]) || null;
-
-    const invoice = { id: Date.now(), type, number, date, place, client, clientDetails, project, ouvrage, site, lines: validLines, ht, tva, timbre, ttc, rib, conditions };
-    if (!state.invoices) state.invoices = [];
-    state.invoices.push(invoice);
-    save(K.invoices, state.invoices);
-
-    if (type !== 'proforma') {
-      state.situations.push({
-        id: Date.now() + 1,
-        client,
-        project: project || '',
-        number,
-        date,
-        amount: ttc,
-        payments: [],
-        contractType: 'formel',
-        invoiceId: invoice.id
-      });
-      save(K.situations, state.situations);
-    }
-
-    invReset();
-    renderAll();
-    alert(`✅ Facture ${number} enregistrée${type !== 'proforma' ? ' et situation client créée' : ''}`);
-  }
-
-  function deleteInvoice(idx) {
-    if (!confirm('Supprimer cette facture ?')) return;
-    const inv = state.invoices[idx];
-    if (inv && inv.id) {
-      state.situations = state.situations.filter(s => s.invoiceId !== inv.id);
-      save(K.situations, state.situations);
-    }
-    state.invoices.splice(idx, 1);
-    save(K.invoices, state.invoices);
-    renderAll();
-  }
-
-  function renderInvoices() {
-    const el = document.getElementById('invoices-table');
-    if (!el) return;
-    if (!state.invoices || state.invoices.length === 0) {
-      el.innerHTML = '<div class="empty-state">Aucune facture émise.</div>';
-      return;
-    }
-    const sorted = state.invoices.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    el.innerHTML = `<table class="mod">
-      <thead><tr><th>N°</th><th>Type</th><th>Client</th><th style="text-align:right">TTC</th><th></th><th style="text-align:right">Date</th></tr></thead>
-      <tbody>${sorted.map(inv => {
-        const realIdx = state.invoices.indexOf(inv);
-        return `<tr>
-          <td style="font-weight:600;">${inv.number}</td>
-          <td><span class="badge ${inv.type === 'proforma' ? 'b-info' : 'b-ok'}">${inv.type === 'proforma' ? 'Proforma' : 'Facture'}</span></td>
-          <td>${inv.client}</td>
-          <td style="text-align:right; font-weight:600;">${fmtDZD(inv.ttc)}</td>
-          <td style="text-align:right; white-space:nowrap;">
-            <button class="btn-secondary" style="font-size:11px;" onclick="app.printInvoice(${realIdx})">Imprimer</button>
-            <button class="ghost-btn" onclick="app.deleteInvoice(${realIdx})">×</button>
-          </td>
-          <td style="text-align:right; color:var(--text-secondary); font-size:11px;">${inv.date}</td>
-        </tr>`;
-      }).join('')}</tbody></table>`;
-  }
-
-  function addRib() {
-    const bank = document.getElementById('rib-bank').value.trim();
-    const number = document.getElementById('rib-number').value.trim();
-    if (!bank || !number) { alert('Remplir banque et RIB'); return; }
-    if (!state.ribList) state.ribList = [];
-    state.ribList.push({ bank, number });
-    save(K.ribList, state.ribList);
-    document.getElementById('rib-bank').value = '';
-    document.getElementById('rib-number').value = '';
-    renderRibs();
-    renderFacturation();
-  }
-
-  function deleteRib(idx) {
-    if (!confirm('Supprimer ce RIB ?')) return;
-    state.ribList.splice(idx, 1);
-    save(K.ribList, state.ribList);
-    renderRibs();
-    renderFacturation();
-  }
-
-  function renderRibs() {
-    const el = document.getElementById('rib-list');
-    if (!el) return;
-    if (!state.ribList || state.ribList.length === 0) {
-      el.innerHTML = '<p style="font-size:12px; color:var(--text-tertiary);">Aucun RIB enregistré.</p>';
-      return;
-    }
-    el.innerHTML = state.ribList.map((r, i) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-muted); border-radius:6px; margin-bottom:4px;">
-        <div><strong>${r.bank}</strong> <span style="font-family:monospace; color:var(--text-secondary);">${r.number}</span></div>
-        <button class="ghost-btn" onclick="app.deleteRib(${i})">×</button>
-      </div>`).join('');
-  }
-
-  // Convert number to French words (for "Arrête la présente facture à la somme de...")
-  function numberToFrenchWords(n) {
-    const ones = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
-    const tens = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
-    function below1000(num) {
-      if (num === 0) return '';
-      let str = '';
-      const h = Math.floor(num / 100);
-      const r = num % 100;
-      if (h === 1) str += 'cent';
-      else if (h > 1) str += ones[h] + ' cent' + (r === 0 ? 's' : '');
-      if (r === 0) return str.trim();
-      if (str) str += ' ';
-      if (r < 20) str += ones[r];
-      else {
-        const t = Math.floor(r / 10);
-        const u = r % 10;
-        if (t === 7 || t === 9) {
-          str += tens[t] + (u === 1 && t === 7 ? ' et ' : '-') + ones[10 + u];
-        } else {
-          str += tens[t];
-          if (u === 1 && t < 8) str += ' et un';
-          else if (u > 0) str += '-' + ones[u];
-          else if (t === 8) str += 's';
-        }
-      }
-      return str.trim();
-    }
-    if (n === 0) return 'zéro';
-    n = Math.floor(Math.abs(n));
-    let result = '';
-    const millions = Math.floor(n / 1000000);
-    const thousands = Math.floor((n % 1000000) / 1000);
-    const rest = n % 1000;
-    if (millions > 0) result += (millions === 1 ? 'un million' : below1000(millions) + ' millions') + ' ';
-    if (thousands > 0) result += (thousands === 1 ? 'mille' : below1000(thousands) + ' mille') + ' ';
-    if (rest > 0) result += below1000(rest);
-    return result.trim();
-  }
-
-  function printInvoice(idx) {
-    const inv = state.invoices[idx];
-    if (!inv) return;
-    const typeLabel = { proforma: 'FACTURE PROFORMA', finale: 'FACTURE' }[inv.type] || 'FACTURE';
-    const w = window.open('', '_blank');
-    if (!w) {
-      alert('⚠ Le navigateur a bloqué la nouvelle fenêtre. Autorise les pop-ups pour ce site et réessaie.');
-      return;
-    }
-    // Fallback for fiscal details if they were updated after invoice creation
-    const currentCD = state.clientDetails && state.clientDetails[inv.client];
-    const cd = inv.clientDetails || currentCD || {};
-    const dateFmt = inv.date ? new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    const place = inv.place || 'Blida';
-    const totalWords = numberToFrenchWords(Math.round(inv.ttc)) + ' dinars algériens';
-
-    // Get the EXACT header HTML used by the rest of the app (with real logo embedded)
-    const headerEl = document.querySelector('.print-header');
-    let headerHtml = '';
-    if (headerEl) {
-      const clone = headerEl.cloneNode(true);
-      // Update title
-      const pageInfo = clone.querySelector('#print-page-info');
-      if (pageInfo) pageInfo.textContent = `${typeLabel} N° ${inv.number} — ${place}, le ${dateFmt}`;
-      headerHtml = clone.outerHTML;
-    }
-
-    const linesHtml = inv.lines.map((l, i) => `
-      <tr>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px; color:#4B5563; text-align:center;">${String(i + 1).padStart(2, '0')}</td>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px;">${l.desc}</td>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px; text-align:center; color:#4B5563;">${l.unit || ''}</td>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px; text-align:right; font-variant-numeric:tabular-nums;">${l.qty}</td>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px; text-align:right; font-variant-numeric:tabular-nums;">${fmtDZD(l.pu)}</td>
-        <td style="padding:9px 10px; border-bottom:1px solid #E5E7EB; font-size:12px; text-align:right; font-variant-numeric:tabular-nums; font-weight:600;">${fmtDZD(l.qty * l.pu)}</td>
-      </tr>`).join('');
-
-    w.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title> </title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #111827; padding: 0; margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  table { border-collapse: collapse; width: 100%; }
-  @page { margin: 10mm 10mm 18mm 10mm; size: A4; }
-  @page :first { margin-top: 8mm; }
-  .print-header { display: block !important; text-align: left; margin-bottom: 8px; }
-  #print-page-info, #print-page-info-clone { display: none !important; }
-</style></head><body>
-
-  <!-- IPCM BOUTEMA Header (real logo, same as other prints) -->
-  ${headerHtml}
-
-  <!-- Two-column meta block -->
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:18px; margin-bottom:18px;">
-    <div>
-      <p style="font-size:10px; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin:0 0 6px;">Émetteur</p>
-      <p style="margin:0; font-weight:700; font-size:13px;">IPCM Boutema</p>
-      ${inv.project ? `<p style="margin:6px 0 0; font-size:12px; color:#4B5563;"><strong>Projet :</strong> ${inv.project}</p>` : ''}
-      ${inv.ouvrage ? `<p style="margin:2px 0 0; font-size:12px; color:#4B5563;"><strong>Ouvrage :</strong> ${inv.ouvrage}</p>` : ''}
-      ${inv.site ? `<p style="margin:2px 0 0; font-size:12px; color:#4B5563;"><strong>Site :</strong> ${inv.site}</p>` : ''}
-    </div>
-    <div style="background:#f3f3f3; padding:12px 14px; border-radius:8px;">
-      <p style="font-size:10px; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin:0 0 6px;">Client</p>
-      <p style="margin:0; font-weight:700; font-size:13px;">${inv.client}</p>
-      ${cd.fullname ? `<p style="margin:4px 0 0; font-size:11px; color:#4B5563;">${cd.fullname}</p>` : ''}
-      ${cd.address ? `<p style="margin:4px 0 0; font-size:10.5px; color:#6B7280;">${cd.address}</p>` : ''}
-      ${(cd.tin || cd.nif || cd.nis || cd.rc || cd.ai) ? `<div style="margin-top:6px; font-size:11px; color:#6B7280; line-height:1.5; display:grid; grid-template-columns:1fr 1fr; gap:0 12px;">
-        ${cd.tin ? `<div><strong>TIN :</strong> ${cd.tin}</div>` : ''}
-        ${cd.nif ? `<div><strong>NIF :</strong> ${cd.nif}</div>` : ''}
-        ${cd.nis ? `<div><strong>NIS :</strong> ${cd.nis}</div>` : ''}
-        ${cd.rc ? `<div><strong>RC :</strong> ${cd.rc}</div>` : ''}
-        ${cd.ai ? `<div><strong>AI :</strong> ${cd.ai}</div>` : ''}
-      </div>` : ''}
-    </div>
-  </div>
-
-  <!-- Lines table -->
-  <table style="margin-top:8px; border-radius:8px; overflow:hidden;">
-    <thead>
-      <tr style="background:#f3f3f3;">
-        <th style="padding:10px; text-align:center; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">N°</th>
-        <th style="padding:10px; text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Désignation</th>
-        <th style="padding:10px; text-align:center; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">U</th>
-        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Quantité</th>
-        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Prix unitaire</th>
-        <th style="padding:10px; text-align:right; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:#4B5563; font-weight:700; border-bottom:2px solid #E5E7EB;">Montant</th>
-      </tr>
-    </thead>
-    <tbody>${linesHtml}</tbody>
-  </table>
-
-  <!-- Totals box -->
-  <div style="display:flex; justify-content:flex-end; margin-top:14px;">
-    <table style="width:300px; font-size:12px;">
-      <tr>
-        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">Montant HT</td>
-        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.ht)}</td>
-      </tr>
-      <tr>
-        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">TVA 19%</td>
-        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.tva)}</td>
-      </tr>
-      ${inv.timbre > 0 ? `<tr>
-        <td style="padding:8px 12px; color:#4B5563; border-bottom:1px solid #E5E7EB;">Timbre fiscal 2%</td>
-        <td style="padding:8px 12px; text-align:right; font-weight:600; border-bottom:1px solid #E5E7EB; font-variant-numeric:tabular-nums;">${fmtDZD(inv.timbre)}</td>
-      </tr>` : ''}
-      <tr style="background:#f3f3f3;">
-        <td style="padding:10px 12px; font-weight:700; font-size:13px; color:#171717;">Montant TTC</td>
-        <td style="padding:10px 12px; text-align:right; font-weight:700; font-size:14px; color:#171717; font-variant-numeric:tabular-nums;">${fmtDZD(inv.ttc)}</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- Total in words BELOW the totals box -->
-  <div style="margin-top:14px; padding:12px 14px; background:#f3f3f3; border-radius:8px; font-size:12px; font-style:italic; color:#1F2937;">
-    <strong style="font-style:normal;">Arrêtée la présente ${typeLabel.toLowerCase()} à la somme de :</strong><br>
-    ${totalWords}.
-  </div>
-
-  ${inv.conditions ? `<div style="margin-top:18px; padding:10px 14px; background:#FFFBEB; border-radius:6px; font-size:12px; border-left:3px solid #D97706;"><strong>Conditions de paiement :</strong> ${inv.conditions}</div>` : ''}
-  ${inv.rib ? `<div style="margin-top:8px; padding:10px 14px; background:#f3f3f3; border-radius:6px; font-size:12px; border-left:3px solid #383838;"><strong>${inv.rib.bank}</strong> — RIP : <span style="font-family:monospace;">${inv.rib.number}</span></div>` : ''}
-
-  <!-- Signature -->
-  <div style="margin-top:50px; display:flex; justify-content:flex-end;">
-    <div style="text-align:center; min-width:200px;">
-      <p style="margin:0 0 4px; font-size:12px; color:#4B5563; font-weight:600;">Le Gérant</p>
-      <div style="border-bottom:1px solid #333; margin-top:50px;"></div>
-    </div>
-  </div>
-
-</body></html>`);
-    w.document.close();
-    setTimeout(() => { w.focus(); w.print(); }, 600);
-  }
-  // ========== END FACTURATION ==========
-
-  // ========== RH MODULE ==========
-
-  function calculateAge(birthDate) {
-    if (!birthDate) return '—';
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-  }
-
-  function renderWorkers() {
-    const el = document.getElementById('workers-table');
-    if (!el) return;
-    const search = (document.getElementById('workers-search')?.value || '').toLowerCase().trim();
-    let workers = (state.workers || []).map((w, i) => ({ ...w, _idx: i }));
-    if (search) {
-      workers = workers.filter(w =>
-        (w.name || '').toLowerCase().includes(search) ||
-        (w.surname || '').toLowerCase().includes(search) ||
-        (w.function || '').toLowerCase().includes(search) ||
-        (w.ss || '').toLowerCase().includes(search) ||
-        (w.cin || '').toLowerCase().includes(search)
-      );
-    }
-    if (workers.length === 0) {
-      el.innerHTML = search
-        ? `<div class="empty-state">Aucun employé trouvé pour "<strong>${search}</strong>".</div>`
-        : '<div class="empty-state">Aucun employé enregistré.</div>';
-      return;
-    }
-
-    el.innerHTML = `<table class="mod">
-      <thead><tr>
-        <th>Nom & Prénom</th>
-        <th>Âge</th>
-        <th>Fonction</th>
-        <th>Entrée</th>
-        <th>Contrat</th>
-        <th>État Civil</th>
-        <th>N° Assurance</th>
-        <th></th>
-      </tr></thead>
-      <tbody>${workers.map(w => `
-        <tr>
-          <td style="font-weight:600;">${w.name} ${w.surname}</td>
-          <td>${calculateAge(w.birth)} ans</td>
-          <td>${w.function || '—'}</td>
-          <td>${w.entry || '—'}</td>
-          <td><span class="badge b-info">${w.contract || '—'}</span></td>
-          <td>${w.status || '—'}</td>
-          <td style="font-family:monospace;">${w.ss || '—'}</td>
-          <td style="text-align:right; white-space:nowrap;">
-            <button class="ghost-btn" title="Modifier (fiche complète)" onclick="app.editWorkerInPanel(${w._idx})">&#9998;</button>
-            <button class="ghost-btn" title="Imprimer la fiche" onclick="app.printWorkerSheet(${w._idx})" style="color:var(--accent);">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            </button>
-            <button class="ghost-btn" title="Supprimer" onclick="app.deleteWorker(${w._idx})">×</button>
-          </td>
-        </tr>`).join('')}</tbody></table>`;
-  }
-
-  function renderHrContracts() {
-    const el = document.getElementById('hr-contracts-table');
-    if (!el) return;
-    
-    const today = new Date();
-    if (!state.workers || state.workers.length === 0) {
-      el.innerHTML = '<div class="empty-state">Aucun employé pour le suivi.</div>';
-      return;
-    }
-
-    const tableHtml = `
-      <table class="mod">
-        <thead><tr>
-          <th>Employé</th>
-          <th>Type</th>
-          <th>Actions</th>
-          <th style="text-align:right">Début</th>
-          <th style="text-align:right">Fin</th>
-        </tr></thead>
-        <tbody>${state.workers.map((w, i) => {
-          const days = w.contractEnd ? daysBetween(today, parseD(w.contractEnd)) : null;
-          const statusClass = days !== null && days <= 15 ? 'color:var(--danger-text); font-weight:700;' : '';
-          
-          return `
-          <tr>
-            <td><strong>${w.name} ${w.surname}</strong><br><small style="color:var(--text-tertiary)">${w.function}</small></td>
-            <td><span class="badge b-info" style="font-size:11px;">${w.contract || '—'}</span></td>
-            <td style="text-align:right; white-space:nowrap;">
-              <button class="ghost-btn" title="Archiver (Fin de contrat)" onclick="app.archiveOnly(${i})" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Archiver
-              </button>
-              <button class="ghost-btn" title="Renouveler" onclick="app.archiveAndRenew(${i})" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);padding:3px 8px;border:1px solid var(--border);border-radius:4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-                Renouveler
-              </button>
-              ${w.history && w.history.length > 0 ? 
-                `<button class="ghost-btn" title="Historique" onclick="app.toggleWorkerHistory(${i})" style="color:var(--text-tertiary); font-size:18px;">📋</button>` : ''}
-            </td>
-            <td style="font-size:12px; text-align:right; color:var(--text-secondary);">${w.entry || '—'}</td>
-            <td style="font-size:12px; text-align:right; ${statusClass}">${w.contractEnd || '—'}</td>
-          </tr>
-          <tr id="history-${i}" style="display:none; background:var(--bg-muted);">
-            <td colspan="5" style="padding:15px;">
-              <p style="font-size:11px; color:var(--text-tertiary); text-transform:uppercase; font-weight:700; margin:0 0 10px;">Historique des anciens contrats</p>
-              <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
-                ${(w.history || []).map(h => `
-                  <div style="background:white; border:1px solid var(--border); border-radius:8px; padding:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                      <span class="badge b-neutral" style="font-size:10px;">${h.type}</span>
-                    </div>
-                    <div style="font-size:12px; color:var(--text-secondary);">
-                      <strong>${h.start}</strong> au <strong>${h.end}</strong>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </td>
-          </tr>`;
-        }).join('')}</tbody></table>`;
-    
-    el.innerHTML = tableHtml;
-  }
-
-  function renderHrNotifications() {
-    const el = document.getElementById('hr-notifications-list');
-    if (!el) return;
-
-    const today = new Date();
-    const alerts = state.workers.filter(w => {
-      if (!w.contractEnd) return false;
-      const days = daysBetween(today, parseD(w.contractEnd));
-      return days <= 15;
-    }).sort((a, b) => (a.contractEnd || '').localeCompare(b.contractEnd || ''));
-
-    // Update Sidebar Dot
-    const navBtn = document.getElementById('nav-hr-notifications');
-    if (navBtn) {
-      navBtn.classList.toggle('has-alert', alerts.length > 0);
-    }
-
-    if (alerts.length === 0) {
-      el.innerHTML = '<div class="empty-state">Aucune notification pour le moment.</div>';
-      return;
-    }
-
-    el.innerHTML = `
-      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px;">
-        ${alerts.map(w => {
-          const days = daysBetween(today, parseD(w.contractEnd));
-          return `
-            <div style="background:white; border:1px solid var(--border); border-radius:12px; padding:15px; border-left:5px solid var(--danger-text);">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                <div>
-                  <p style="margin:0; font-weight:700; font-size:15px;">${w.name} ${w.surname}</p>
-                  <p style="margin:2px 0 0; font-size:12px; color:var(--text-secondary);">${w.function}</p>
-                </div>
-                <span class="badge ${days < 0 ? 'b-danger' : 'b-warn'}">${days < 0 ? 'Expiré' : 'Échéance'}</span>
-              </div>
-              <p style="margin:0 0 15px; font-size:13px; color:var(--text-primary);">
-                ${days < 0 ? `Le contrat a expiré il y a <strong>${Math.abs(days)} jours</strong>.` : `Le contrat expire dans <strong>${days} jours</strong> (${w.contractEnd}).`}
-              </p>
-              <div style="display:flex; gap:8px;">
-                <button class="btn-primary" style="flex:1; height:32px; font-size:12px;" onclick="app.viewInSuivi(${state.workers.indexOf(w)})">Voir dans Suivi Contrat</button>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  function viewInSuivi(idx) {
-    app.switchModule('rh');
-    const panelBtn = document.querySelector('.nav-btn[data-panel="hr-contracts"]');
-    if (panelBtn) panelBtn.click();
-    
-    // Smooth scroll and highlight
-    setTimeout(() => {
-      const rows = document.querySelectorAll('#hr-contracts-table tr');
-      const w = state.workers[idx];
-      rows.forEach(row => {
-        if (row.innerText.includes(w.name) && row.innerText.includes(w.surname)) {
-          row.style.background = '#FEF3C7'; 
-          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => { 
-            row.style.transition = 'background 1s'; 
-            row.style.background = 'transparent'; 
-          }, 3000);
-        }
-      });
-    }, 150);
-  }
-
-  function toggleWorkerHistory(idx) {
-    const el = document.getElementById(`history-${idx}`);
-    if (el) {
-      el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
-    }
-  }
-
-  function archiveOnly(idx) {
-    const w = state.workers[idx];
-    if (!w.contract || !w.contractEnd) {
-      alert("Données de contrat incomplètes.");
-      return;
-    }
-    if (!confirm(`Archiver le contrat actuel de ${w.name} ?`)) return;
-
-    if (!w.history) w.history = [];
-    w.history.push({ type: w.contract, start: w.entry || '?', end: w.contractEnd });
-
-    w.contract = '';
-    w.entry = '';
-    w.contractEnd = '';
-
-    save(K.workers, state.workers);
-    renderAll();
-  }
-
-  function archiveAndRenew(idx) {
-    const w = state.workers[idx];
-    if (!w.contract || !w.contractEnd) {
-      alert("Le contrat actuel n'est pas complet.");
-      return;
-    }
-    if (!confirm(`Archiver et préparer le renouvellement pour ${w.name} ?`)) return;
-
-    if (!w.history) w.history = [];
-    w.history.push({ type: w.contract, start: w.entry || '?', end: w.contractEnd });
-
-    const oldEnd = parseD(w.contractEnd);
-    if (oldEnd) {
-      const nextDay = new Date(oldEnd);
-      nextDay.setDate(nextDay.getDate() + 1);
-      w.entry = nextDay.toISOString().split('T')[0];
-    }
-    w.contractEnd = ''; 
-
-    save(K.workers, state.workers);
-    app.editWorker(idx);
-    renderAll();
-  }
-
-  function archiveCurrentContract(idx) {
-    archiveAndRenew(idx);
-  }
-
-  function populateWkWorksiteSelect(currentWsIdx) {
-    const sel = document.getElementById('wk-worksite');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">— Aucun chantier —</option>' +
-      state.workSites.map((ws, i) =>
-        `<option value="${i}" ${i === currentWsIdx ? 'selected' : ''}>${ws.name}</option>`
-      ).join('');
-  }
-
-  function previewWorkerPhoto(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      state._workerPhotoData = e.target.result;
-      const preview = document.getElementById('wk-photo-preview');
-      if (preview) { preview.src = e.target.result; preview.style.display = 'block'; }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function openWorkerModal() {
-    state.editingWorkerIdx = null;
-    document.getElementById('worker-modal-title').textContent = 'Nouvel employé';
-    ['wk-name','wk-surname','wk-birth','wk-function','wk-entry','wk-contract-end','wk-contract','wk-status','wk-ss','wk-kids','wk-blood','wk-health','wk-address'].forEach(id => {
-      const e = document.getElementById(id);
-      if (e) e.value = (id === 'wk-contract' ? 'CDI' : id === 'wk-status' ? 'Célibataire' : id === 'wk-health' ? 'Bonne' : '');
-    });
-    const preview = document.getElementById('wk-photo-preview');
-    if (preview) { preview.style.display = 'none'; preview.src = ''; }
-    state._workerPhotoData = null;
-    populateWkWorksiteSelect(null);
-    document.getElementById('worker-modal').classList.add('active');
-  }
-
-  function closeWorkerModal() {
-    document.getElementById('worker-modal').classList.remove('active');
-    state.editingWorkerIdx = null;
-  }
-
-  function previewNewWorkerPhoto(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      state._newWorkerPhoto = e.target.result;
-      const p = document.getElementById('wnp-photo-preview');
-      p.src = e.target.result; p.style.display = 'block';
-      updateWorkerPreview();
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function updateWorkerPreview() {
-    const content = document.getElementById('worker-preview-content');
-    if (!content) return; // panel not visible, skip
-    const surname = document.getElementById('wnp-surname')?.value||'';
-    const fn = document.getElementById('wnp-function')?.value||'';
-    const birth = document.getElementById('wnp-birth')?.value||'';
-    const ss = document.getElementById('wnp-ss')?.value||'';
-    const blood = document.getElementById('wnp-blood')?.value||'';
-    const status = document.getElementById('wnp-status')?.value||'';
-    const kids = document.getElementById('wnp-kids')?.value||'0';
-    const health = document.getElementById('wnp-health')?.value||'';
-    const contract = document.getElementById('wnp-contract')?.value||'';
-    const entry = document.getElementById('wnp-entry')?.value||'';
-    const end = document.getElementById('wnp-contract-end')?.value||'';
-    const address = document.getElementById('wnp-address')?.value||'';
-    const photo = state._newWorkerPhoto||null;
-    const age = birth ? calculateAge(birth) : '—';
-    if (!name && !surname) {
-      content.innerHTML = '<div style="color:var(--text-tertiary);text-align:center;padding:20px 0;">Remplissez le formulaire pour voir l\'aperçu</div>';
-      return;
-    }
-    content.innerHTML = `
-      <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:var(--gray-900);">${name} ${surname}</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">${fn||'—'}</div>
-        </div>
-        ${photo ? '<img src="'+photo+'" style="width:48px;height:58px;object-fit:cover;border-radius:4px;border:1px solid var(--border);"/>' : '<div style="width:48px;height:58px;border:1px dashed var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-tertiary);">Photo</div>'}
-      </div>
-      <div style="border-top:1px solid var(--border);padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:11px;">
-        <div><span style="color:var(--text-tertiary);">Âge:</span> <strong>${age} ans</strong></div>
-        <div><span style="color:var(--text-tertiary);">Groupe:</span> <strong>${blood||'—'}</strong></div>
-        <div><span style="color:var(--text-tertiary);">État civil:</span> <strong>${status||'—'}</strong></div>
-        <div><span style="color:var(--text-tertiary);">Enfants:</span> <strong>${kids}</strong></div>
-        <div><span style="color:var(--text-tertiary);">Santé:</span> <strong>${health||'—'}</strong></div>
-        <div><span style="color:var(--text-tertiary);">Contrat:</span> <strong>${contract||'—'}</strong></div>
-        <div style="grid-column:1/-1;"><span style="color:var(--text-tertiary);">Assurance:</span> <strong style="font-family:monospace;">${ss||'—'}</strong></div>
-        <div><span style="color:var(--text-tertiary);">Entrée:</span> <strong>${entry||'—'}</strong></div>
-        <div><span style="color:var(--text-tertiary);">Fin:</span> <strong>${end||'—'}</strong></div>
-        ${address ? '<div style="grid-column:1/-1;"><span style="color:var(--text-tertiary);">Adresse:</span> <strong>'+address+'</strong></div>' : ''}
-      </div>
-      <div style="margin-top:8px;padding:5px 8px;background:var(--gray-100);border-radius:4px;font-size:9px;color:var(--text-tertiary);text-align:center;">QR Code généré à l&apos;impression</div>`;
-  }
-
-  function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
-    const kids = document.getElementById('wnp-kids'); if(kids) kids.value='0';
-    const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDI';
-    const st = document.getElementById('wnp-status'); if(st) st.value='Célibataire';
-    const hl = document.getElementById('wnp-health'); if(hl) hl.value='Bonne';
-    const bl = document.getElementById('wnp-blood'); if(bl) bl.value='';
-    const pv = document.getElementById('wnp-photo-preview'); if(pv){ pv.style.display='none'; pv.src=''; }
-    state._newWorkerPhoto = null;
-    state._editingFromPanel = null;
-    document.getElementById('worker-new-title').textContent = 'Nouvel Employé';
-    updateWorkerPreview();
-  }
-
-  function saveWorkerFromPanel() {
-    const name = document.getElementById('wnp-name').value.trim().toUpperCase();
-    const surname = document.getElementById('wnp-surname').value.trim();
-    if (!name||!surname) { alert('Nom et prénom requis'); return; }
-    const editIdx = state._editingFromPanel;
-    const existing = (editIdx !== null && editIdx !== undefined) ? state.workers[editIdx] : null;
-    const worker = {
-      name, surname,
-      birth: document.getElementById('wnp-birth').value,
-      function: document.getElementById('wnp-function').value.trim(),
-      ss: document.getElementById('wnp-ss').value.trim(),
-      kids: document.getElementById('wnp-kids').value||'0',
-      blood: document.getElementById('wnp-blood').value,
-      status: document.getElementById('wnp-status').value,
-      health: document.getElementById('wnp-health').value,
-      contract: document.getElementById('wnp-contract').value,
-      entry: document.getElementById('wnp-entry').value,
-      contractEnd: document.getElementById('wnp-contract-end').value,
-      address: document.getElementById('wnp-address').value.trim(),
-      phone: document.getElementById('wnp-phone').value.trim(),
-      cin: document.getElementById('wnp-cin').value.trim(),
-      cinExp: document.getElementById('wnp-cin-exp').value,
-      salary: document.getElementById('wnp-salary').value || '0',
-      rib: document.getElementById('wnp-rib').value.trim(),
-      cert: document.getElementById('wnp-cert').value.trim(),
-      photo: state._newWorkerPhoto || (existing ? existing.photo : null),
-      history: existing ? (existing.history || []) : []
-    };
-    let workerIdx;
-    if (existing) {
-      state.workers[editIdx] = worker;
-      workerIdx = editIdx;
-    } else {
-      state.workers.push(worker);
-      workerIdx = state.workers.length - 1;
-    }
-    const selWs = document.getElementById('wnp-worksite');
-    const newWsIdx = selWs && selWs.value !== '' ? parseInt(selWs.value) : -1;
-    state.workSites.forEach(ws => { ws.workerIds = (ws.workerIds||[]).filter(id => id !== workerIdx); });
-    if (newWsIdx >= 0 && state.workSites[newWsIdx]) {
-      if (!state.workSites[newWsIdx].workerIds) state.workSites[newWsIdx].workerIds = [];
-      state.workSites[newWsIdx].workerIds.push(workerIdx);
-    }
-    save(K.workSites, state.workSites);
-    save(K.workers, state.workers);
-    renderAll();
-    resetWorkerForm();
-    app.switchPanel('workers');
-  }
-
-  function editWorkerInPanel(idx) {
-    const w = state.workers[idx];
-    if (!w) return;
-    state._editingFromPanel = idx;
-    state._newWorkerPhoto = null;
-    app.switchModule && app.switchModule('rh');
-    app.switchPanel('worker-new');
-    document.getElementById('worker-new-title').textContent = 'Modifier la fiche employé';
-    document.getElementById('wnp-name').value = w.name || '';
-    document.getElementById('wnp-surname').value = w.surname || '';
-    document.getElementById('wnp-birth').value = w.birth || '';
-    document.getElementById('wnp-function').value = w.function || '';
-    document.getElementById('wnp-ss').value = w.ss || '';
-    document.getElementById('wnp-kids').value = w.kids || '0';
-    document.getElementById('wnp-blood').value = w.blood || '';
-    document.getElementById('wnp-status').value = w.status || 'Célibataire';
-    document.getElementById('wnp-health').value = w.health || 'Bonne';
-    document.getElementById('wnp-contract').value = w.contract || 'CDI';
-    document.getElementById('wnp-entry').value = w.entry || '';
-    document.getElementById('wnp-contract-end').value = w.contractEnd || '';
-    document.getElementById('wnp-address').value = w.address || '';
-    document.getElementById('wnp-phone').value = w.phone || '';
-    document.getElementById('wnp-cin').value = w.cin || '';
-    document.getElementById('wnp-cin-exp').value = w.cinExp || '';
-    document.getElementById('wnp-salary').value = w.salary || '';
-    document.getElementById('wnp-rib').value = w.rib || '';
-    document.getElementById('wnp-cert').value = w.cert || '';
-    const curWs = state.workSites.findIndex(ws => (ws.workerIds||[]).includes(idx));
-    const selWs = document.getElementById('wnp-worksite');
-    if (selWs) selWs.value = curWs >= 0 ? String(curWs) : '';
-    const pv = document.getElementById('wnp-photo-preview');
-    if (w.photo) { pv.src = w.photo; pv.style.display = 'block'; }
-    else { pv.style.display = 'none'; pv.src = ''; }
-    updateWorkerPreview();
-  }
-
-  function printNewWorkerSheet() {
-    const name = (document.getElementById('wnp-name')?.value||'').toUpperCase();
-    const surname = document.getElementById('wnp-surname')?.value||'';
-    if (!name&&!surname) { alert('Remplissez au moins le nom et prénom.'); return; }
-    printWorkerSheetFromData({
-      name, surname,
-      birth: document.getElementById('wnp-birth')?.value||'',
-      function: document.getElementById('wnp-function')?.value||'',
-      ss: document.getElementById('wnp-ss')?.value||'',
-      kids: document.getElementById('wnp-kids')?.value||'0',
-      blood: document.getElementById('wnp-blood')?.value||'',
-      status: document.getElementById('wnp-status')?.value||'',
-      health: document.getElementById('wnp-health')?.value||'',
-      contract: document.getElementById('wnp-contract')?.value||'',
-      entry: document.getElementById('wnp-entry')?.value||'',
-      contractEnd: document.getElementById('wnp-contract-end')?.value||'',
-      address: document.getElementById('wnp-address')?.value||'',
-      phone: document.getElementById('wnp-phone')?.value||'',
-      cin: document.getElementById('wnp-cin')?.value||'',
-      cinExp: document.getElementById('wnp-cin-exp')?.value||'',
-      salary: document.getElementById('wnp-salary')?.value||'',
-      rib: document.getElementById('wnp-rib')?.value||'',
-      cert: document.getElementById('wnp-cert')?.value||'',
-      photo: state._newWorkerPhoto||null,
-      history: []
-    });
-  }
-
-  function printWorkerSheetFromData(w) {
-    if (!w) return;
-    const age = calculateAge(w.birth);
-    const logoSrc = document.querySelector('.print-header img')?.src || '';
-    const expiringSoon = w.contractEnd && new Date(w.contractEnd) < new Date(Date.now()+15*86400000);
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    const win = window.open('', '_blank', 'width=900,height=700');
-    if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
-
-    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = '';
-    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Fiche ${w.name} ${w.surname}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;padding:10mm 12mm;line-height:1.8;}
-@page{size:A4 portrait;margin:8mm;}
-@media print{body{padding:0;}}
-.hdr{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #C8782A;padding-bottom:8px;margin-bottom:6px;}
-.cn{font-size:13px;font-weight:700;}
-.ci{font-size:9px;color:#555;line-height:1.7;}
-.date{text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 10px;}
-.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:10px;}
-.phb{width:110px;height:135px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;overflow:hidden;flex-shrink:0;}
-.phb img{width:100%;height:100%;object-fit:cover;}
-.infos{flex:1;}
-.ttl{text-align:center;font-size:17px;font-weight:700;margin:0 0 14px;text-decoration:underline;text-transform:uppercase;letter-spacing:.04em;}
-.row{margin:5px 0;font-size:13px;}
-.row .lbl{font-weight:700;display:inline-block;min-width:190px;}
-.divider{border:none;border-top:1px solid #ccc;margin:12px 0;}
-</style>
-</head><body>
-
-<div class="hdr">
-  <div>
-    <div class="cn">I.P.C.M BOUTEMA</div>
-    <div class="ci">Entreprise industrielle production d'ensemble construction métallique<br>
-    Adresse: Rue des Frères Djennadi, 3ème étage, Lot 35 Div 96, Blida<br>
-    RC: 09/00-4108712A23 &nbsp;|&nbsp; NIF: 16922040023019500900 &nbsp;|&nbsp; NIS: 196922040023050 &nbsp;|&nbsp; BP: 1001369786<br>
-    Tél: 0550700196 &nbsp;|&nbsp; Email: direction.ipcmboutema@gmail.com</div>
-  </div>
-  ${logoSrc ? '<img src="'+logoSrc+'" style="height:48px;object-fit:contain;"/>' : ''}
-</div>
-
-<p class="date">Date : ${today}</p>
-
-<div class="ttl">Fiche de l&#x27;Employ&#233;</div>
-
-<div class="top">
-  <div class="infos">
-    <div class="row"><span class="lbl">Nom :</span> ${w.name}</div>
-    <div class="row"><span class="lbl">Prénom :</span> ${w.surname}</div>
-    <div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
-    <div class="row"><span class="lbl">N° Assurance :</span> ${w.ss||''}</div>
-    <div class="row"><span class="lbl">Âge :</span> ${age} ans</div>
-    <div class="row"><span class="lbl">Téléphone :</span> ${w.phone||''}</div>
-    <div class="row"><span class="lbl">N° CIN :</span> ${_cin}</div>
-        <div class="row"><span class="lbl">Situation de santé :</span> ${w.health||''}</div>
-    <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
-    <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
-    <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
-    <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
-  </div>
-  <div class="phb" id="ph-box">Photo</div>
-</div>
-
-<hr class="divider"/>
-<div class="row"><span class="lbl">Net à payer :</span> ${_salary}</div>
-<div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
-
-<hr class="divider"/>
-<div class="row"><span class="lbl">Contrat :</span> ${_contrat}</div>
-<div class="row"><span class="lbl">Certificat / Attestation :</span> ${w.cert||''}</div>
-${_expWarn}
-
-<script>window._photoSrc = ${JSON.stringify(w.photo || '')};
-window.onload=function(){
-  var ph=document.getElementById('ph-box');
-  if(window._photoSrc && ph){
-    var img=new Image();
-    img.style.cssText='width:100%;height:100%;object-fit:cover;';
-    img.onload=function(){ph.innerHTML='';ph.appendChild(img);};
-    img.onerror=function(){ph.textContent='Photo';};
-    img.src=window._photoSrc;
-  }
-  setTimeout(function(){window.print();window.close();},1200);
-};<\/script>
-</body></html>`);
-    win.document.close();
-  }
-
-  function saveWorker() {
-    const existingPhoto = state.editingWorkerIdx !== null ? (state.workers[state.editingWorkerIdx].photo || null) : null;
-    const worker = {
-      name: document.getElementById('wk-name').value.trim().toUpperCase(),
-      surname: document.getElementById('wk-surname').value.trim(),
-      birth: document.getElementById('wk-birth').value,
-      function: document.getElementById('wk-function').value.trim(),
-      entry: document.getElementById('wk-entry').value,
-      contractEnd: document.getElementById('wk-contract-end').value,
-      contract: document.getElementById('wk-contract').value,
-      status: document.getElementById('wk-status').value,
-      ss: document.getElementById('wk-ss').value.trim(),
-      kids: document.getElementById('wk-kids').value || '0',
-      blood: document.getElementById('wk-blood').value,
-      health: document.getElementById('wk-health').value,
-      address: document.getElementById('wk-address').value.trim(),
-      photo: state._workerPhotoData || existingPhoto,
-      history: (state.editingWorkerIdx !== null ? state.workers[state.editingWorkerIdx].history || [] : [])
-    };
-
-    if (!worker.name || !worker.surname) { alert('Nom et prénom requis'); return; }
-
-    let workerIdx;
-    if (state.editingWorkerIdx !== null) {
-      state.workers[state.editingWorkerIdx] = worker;
-      workerIdx = state.editingWorkerIdx;
-    } else {
-      state.workers.push(worker);
-      workerIdx = state.workers.length - 1;
-    }
-
-    // Handle worksite assignment
-    const selWs = document.getElementById('wk-worksite');
-    const newWsIdx = selWs && selWs.value !== '' ? parseInt(selWs.value) : -1;
-
-    // Remove from all worksites first
-    state.workSites.forEach(ws => {
-      ws.workerIds = (ws.workerIds || []).filter(id => id !== workerIdx);
-    });
-
-    // Add to new worksite if selected
-    if (newWsIdx >= 0 && state.workSites[newWsIdx]) {
-      if (!state.workSites[newWsIdx].workerIds) state.workSites[newWsIdx].workerIds = [];
-      state.workSites[newWsIdx].workerIds.push(workerIdx);
-      save(K.workSites, state.workSites);
-    } else {
-      save(K.workSites, state.workSites);
-    }
-
-    save(K.workers, state.workers);
-    closeWorkerModal();
-    renderAll();
-  }
-
-  function editWorker(idx) {
-    const w = state.workers[idx];
-    state.editingWorkerIdx = idx;
-    state._workerPhotoData = null;
-    document.getElementById('worker-modal-title').textContent = 'Modifier employé';
-    document.getElementById('wk-name').value = w.name;
-    document.getElementById('wk-surname').value = w.surname;
-    document.getElementById('wk-birth').value = w.birth;
-    document.getElementById('wk-function').value = w.function;
-    document.getElementById('wk-entry').value = w.entry || '';
-    document.getElementById('wk-contract-end').value = w.contractEnd || '';
-    document.getElementById('wk-contract').value = w.contract;
-    document.getElementById('wk-status').value = w.status;
-    document.getElementById('wk-ss').value = w.ss;
-    document.getElementById('wk-kids').value = w.kids || '0';
-    document.getElementById('wk-blood').value = w.blood || '';
-    document.getElementById('wk-health').value = w.health || 'Bonne';
-    document.getElementById('wk-address').value = w.address || '';
-    const preview = document.getElementById('wk-photo-preview');
-    if (w.photo) { preview.src = w.photo; preview.style.display = 'block'; }
-    else { preview.style.display = 'none'; preview.src = ''; }
-    const currentWsIdx = state.workSites.findIndex(ws => (ws.workerIds || []).includes(idx));
-    populateWkWorksiteSelect(currentWsIdx === -1 ? null : currentWsIdx);
-    populateWkWorksiteSelect(currentWsIdx === -1 ? null : currentWsIdx);
-    document.getElementById('worker-modal').classList.add('active');
-  }
-
-  function deleteWorker(idx) {
-    if (!confirm('Supprimer cet employé ?')) return;
-    state.workers.splice(idx, 1);
-    save(K.workers, state.workers);
-    renderAll();
-  }
-
-  function printWorkers() {
-    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const title = `Liste du personnel — ${today}`;
-    const card = document.getElementById('workers-table') ? document.getElementById('workers-table').closest('.card') : null;
-    openPrintWindow(title, card);
-  }
-
-  function printWorkerSheet(idx) {
-    printWorkerSheetFromData(state.workers[idx]);
-  }
-
-  function _oldPrintWorkerSheet_DISABLED(idx) {
-    const w = state.workers[idx];
-    if (!w) return;
-    const age = calculateAge(w.birth);
-    const qrData = `NOM:${w.name} ${w.surname}|FONCTION:${w.function}|ASSURANCE:${w.ss}|ENTRE:${w.entry}|FIN:${w.contractEnd}`;
-    const win = window.open('', '_blank', 'width=900,height=650');
-    if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
-    const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = '';
-    const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' — ' + (w.contract||'');
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Fiche — ${w.name} ${w.surname}</title>
-
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 12px; color: #111; background: white; padding: 12mm; }
-  @page { size: A4 portrait; margin: 8mm; }
-  @media print { body { padding: 0; } }
-  .sheet-header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2px solid #C8782A; padding-bottom: 8px; margin-bottom: 12px; }
-  .company-info { font-size: 9px; color: #555; line-height: 1.5; }
-  .company-name { font-size: 13px; font-weight: 700; color: #111; }
-  .sheet-title { text-align: center; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
-  .top-row { display: flex; gap: 14px; margin-bottom: 14px; }
-  .qr-box { border: 1px solid #ccc; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 4px; overflow: hidden; }
-  .photo-box { border: 1px solid #ccc; width: 90px; height: 110px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 4px; overflow: hidden; font-size: 10px; color: #aaa; text-align: center; }
-  .photo-box img { width: 100%; height: 100%; object-fit: cover; }
-  .info-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
-  .info-item { border-bottom: 1px solid #eee; padding-bottom: 3px; }
-  .info-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; font-weight: 700; }
-  .info-value { font-size: 12px; font-weight: 600; color: #111; margin-top: 1px; }
-  .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #C8782A; border-bottom: 1px solid #C8782A; padding-bottom: 3px; margin: 14px 0 8px; }
-  .contract-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .alert-box { background: #fff8f0; border: 1px solid #f59e0b; border-radius: 4px; padding: 8px 10px; margin-top: 12px; font-size: 10px; color: #92400e; }
-  .full-row { grid-column: 1 / -1; }
-</style>
-</head><body>
-<div class="sheet-header">
-  <div>
-    <div class="company-name">I.P.C.M BOUTEMA</div>
-    <div class="company-info">
-      Entreprise industrielle production d'ensemble construction métallique<br>
-      RC: 09/00-4108712A23 &nbsp;|&nbsp; NIF: 16922040023019500900 &nbsp;|&nbsp; NIS: 196922040023050
-    </div>
-  </div>
-  <img src="${document.querySelector('.print-header img') ? document.querySelector('.print-header img').src : ''}" style="height:36px; object-fit:contain;"/>
-</div>
-
-<div class="sheet-title">Fiche de l&#x27;Employ&#233;</div>
-
-<div class="top-row">
-  <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-    <div class="qr-box" id="qr-container"></div>
-    <div style="font-size:8px;color:#aaa;text-align:center;">Code QR</div>
-  </div>
-  <div class="info-grid" style="flex:1;">
-    <div class="info-item"><div class="info-label">Nom</div><div class="info-value">${w.name}</div></div>
-    <div class="info-item"><div class="info-label">Prénom</div><div class="info-value">${w.surname}</div></div>
-    <div class="info-item"><div class="info-label">Fonction / Poste</div><div class="info-value">${w.function || '—'}</div></div>
-    <div class="info-item"><div class="info-label">Âge</div><div class="info-value">${age} ans</div></div>
-    <div class="info-item"><div class="info-label">N° Assurance</div><div class="info-value" style="font-family:monospace;">${w.ss || '—'}</div></div>
-    <div class="info-item"><div class="info-label">Groupe sanguin</div><div class="info-value">${w.blood || '—'}</div></div>
-    <div class="info-item"><div class="info-label">Situation familiale</div><div class="info-value">${w.status || '—'}</div></div>
-    <div class="info-item"><div class="info-label">Enfants</div><div class="info-value">${w.kids || '0'}</div></div>
-    <div class="info-item full-row"><div class="info-label">Situation de santé</div><div class="info-value">${w.health || '—'}</div></div>
-    <div class="info-item full-row"><div class="info-label">Adresse</div><div class="info-value">${w.address || '—'}</div></div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-    <div class="photo-box">${w.photo ? `<img src="${w.photo}"/>` : 'Photo'}</div>
-    <div style="font-size:8px;color:#aaa;text-align:center;">Photo</div>
-  </div>
-</div>
-
-<div class="section-title">Contrat</div>
-<div class="contract-grid">
-  <div class="info-item"><div class="info-label">Type</div><div class="info-value">${w.contract || '—'}</div></div>
-  <div class="info-item"><div class="info-label">Date d'entrée</div><div class="info-value">${w.entry || '—'}</div></div>
-  <div class="info-item"><div class="info-label">Date de fin</div><div class="info-value" style="${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) ? 'color:#DC2626;font-weight:700;' : ''}">${w.contractEnd || '—'}</div></div>
-</div>
-
-${w.contractEnd && new Date(w.contractEnd) < new Date(Date.now() + 15*86400000) ? `
-<div class="alert-box">
-  ⚠ Contrat arrive à expiration dans moins de 15 jours (${w.contractEnd}). Pensez à renouveler ou archiver.
-</div>` : ''}
-
-<div class="section-title">Certificats / Attestations</div>
-<div style="border:1px solid #eee;border-radius:4px;padding:10px;min-height:40px;color:#aaa;font-size:11px;">
-  ${(w.history && w.history.length > 0) ? w.history.map(h => `<div>• ${h.from} → ${h.to} (${h.type})</div>`).join('') : 'Aucun historique de contrat.'}
-</div>
-
-<script>
-  window.onload = function() {
-    try {
-      new QRCode(document.getElementById('qr-container'), {
-        text: ${JSON.stringify(qrData)},
-        width: 88, height: 88, colorDark: '#000', colorLight: '#fff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(e) {}
-    setTimeout(() => { window.print(); window.close(); }, 800);
-  };
-<\/script>
-</body></html>`);
-    win.document.close();
   }
 
   function importWorkers(input) {
