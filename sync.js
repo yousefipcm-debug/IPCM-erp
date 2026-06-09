@@ -193,7 +193,20 @@
   function getRole()  { return sessionStorage.getItem(ROLE_KEY); }
 
   localStorage.setItem = function (key, value) {
-    _origSet(key, value);
+    // Strip photos before caching in localStorage to avoid quota errors
+    // Photos are still sent to the server (Railway) in full
+    let cacheValue = value;
+    if (key === 'ipcm_v2_workers') {
+      try {
+        const arr = JSON.parse(value);
+        const stripped = arr.map(w => { const c = Object.assign({}, w); delete c.photo; return c; });
+        cacheValue = JSON.stringify(stripped);
+      } catch { }
+    }
+    try { _origSet(key, cacheValue); } catch (e) {
+      // If localStorage is still full, just skip the cache — data is safe on server
+      console.warn('localStorage quota exceeded for', key, '— skipping cache');
+    }
     const shortKey = LS_TO_SHORT[key];
     if (!shortKey) return;
     const token = getToken();
@@ -247,7 +260,14 @@
     Object.entries(serverData).forEach(([shortKey, value]) => {
       const lsKey = SHORT_TO_LS[shortKey];
       if (lsKey && value !== null && value !== undefined) {
-        _origSet(lsKey, JSON.stringify(value));
+        let cacheVal = value;
+        // Strip photos from workers cache to avoid localStorage quota
+        if (shortKey === 'workers' && Array.isArray(value)) {
+          cacheVal = value.map(w => { const c = Object.assign({}, w); delete c.photo; return c; });
+        }
+        try { _origSet(lsKey, JSON.stringify(cacheVal)); } catch (e) {
+          console.warn('localStorage quota exceeded for', lsKey, '— skipping cache');
+        }
       }
     });
   }
