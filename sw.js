@@ -1,5 +1,5 @@
-// v13 - force reload for offline mock
-const VERSION = 'v13-' + Date.now();
+// v14 - executive ERP theme - force reload
+const VERSION = 'v14-' + Date.now();
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(

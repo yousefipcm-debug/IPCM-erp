@@ -18,73 +18,78 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="screen">
 <style>
   :root {
-    /* ── ERPNext Espresso Design System ── */
-    --font-stack: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    /* ── Executive Dashboard ── */
+    --font-stack: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    /* Gray scale */
-    --gray-50:  #f8f8f8;
-    --gray-100: #f3f3f3;
-    --gray-200: #ededed;
-    --gray-300: #e2e2e2;
-    --gray-400: #c7c7c7;
-    --gray-500: #999999;
-    --gray-600: #7c7c7c;
-    --gray-700: #525252;
-    --gray-800: #383838;
-    --gray-900: #171717;
+    /* Neutrals — blue-tinted grays for depth */
+    --gray-50:  #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-800: #1F2937;
+    --gray-900: #111827;
 
-    /* Brand / primary — near-black like ERPNext */
-    --primary:       #171717;
-    --accent:        #171717;
-    --accent-bg:     #f3f3f3;
-    --accent-hover:  #383838;
-    --nav-hover:     #f3f3f3;
-    --nav-active:    #ffffff;
+    /* Primary — deep slate blue, corporate & calm */
+    --primary:       #1E3A5F;
+    --accent:        #1E3A5F;
+    --accent-bg:     #EBF0F7;
+    --accent-hover:  #162D4A;
+    --nav-hover:     #F3F5F9;
+    --nav-active:    #EBF0F7;
 
     /* Backgrounds */
-    --bg-page:    #f8f8f8;
+    --bg-page:    #F3F4F6;
     --bg:         #ffffff;
-    --bg-muted:   #f3f3f3;
-    --bg-hover:   #ededed;
+    --bg-muted:   #F9FAFB;
+    --bg-hover:   #F3F4F6;
     --bg-sidebar: #ffffff;
-    --control-bg: #f3f3f3;
+    --control-bg: #ffffff;
 
     /* Text */
-    --text-primary:   #171717;
-    --text-secondary: #525252;
-    --text-tertiary:  #999999;
-    --heading-color:  #171717;
+    --text-primary:   #111827;
+    --text-secondary: #4B5563;
+    --text-tertiary:  #9CA3AF;
+    --heading-color:  #111827;
+
+    /* Sidebar */
+    --sidebar-text:        #4B5563;
+    --sidebar-text-active: #1E3A5F;
 
     /* Borders */
-    --border:        #ededed;
-    --border-strong: #e2e2e2;
+    --border:        #E5E7EB;
+    --border-strong: #D1D5DB;
 
-    /* Semantic colors — color on text only, never on card backgrounds */
-    --danger-bg:    #ffffff;
+    /* Semantic — muted, not neon */
+    --danger-bg:    #FEF2F2;
     --danger-text:  #DC2626;
-    --warn-bg:      #ffffff;
+    --warn-bg:      #FFFBEB;
     --warn-text:    #D97706;
-    --ok-bg:        #ffffff;
+    --ok-bg:        #F0FDF4;
     --ok-text:      #16A34A;
-    --info-bg:      #f3f3f3;
-    --info-text:    #525252;
+    --info-bg:      #EFF6FF;
+    --info-text:    #2563EB;
 
-    /* Shadows — subtle, professional */
-    --shadow-xs: 0px 1px 2px rgba(0,0,0,.06), 0px 0px 0px 1px rgba(0,0,0,.06);
-    --shadow-sm: 0px 1px 3px rgba(0,0,0,.08);
-    --shadow-md: 0 2px 8px rgba(0,0,0,.07);
+    /* Shadows — barely there */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.06);
 
-    /* Radii — tighter = more serious */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-    --radius-xl: 10px;
+    /* Radii — sharp, enterprise */
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 4px;
+    --radius-xl: 4px;
 
     /* Layout */
-    --navbar-height: 48px;
+    --navbar-height: 44px;
     --sidebar-width: 220px;
-    --btn-height:    28px;
-    --input-height:  28px;
+    --btn-height:    30px;
+    --input-height:  30px;
+    --row-height:    36px;
   }
 
   * { box-sizing: border-box; }
@@ -93,9 +98,9 @@
     font-family: var(--font-stack);
     background: var(--bg-page);
     color: var(--text-primary);
-    font-size: 13px;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
+    font-size: 12.5px;
+    line-height: 1.45;
+    letter-spacing: 0;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -118,37 +123,37 @@
   }
 
   .brand {
-    padding: 14px 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     height: var(--navbar-height);
     display: flex; align-items: center; justify-content: center;
   }
   .brand-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
-  .brand-name { font-size: 13px; font-weight: 700; margin: 0; color: var(--gray-900); letter-spacing: -0.01em; text-align: center; }
-  .brand-sub { font-size: 10px; color: var(--text-tertiary); margin: 2px 0 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; }
+  .brand-name { font-size: 13px; font-weight: 700; margin: 0; color: var(--gray-900); letter-spacing: 0.02em; text-align: center; }
+  .brand-sub { font-size: 9px; color: var(--text-tertiary); margin: 1px 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; }
 
   .nav-section-label {
-    padding: 14px 10px 4px;
+    padding: 14px 12px 4px;
     font-size: 10px; color: var(--text-tertiary);
-    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
   }
-  .nav-list { list-style: none; padding: 2px 6px; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+  .nav-list { list-style: none; padding: 2px 8px; margin: 0; display: flex; flex-direction: column; gap: 1px; }
   .nav-btn {
     width: 100%; background: transparent; border: none;
     text-align: left; padding: 0 10px; border-radius: var(--radius-md);
-    font-size: 12px; color: var(--text-secondary); cursor: pointer;
+    font-size: 12.5px; color: var(--gray-500); cursor: pointer;
     display: flex; align-items: center; gap: 8px;
-    font-family: inherit; transition: background 0.1s, color 0.1s;
+    font-family: inherit; transition: all 0.1s;
     font-weight: 500; height: 30px;
   }
-  .nav-btn:hover { background: var(--gray-100); color: var(--gray-900); }
+  .nav-btn:hover { background: var(--gray-100); color: var(--gray-800); }
   .nav-btn.active {
-    background: var(--bg);
-    color: var(--gray-900);
+    background: var(--accent-bg);
+    color: var(--accent);
     font-weight: 600;
-    box-shadow: var(--shadow-xs);
+    box-shadow: inset 2px 0 0 var(--accent);
   }
-  .nav-btn.active .nav-icon { stroke: var(--gray-900); }
+  .nav-btn.active .nav-icon { stroke: var(--accent); }
   .nav-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: #DC2626; margin-left: auto; display: none;
@@ -171,28 +176,38 @@
   /* ── Topbar ── */
   .topbar {
     background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 0 20px;
     height: var(--navbar-height);
     display: flex; justify-content: space-between;
     align-items: center; flex-wrap: wrap; gap: 12px;
     position: sticky; top: 0; z-index: 10;
   }
-  .topbar h1 { font-size: 14px; font-weight: 600; margin: 0; color: var(--gray-900); }
-  .topbar p  { font-size: 11px; color: var(--text-tertiary); margin: 0; font-weight: 400; }
+  .topbar h1 { font-size: 15px; font-weight: 600; margin: 0; color: var(--gray-900); letter-spacing: -0.01em; }
+  .breadcrumb { font-size: 10.5px; color: var(--text-tertiary); font-weight: 500; display: flex; align-items: center; gap: 5px; margin-bottom: 1px; }
+  .breadcrumb .bc-sep { color: var(--gray-300); }
+  .breadcrumb #bc-current { color: var(--gray-500); }
+  .topbar p  { font-size: 11px; color: var(--text-tertiary); margin: 1px 0 0; font-weight: 400; }
   .top-pills { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .pill {
-    font-size: 11px; padding: 2px 8px; border-radius: 4px;
-    background: var(--gray-100); color: var(--text-secondary); font-weight: 600;
-    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 3px 9px; border-radius: var(--radius-sm);
+    background: var(--gray-100); color: var(--gray-600); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px;
     border: 1px solid var(--border);
   }
-  .pill-ok     { background: var(--bg); color: var(--ok-text);     border-color: #bbf7d0; }
-  .pill-warn   { background: var(--bg); color: var(--warn-text);   border-color: #fde68a; }
-  .pill-danger { background: var(--bg); color: var(--danger-text); border-color: #fecaca; }
-  .pill .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .pill-ok     { background: var(--ok-bg);     color: var(--ok-text);     border-color: transparent; }
+  .pill-warn   { background: var(--warn-bg);   color: var(--warn-text);   border-color: transparent; }
+  .pill-danger { background: var(--danger-bg); color: var(--danger-text); border-color: transparent; }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-  .content { padding: 20px 24px; flex: 1; }
+  .content { padding: 16px 20px; flex: 1; }
+
+  /* ── ERP toolbar (above tables) ── */
+  .erp-toolbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 0 0 12px; margin-bottom: 0;
+  }
+  .erp-toolbar .spacer { flex: 1; }
 
   .panel { display: none; animation: fadeIn 0.18s ease; }
   .panel.active { display: block; }
@@ -220,14 +235,16 @@
   .journal-hint { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
 
   /* ── KPI Cards ── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; margin-bottom: 16px;
+    border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
   .kpi-card {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 14px 16px; position: relative;
+    background: var(--bg); border: none; border-right: 1px solid var(--border);
+    border-radius: 0; padding: 14px 16px; position: relative;
     min-width: 0; overflow: hidden;
-    box-shadow: var(--shadow-sm); transition: box-shadow 0.15s;
+    box-shadow: none; transition: background 0.12s;
   }
-  .kpi-card:hover { box-shadow: var(--shadow-md); }
+  .kpi-card:last-child { border-right: none; }
+  .kpi-card:hover { background: var(--gray-50); }
   .kpi-card.danger  { border-color: var(--border); background: var(--bg); }
   .kpi-card.kpi-warn{ border-color: var(--border); background: var(--bg); }
   .kpi-card.kpi-ok  { border-color: var(--border); background: var(--bg); }
@@ -237,20 +254,21 @@
   .kpi-card.kpi-ok  .kpi-val  { color: var(--ok-text); }
   .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
   .kpi-lbl {
-    font-size: 10px; color: var(--text-secondary); text-transform: uppercase;
-    letter-spacing: 0.07em; margin: 0; font-weight: 700;
+    font-size: 10px; color: var(--text-tertiary); text-transform: uppercase;
+    letter-spacing: 0.06em; margin: 0; font-weight: 600;
   }
   .kpi-card.danger .kpi-lbl { color: var(--danger-text); }
   .kpi-icon-chip {
-    width: 28px; height: 28px; border-radius: 6px; background: var(--gray-100);
-    display: flex; align-items: center; justify-content: center; color: var(--gray-700);
+    width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--accent-bg);
+    display: flex; align-items: center; justify-content: center; color: var(--accent);
   }
   .kpi-card.danger .kpi-icon-chip { background: var(--gray-100); color: var(--danger-text); }
   .kpi-card.danger.flash .kpi-icon-chip { animation: pulseRed 1.4s ease-in-out infinite; }
   @keyframes pulseRed { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.55; } }
   .kpi-val {
-    font-size: 20px; font-weight: 700; margin: 0; overflow-wrap: break-word;
-    line-height: 1.2; color: var(--gray-900);
+    font-size: 22px; font-weight: 700; margin: 0; overflow-wrap: break-word;
+    line-height: 1.15; color: var(--gray-900); font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
   .kpi-card.danger .kpi-val { color: var(--danger-text); }
   .kpi-hint { font-size: 11px; color: var(--text-tertiary); margin: 5px 0 0; font-weight: 500; }
@@ -259,16 +277,19 @@
   /* ── Cards ── */
   .card {
     background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 16px 18px; min-width: 0; margin-bottom: 10px;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg); padding: 16px; min-width: 0; margin-bottom: 12px;
+    box-shadow: var(--shadow-xs);
   }
   .card-head {
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px; flex-wrap: wrap; gap: 6px;
+    margin: -16px -16px 14px; flex-wrap: wrap; gap: 6px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: var(--gray-50);
   }
   .card-title {
-    font-size: 13px; font-weight: 600; margin: 0; color: var(--gray-900);
-    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 600; margin: 0; color: var(--gray-800);
+    display: flex; align-items: center; gap: 7px; text-transform: none;
+    letter-spacing: 0;
   }
   .card-title .ti { width: 15px; height: 15px; color: var(--text-secondary); }
   .card-hint { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
@@ -308,40 +329,42 @@
     text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700;
   }
   input[type="text"], input[type="number"], input[type="date"], select, textarea {
-    font-family: var(--font-stack); font-size: 12px;
-    padding: 0 10px; border: 1px solid var(--border);
-    border-radius: var(--radius-md); background: var(--control-bg);
+    font-family: var(--font-stack); font-size: 13px;
+    padding: 0 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-md); background: #fff;
     color: var(--text-primary); width: 100%; height: var(--input-height);
-    transition: border-color 0.1s, box-shadow 0.1s; font-weight: 500;
+    transition: border-color 0.15s, box-shadow 0.15s; font-weight: 400;
   }
-  textarea { height: auto; min-height: 68px; resize: vertical; padding: 8px 10px; }
+  textarea { height: auto; min-height: 68px; resize: vertical; padding: 9px 12px; }
   input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--gray-400);
+    border-color: var(--accent);
     background: var(--bg);
-    box-shadow: 0 0 0 2px rgba(23,23,23,0.08);
+    box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
   }
   .num-input { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* ── Buttons ── */
   .btn-primary {
-    background: var(--gray-900); color: #fff;
-    border: 1px solid var(--gray-900); border-radius: var(--radius-md);
-    padding: 0 14px; font-size: 12px; font-weight: 600;
+    background: var(--accent); color: #fff;
+    border: 1px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 0 14px; font-size: 12px; font-weight: 500;
     cursor: pointer; font-family: inherit; height: var(--btn-height);
-    transition: background 0.1s; white-space: nowrap;
+    transition: all 0.12s; white-space: nowrap; letter-spacing: 0;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .btn-primary:hover  { background: var(--gray-800); border-color: var(--gray-800); }
+  .btn-primary:hover  { background: var(--accent-hover); border-color: var(--accent-hover); }
   .btn-primary:active { transform: scale(0.98); }
 
   .btn-secondary {
-    background: var(--gray-100); color: var(--text-primary);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 0 12px; font-size: 12px; font-weight: 600;
+    background: var(--bg); color: var(--gray-700);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    padding: 0 12px; font-size: 12px; font-weight: 500;
     cursor: pointer; font-family: inherit; height: var(--btn-height);
-    transition: background 0.1s; white-space: nowrap;
+    transition: all 0.12s; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .btn-secondary:hover { background: var(--gray-200); }
+  .btn-secondary:hover { background: var(--gray-50); border-color: var(--gray-400); }
 
   /* ── Data tables ── */
   .tbl-wrap { overflow-x: auto; margin: 0; }
@@ -349,30 +372,33 @@
     width: 100%; font-size: 12px; border-collapse: collapse; min-width: 520px;
   }
   table.mod th {
-    text-align: left; font-weight: 700; color: var(--text-secondary);
-    padding: 8px 12px; border-bottom: 1px solid var(--border);
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
-    background: var(--gray-100);
+    text-align: left; font-weight: 600; color: var(--gray-500);
+    padding: 7px 12px; border-bottom: 1px solid var(--border-strong);
+    border-top: 1px solid var(--border);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.03em;
+    background: var(--gray-50); white-space: nowrap;
   }
   table.mod td {
-    padding: 9px 12px; border-bottom: 1px solid var(--border);
+    padding: 0 12px; border-bottom: 1px solid var(--border);
     vertical-align: middle; font-variant-numeric: tabular-nums;
-    color: var(--text-primary); height: 30px;
+    color: var(--text-primary); height: var(--row-height);
   }
   table.mod tr:last-child td { border-bottom: none; }
-  table.mod tr:hover td { background: var(--gray-50); }
+  table.mod tbody tr:nth-child(even) td { background: var(--gray-50); }
+  table.mod tbody tr:hover td { background: var(--accent-bg); }
+  table.mod td.num, table.mod th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* ── Badges ── */
   .badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 7px; border-radius: 4px; font-size: 11px;
-    font-weight: 600; white-space: nowrap;
+    padding: 2px 8px; border-radius: 999px; font-size: 11px;
+    font-weight: 600; white-space: nowrap; border: none;
   }
-  .b-ok      { background: var(--bg); color: var(--ok-text);     border: 1px solid #bbf7d0; }
-  .b-warn    { background: var(--bg); color: var(--warn-text);   border: 1px solid #fde68a; }
-  .b-danger  { background: var(--bg); color: var(--danger-text); border: 1px solid #fecaca; }
-  .b-info    { background: var(--gray-100); color: var(--text-secondary); border: 1px solid var(--border); }
-  .b-neutral { background: var(--gray-100); color: var(--text-secondary); border: 1px solid var(--border); }
+  .b-ok      { background: var(--ok-bg);     color: var(--ok-text); }
+  .b-warn    { background: var(--warn-bg);    color: var(--warn-text); }
+  .b-danger  { background: var(--danger-bg);  color: var(--danger-text); }
+  .b-info    { background: var(--info-bg);    color: var(--info-text); }
+  .b-neutral { background: var(--gray-100);   color: var(--gray-600); }
   .bd { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
   .ghost-btn {
@@ -649,34 +675,33 @@
   .module-nav { display: flex; flex-direction: column; gap: 0; padding: 6px 0; flex: 1; overflow-y: auto; }
   .module-group { display: flex; flex-direction: column; }
   .module-btn {
-    display: flex; align-items: center; gap: 9px;
+    display: flex; align-items: center; gap: 8px;
     background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); font-family: inherit;
-    font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
-    border-radius: var(--radius-md); margin: 0 6px 1px;
-    width: calc(100% - 12px);
+    color: var(--gray-600); font-family: inherit;
+    font-size: 12.5px; font-weight: 600; letter-spacing: 0;
+    border-radius: var(--radius-md); margin: 0 8px 1px;
+    width: calc(100% - 16px);
     padding: 0 10px;
-    text-align: left; transition: background 0.1s, color 0.1s;
+    text-align: left; transition: all 0.1s;
     position: relative; height: 32px;
   }
   .module-btn:hover { background: var(--gray-100); color: var(--gray-900); }
-  .module-btn.active { background: var(--bg); color: var(--gray-900); box-shadow: var(--shadow-xs); }
+  .module-btn.active { background: var(--accent-bg); color: var(--accent); }
   .module-btn-soon { opacity: 0.4; cursor: not-allowed; }
   .module-badge {
     margin-left: auto; font-size: 9px; font-weight: 700;
-    background: var(--gray-200); color: var(--text-tertiary);
+    background: var(--gray-100); color: var(--text-tertiary);
     padding: 1px 5px; border-radius: 8px; letter-spacing: 0.04em;
     text-transform: uppercase;
   }
   .module-items { padding-left: 6px; margin-bottom: 2px; }
 
-  /* Colored module icon chip — ERPNext style */
   .mod-icon {
     width: 16px; height: 16px;
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0; color: var(--gray-500);
   }
-  .module-btn.active .mod-icon,
+  .module-btn.active .mod-icon { color: var(--accent); }
   .module-btn:hover .mod-icon { color: var(--gray-800); }
 
   /* Nav item icons */
@@ -905,7 +930,7 @@
   /* ── Login Overlay ── */
   #login-overlay {
     position: fixed; inset: 0; z-index: 9999;
-    background: #f8f8f8;
+    background: var(--bg-page);
     display: flex; align-items: center; justify-content: center;
     font-family: var(--font-stack);
   }
@@ -936,15 +961,15 @@
     color: #171717; outline: none; box-sizing: border-box;
     transition: border-color .15s;
   }
-  .login-input:focus { border-color: #171717; background: #fff; }
+  .login-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(30,58,95,0.08); }
   .login-field { margin-bottom: 16px; }
   .login-btn {
-    width: 100%; height: 38px; background: #171717; color: #fff;
+    width: 100%; height: 38px; background: var(--accent); color: #fff;
     border: none; border-radius: 7px; font-size: 13px; font-weight: 600;
     font-family: var(--font-stack); cursor: pointer; margin-top: 8px;
     transition: background .15s;
   }
-  .login-btn:hover:not(:disabled) { background: #383838; }
+  .login-btn:hover:not(:disabled) { background: var(--accent-hover); }
   .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .login-error {
     color: #dc2626; font-size: 12px; margin-top: 10px;
@@ -954,18 +979,18 @@
   /* ── Sidebar user info ── */
   .sidebar-user {
     padding: 10px 12px;
-    border-top: 1px solid #ededed;
-    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
   }
-  .sidebar-user-name { font-size: 12px; font-weight: 600; color: #171717; }
-  .sidebar-user-role { font-size: 11px; color: #999; margin-top: 1px; }
+  .sidebar-user-name { font-size: 12px; font-weight: 600; color: var(--gray-800); }
+  .sidebar-user-role { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
   .logout-btn {
-    margin-top: 8px; width: 100%; height: 26px;
-    background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
-    border-radius: 6px; font-size: 11px; font-weight: 600;
-    font-family: var(--font-stack); cursor: pointer; letter-spacing: .02em;
+    margin-top: 8px; width: 100%; height: 28px;
+    background: transparent; color: var(--gray-400); border: 1px solid var(--border);
+    border-radius: var(--radius-md); font-size: 11px; font-weight: 500;
+    font-family: var(--font-stack); cursor: pointer; letter-spacing: 0;
   }
-  .logout-btn:hover { background: #fee2e2; }
+  .logout-btn:hover { background: var(--danger-bg); color: var(--danger-text); border-color: #FECACA; }
 </style>
 <script>
 /* IPCM ERP — Sync Layer
@@ -1633,10 +1658,6 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Simulateur
           </button></li>
-          <li><button class="nav-btn" data-panel="facturation">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Facturation
-          </button></li>
           <li><button class="nav-btn" data-panel="hr-documents">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Documents
@@ -1745,6 +1766,11 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             Contacts
           </button></li>
+          <li><button class="nav-btn" data-panel="facturation">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Facturation
+          </button></li>
+
           <li><button class="nav-btn" data-panel="hr-documents">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Documents
@@ -1781,6 +1807,7 @@
   <main class="main">
     <header class="topbar">
       <div>
+        <div class="breadcrumb" id="breadcrumb"><span>ARCIS</span><span class="bc-sep">/</span><span id="bc-current">Vue d'ensemble</span></div>
         <h1 id="page-title">Vue d'ensemble</h1>
         <p id="page-sub">Le pouls de ton entreprise aujourd'hui</p>
       </div>
@@ -2150,7 +2177,10 @@
             <div class="field"><label>Date</label><input type="date" id="inv-date"/></div>
             <div class="field"><label>Lieu</label><input type="text" id="inv-place" value="Blida" placeholder="Ex. Blida"/></div>
             <div class="field"><label>Client</label>
-              <input type="text" id="inv-client" list="inv-client-list" placeholder="Rechercher ou taper un client..." style="height:38px;width:100%;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" id="inv-client" list="inv-client-list" placeholder="Rechercher ou taper un client..." style="flex:1;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
+                <button type="button" onclick="app.openNewClientModal()" title="Ajouter un nouveau client" style="height:38px;width:38px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;background:var(--gray-900);color:#fff;font-size:20px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+              </div>
               <datalist id="inv-client-list"></datalist>
             </div>
             <div class="field"><label>Projet</label><input type="text" id="inv-project" placeholder="Ex. SAFEX, BLOCOTELHA Steel..."/></div>
@@ -2188,25 +2218,44 @@
             <p class="card-title">Informations fiscales des clients</p>
             <p style="font-size:11px; color:var(--text-tertiary); margin:0;">Renseignements à imprimer sur les factures</p>
           </div>
-          <div class="form-grid" style="grid-template-columns:1fr 2fr;">
-            <div class="field"><label>Client</label><select id="cd-client"></select></div>
-            <div class="field"><label>Nom légal complet</label><input type="text" id="cd-fullname" placeholder="Ex. BLOCOTELHA Steel Constructions, S.A (ALGERIE)"/></div>
-            <div class="field"><label>Adresse</label><input type="text" id="cd-address" placeholder="Ex. 17 chemin de l'avenir Oued Romane - El Achour, 16106 Alger, Algérie"/></div>
-            <div class="field"><label>TIN</label><input type="text" id="cd-tin" placeholder="0 0 0 87556"/></div>
-            <div class="field"><label>NIF</label><input type="text" id="cd-nif" placeholder="314070000019511"/></div>
-            <div class="field"><label>NIS</label><input type="text" id="cd-nis" placeholder="1316299006147"/></div>
-            <div class="field"><label>RC</label><input type="text" id="cd-rc" placeholder="Ex. 00B0012345-00/16"/></div>
-            <div class="field"><label>AI</label><input type="text" id="cd-ai" placeholder="Ex. 16012345678"/></div>
-            <button class="btn-primary" onclick="app.saveClientDetails()">Enregistrer</button>
-          </div>
-          <div id="client-details-list" style="margin-top:12px;"></div>
-        </div>
 
-        <div class="card">
-          <div class="card-head">
-            <p class="card-title">Liste des factures émises</p>
+          <!-- Toggle buttons -->
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button id="cd-mode-select" onclick="app.setCdMode('select')" style="flex:1;height:36px;border-radius:8px;border:2px solid var(--gray-900);background:var(--gray-900);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Sélectionner un client</button>
+            <button id="cd-mode-new" onclick="app.setCdMode('new')" style="flex:1;height:36px;border-radius:8px;border:2px solid var(--border);background:var(--bg);color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;">+ Nouveau client</button>
           </div>
-          <div class="tbl-wrap" id="invoices-table"></div>
+
+          <!-- Mode: Select existing -->
+          <div id="cd-section-select">
+            <div class="form-grid" style="grid-template-columns:1fr 2fr;">
+              <div class="field"><label>Client</label><select id="cd-client" onchange="if(this.value)app.loadClientDetailsToForm(this.value)"></select></div>
+              <div class="field"><label>Nom légal complet</label><input type="text" id="cd-fullname" placeholder="Ex. BLOCOTELHA Steel Constructions, S.A (ALGERIE)"/></div>
+              <div class="field"><label>Adresse</label><input type="text" id="cd-address" placeholder="Ex. 17 chemin de l&#x27;avenir Oued Romane - El Achour, 16106 Alger, Algérie"/></div>
+              <div class="field"><label>TIN</label><input type="text" id="cd-tin" placeholder="0 0 0 87556"/></div>
+              <div class="field"><label>NIF</label><input type="text" id="cd-nif" placeholder="314070000019511"/></div>
+              <div class="field"><label>NIS</label><input type="text" id="cd-nis" placeholder="1316299006147"/></div>
+              <div class="field"><label>RC</label><input type="text" id="cd-rc" placeholder="Ex. 00B0012345-00/16"/></div>
+              <div class="field"><label>AI</label><input type="text" id="cd-ai" placeholder="Ex. 16012345678"/></div>
+              <button class="btn-primary" onclick="app.saveClientDetails()">Enregistrer</button>
+            </div>
+          </div>
+
+          <!-- Mode: New client -->
+          <div id="cd-section-new" style="display:none;">
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="field" style="grid-column:1/-1;"><label>Nom du client <span style="color:var(--danger-text);">*</span></label><input type="text" id="cd-new-name" placeholder="Ex. SAFEX, BLOCOTELHA..."/></div>
+              <div class="field"><label>Nom légal complet</label><input type="text" id="cd-new-fullname" placeholder="Ex. BLOCOTELHA Steel Constructions, S.A"/></div>
+              <div class="field"><label>Adresse</label><input type="text" id="cd-new-address" placeholder="Ex. 17 rue Didouche Mourad, Alger"/></div>
+              <div class="field"><label>NIF</label><input type="text" id="cd-new-nif" placeholder="314070000019511"/></div>
+              <div class="field"><label>NIS</label><input type="text" id="cd-new-nis" placeholder="1316299006147"/></div>
+              <div class="field"><label>RC</label><input type="text" id="cd-new-rc" placeholder="Ex. 00B0012345-00/16"/></div>
+              <div class="field"><label>AI</label><input type="text" id="cd-new-ai" placeholder="Ex. 16012345678"/></div>
+              <div class="field"><label>TIN</label><input type="text" id="cd-new-tin" placeholder="0 0 0 87556"/></div>
+            </div>
+            <button class="btn-primary" onclick="app.saveNewClientFiscal()" style="margin-top:4px;">Créer et enregistrer</button>
+          </div>
+
+          <div id="client-details-list" style="margin-top:12px;"></div>
         </div>
 
         <div class="card">
@@ -2220,6 +2269,14 @@
           </div>
           <div id="rib-list" style="margin-top:12px;"></div>
         </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Liste des factures émises</p>
+          </div>
+          <div class="tbl-wrap" id="invoices-table"></div>
+        </div>
+
       </section>
       
       <!-- RH PANEL -->
@@ -2280,6 +2337,7 @@
               <div class="field"><label>Téléphone</label><input type="tel" id="wnp-phone" placeholder="Ex. 0550 123 456"/></div>
               <div class="field"><label>N° CIN</label><input type="text" id="wnp-cin" placeholder="Ex. 123456789"/></div>
               <div class="field"><label>Date expiration CIN</label><input type="date" id="wnp-cin-exp"/></div>
+              <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-base-salary" placeholder="Ex. 35000" min="0"/></div>
               <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
               <div class="field"><label>RIP / Compte postal</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
               
@@ -2431,6 +2489,66 @@
       </section>
 
       <!-- Contact Modal -->
+      <!-- PRINT SALARY CHOICE MODAL -->
+      <div class="modal-overlay" id="print-salary-modal">
+        <div class="modal" style="max-width:380px;width:90%;">
+          <div class="modal-head">
+            <p class="modal-title">Imprimer la fiche employé</p>
+            <button class="modal-close" onclick="document.getElementById('print-salary-modal').classList.remove('active')">×</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px;">Quel salaire afficher sur la fiche ?</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn-primary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.doPrintWorkerSheet('net')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Net à payer
+              </button>
+              <button class="btn-secondary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.doPrintWorkerSheet('base')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Salaire de base
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW CLIENT MODAL -->
+      <div class="modal-overlay" id="new-client-modal">
+        <div class="modal" style="max-width:560px;width:95%;">
+          <div class="modal-head">
+            <p class="modal-title">Nouveau Client</p>
+            <button class="modal-close" onclick="app.closeNewClientModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">Le client sera ajouté à Commercial → Contacts et ses infos fiscales enregistrées automatiquement.</p>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="field" style="grid-column:1/-1;"><label>Nom du client <span style="color:var(--danger-text);">*</span></label><input type="text" id="nc-name" placeholder="Ex. SAFEX, BLOCOTELHA..."/></div>
+              <div class="field"><label>Personne de contact</label><input type="text" id="nc-person" placeholder="Ex. Mohamed Benali"/></div>
+              <div class="field"><label>Téléphone</label><input type="tel" id="nc-phone" placeholder="Ex. 0550 123 456"/></div>
+              <div class="field"><label>Email</label><input type="email" id="nc-email" placeholder="Ex. contact@client.dz"/></div>
+              <div class="field"><label>Adresse</label><input type="text" id="nc-address" placeholder="Ex. 17 rue Didouche Mourad, Alger"/></div>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;"/>
+            <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);margin:0 0 10px;">Informations fiscales</p>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="field" style="grid-column:1/-1;"><label>Nom légal complet</label><input type="text" id="nc-fullname" placeholder="Ex. BLOCOTELHA Steel Constructions, S.A (ALGERIE)"/></div>
+              <div class="field"><label>NIF</label><input type="text" id="nc-nif" placeholder="314070000019511"/></div>
+              <div class="field"><label>NIS</label><input type="text" id="nc-nis" placeholder="1316299006147"/></div>
+              <div class="field"><label>RC</label><input type="text" id="nc-rc" placeholder="Ex. 00B0012345-00/16"/></div>
+              <div class="field"><label>AI</label><input type="text" id="nc-ai" placeholder="Ex. 16012345678"/></div>
+              <div class="field"><label>TIN</label><input type="text" id="nc-tin" placeholder="0 0 0 87556"/></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn-secondary" onclick="app.closeNewClientModal()">Annuler</button>
+            <button class="btn-primary" onclick="app.saveNewClient()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Créer le client
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-overlay" id="contact-modal">
         <div class="modal" style="max-width:560px;">
           <div class="modal-head">
@@ -3969,7 +4087,21 @@ window.app = (() => {
 
   function printWorkerSheet(idx) {
     const w = state.workers[idx];
-    if (w) printWorkerSheetFromData(w);
+    if (!w) return;
+    state._printWorkerIdx = idx;
+    document.getElementById('print-salary-modal').classList.add('active');
+  }
+
+  function doPrintWorkerSheet(salaryType) {
+    document.getElementById('print-salary-modal').classList.remove('active');
+    if (state._printFromForm && state._printFormWorker) {
+      state._printFromForm = false;
+      printWorkerSheetFromData(state._printFormWorker, salaryType);
+      state._printFormWorker = null;
+      return;
+    }
+    const w = state.workers[state._printWorkerIdx];
+    if (w) printWorkerSheetFromData(w, salaryType);
   }
 
   function previewWorkerPhoto(input) { previewNewWorkerPhoto(input); }
@@ -3998,7 +4130,7 @@ window.app = (() => {
   }
 
   function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-base-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
     const ks = document.getElementById('wnp-kids'); if(ks) ks.value='0';
     const bl = document.getElementById('wnp-blood'); if(bl) bl.value='';
     const st = document.getElementById('wnp-status'); if(st) st.value='';
@@ -4035,6 +4167,7 @@ window.app = (() => {
       cin: document.getElementById('wnp-cin')?.value?.trim() || '',
       cinExp: document.getElementById('wnp-cin-exp')?.value || '',
       salary: document.getElementById('wnp-salary')?.value || '0',
+      baseSalary: document.getElementById('wnp-base-salary')?.value || '0',
       rib: document.getElementById('wnp-rib')?.value?.trim() || '',
       photo: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.photo || state._newWorkerPhoto || null) : (state._newWorkerPhoto || null),
       history: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.history || []) : []
@@ -4082,6 +4215,7 @@ window.app = (() => {
       document.getElementById('wnp-cin').value = w.cin || '';
       document.getElementById('wnp-cin-exp').value = w.cinExp || '';
       document.getElementById('wnp-salary').value = w.salary || '';
+      document.getElementById('wnp-base-salary').value = w.baseSalary || '';
       document.getElementById('wnp-rib').value = w.rib || '';
       if (w.photo) {
         const ph = document.getElementById('wnp-photo-preview');
@@ -4111,10 +4245,13 @@ window.app = (() => {
       cin: document.getElementById('wnp-cin')?.value||'',
       cinExp: document.getElementById('wnp-cin-exp')?.value||'',
       salary: document.getElementById('wnp-salary')?.value||'',
+      baseSalary: document.getElementById('wnp-base-salary')?.value||'',
       rib: document.getElementById('wnp-rib')?.value||'',
       photo: state._newWorkerPhoto || null
     };
-    printWorkerSheetFromData(w);
+    state._printFormWorker = w;
+    document.getElementById('print-salary-modal').classList.add('active');
+    state._printFromForm = true;
   }
 
   function archiveCurrentContract(idx) { archiveOnly(idx); }
@@ -4152,9 +4289,136 @@ window.app = (() => {
 
   function viewInSuivi(idx) { switchPanel('hr-contracts'); }
 
-  function saveClientDetails() {}
-  function loadClientDetailsToForm() {}
-  function deleteClientDetails() {}
+  function setCdMode(mode) {
+    const selBtn = document.getElementById('cd-mode-select');
+    const newBtn = document.getElementById('cd-mode-new');
+    const selSec = document.getElementById('cd-section-select');
+    const newSec = document.getElementById('cd-section-new');
+    if (!selBtn) return;
+    if (mode === 'select') {
+      selBtn.style.background = 'var(--gray-900)'; selBtn.style.color = '#fff'; selBtn.style.borderColor = 'var(--gray-900)';
+      newBtn.style.background = 'var(--bg)'; newBtn.style.color = 'var(--text-secondary)'; newBtn.style.borderColor = 'var(--border)';
+      selSec.style.display = ''; newSec.style.display = 'none';
+    } else {
+      newBtn.style.background = 'var(--gray-900)'; newBtn.style.color = '#fff'; newBtn.style.borderColor = 'var(--gray-900)';
+      selBtn.style.background = 'var(--bg)'; selBtn.style.color = 'var(--text-secondary)'; selBtn.style.borderColor = 'var(--border)';
+      selSec.style.display = 'none'; newSec.style.display = '';
+      setTimeout(() => document.getElementById('cd-new-name')?.focus(), 50);
+    }
+  }
+
+  function saveNewClientFiscal() {
+    const name = document.getElementById('cd-new-name')?.value?.trim();
+    if (!name) { alert('Le nom du client est requis'); return; }
+
+    // Add to clientNames
+    if (!state.clientNames.includes(name)) {
+      state.clientNames.push(name);
+      save(K.clientNames, state.clientNames);
+    }
+
+    // Add to commercial contacts
+    if (!state.commercialContacts) state.commercialContacts = [];
+    if (!state.commercialContacts.find(c => c.category === 'client' && c.name.toUpperCase() === name.toUpperCase())) {
+      state.commercialContacts.push({
+        category: 'client', name,
+        address: document.getElementById('cd-new-address')?.value?.trim() || '',
+        nif:     document.getElementById('cd-new-nif')?.value?.trim() || '',
+        nis:     document.getElementById('cd-new-nis')?.value?.trim() || '',
+        rc:      document.getElementById('cd-new-rc')?.value?.trim() || ''
+      });
+      save(K.commercialContacts, state.commercialContacts);
+    }
+
+    // Save fiscal details
+    if (!state.clientDetails) state.clientDetails = {};
+    state.clientDetails[name] = {
+      fullname: document.getElementById('cd-new-fullname')?.value?.trim() || '',
+      address:  document.getElementById('cd-new-address')?.value?.trim() || '',
+      nif:      document.getElementById('cd-new-nif')?.value?.trim() || '',
+      nis:      document.getElementById('cd-new-nis')?.value?.trim() || '',
+      rc:       document.getElementById('cd-new-rc')?.value?.trim() || '',
+      ai:       document.getElementById('cd-new-ai')?.value?.trim() || '',
+      tin:      document.getElementById('cd-new-tin')?.value?.trim() || ''
+    };
+    save(K.clientDetails, state.clientDetails);
+
+    // Clear fields and switch back to select mode
+    ['cd-new-name','cd-new-fullname','cd-new-address','cd-new-nif','cd-new-nis','cd-new-rc','cd-new-ai','cd-new-tin'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+
+    // Update select dropdown
+    const cdSel = document.getElementById('cd-client');
+    if (cdSel) {
+      cdSel.innerHTML = '<option value="">— Sélectionner —</option>' + state.clientNames.map(n => `<option value="${n}" ${n===name?'selected':''}>${n}</option>`).join('');
+    }
+
+    // Load the new client fiscal info into select form fields
+    loadClientDetailsToForm(name);
+    setCdMode('select');
+    renderClientDetailsList();
+    renderAll();
+    alert(`✓ Client "${name}" créé avec ses informations fiscales.`);
+  }
+
+  function saveClientDetails() {
+    const client = document.getElementById('cd-client')?.value;
+    if (!client) { alert('Sélectionner un client'); return; }
+    if (!state.clientDetails) state.clientDetails = {};
+    state.clientDetails[client] = {
+      fullname: document.getElementById('cd-fullname')?.value.trim() || '',
+      address:  document.getElementById('cd-address')?.value.trim() || '',
+      tin:      document.getElementById('cd-tin')?.value.trim() || '',
+      nif:      document.getElementById('cd-nif')?.value.trim() || '',
+      nis:      document.getElementById('cd-nis')?.value.trim() || '',
+      rc:       document.getElementById('cd-rc')?.value.trim() || '',
+      ai:       document.getElementById('cd-ai')?.value.trim() || ''
+    };
+    save(K.clientDetails, state.clientDetails);
+    renderClientDetailsList();
+    alert('✓ Informations fiscales enregistrées pour ' + client);
+  }
+
+  function loadClientDetailsToForm(client) {
+    const d = state.clientDetails?.[client];
+    if (!d) { ['cd-fullname','cd-address','cd-tin','cd-nif','cd-nis','cd-rc','cd-ai'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; }); return; }
+    document.getElementById('cd-fullname').value = d.fullname || '';
+    document.getElementById('cd-address').value  = d.address  || '';
+    document.getElementById('cd-tin').value      = d.tin      || '';
+    document.getElementById('cd-nif').value      = d.nif      || '';
+    document.getElementById('cd-nis').value      = d.nis      || '';
+    document.getElementById('cd-rc').value       = d.rc       || '';
+    document.getElementById('cd-ai').value       = d.ai       || '';
+  }
+
+  function deleteClientDetails(client) {
+    if (!confirm('Supprimer les infos fiscales de ' + client + ' ?')) return;
+    delete state.clientDetails[client];
+    save(K.clientDetails, state.clientDetails);
+    renderClientDetailsList();
+  }
+
+  function renderClientDetailsList() {
+    const el = document.getElementById('client-details-list');
+    if (!el) return;
+    const details = state.clientDetails || {};
+    const entries = Object.entries(details);
+    if (entries.length === 0) {
+      el.innerHTML = '<p style="font-size:12px;color:var(--text-tertiary);margin-top:8px;">Aucune fiche fiscale enregistrée.</p>';
+      return;
+    }
+    el.innerHTML = `<table class="mod" style="margin-top:8px;">
+      <thead><tr><th>Client</th><th>Nom légal</th><th>NIF</th><th>RC</th><th></th></tr></thead>
+      <tbody>${entries.map(([client, d]) => `<tr>
+        <td style="font-weight:600;">${client}</td>
+        <td>${d.fullname||'—'}</td>
+        <td style="font-family:monospace;font-size:11px;">${d.nif||'—'}</td>
+        <td style="font-family:monospace;font-size:11px;">${d.rc||'—'}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          <button class="ghost-btn" onclick="app.loadClientDetailsToForm('${client.replace(/'/g,"\\'")}');document.getElementById('cd-client').value='${client.replace(/'/g,"\\'")}'" title="Modifier">&#9998;</button>
+          <button class="ghost-btn" onclick="app.deleteClientDetails('${client.replace(/'/g,"\\'")}')">×</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }
 
   function renderFacturation() {
     const sel = document.getElementById('inv-client-list');
@@ -4268,22 +4532,40 @@ window.app = (() => {
       el.innerHTML = '<div class="empty-state">Aucune facture émise.</div>';
       return;
     }
-    const sorted = state.invoices.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    el.innerHTML = `<table class="mod">
-      <thead><tr><th>N°</th><th>Type</th><th>Client</th><th style="text-align:right">TTC</th><th></th><th style="text-align:right">Date</th></tr></thead>
-      <tbody>${sorted.map(inv => {
-        const realIdx = state.invoices.indexOf(inv);
-        return `<tr>
-          <td style="font-weight:600;">${inv.number}</td>
-          <td><span class="badge ${inv.type === 'proforma' ? 'b-info' : 'b-ok'}">${inv.type === 'proforma' ? 'Proforma' : 'Facture'}</span></td>
-          <td>${inv.client}</td>
-          <td style="text-align:right; font-weight:600;">${fmtDZD(inv.ttc)}</td>
-          <td style="text-align:right; white-space:nowrap;">
-            <button class="btn-secondary" style="font-size:11px;" onclick="app.printInvoice(${realIdx})">Imprimer</button>
-            <button class="ghost-btn" onclick="app.deleteInvoice(${realIdx})">×</button>
-          </td>
-          <td style="text-align:right; color:var(--text-secondary); font-size:11px;">${inv.date}</td>
-        </tr>`;}).join('')}</tbody></table>`;
+    const factures = state.invoices.map((inv, i) => ({ ...inv, _idx: i })).filter(inv => inv.type !== 'proforma').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const proformas = state.invoices.map((inv, i) => ({ ...inv, _idx: i })).filter(inv => inv.type === 'proforma').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    function buildTable(list, emptyMsg) {
+      if (list.length === 0) return '<p style="font-size:12px;color:var(--text-tertiary);margin:6px 0;">' + emptyMsg + '</p>';
+      return '<table class="mod"><thead><tr><th>N°</th><th>Client</th><th style="text-align:right">TTC</th><th style="text-align:right">Date</th><th></th></tr></thead><tbody>' +
+        list.map(function(inv) {
+          return '<tr>' +
+            '<td style="font-weight:600;">' + inv.number + '</td>' +
+            '<td>' + inv.client + '</td>' +
+            '<td style="text-align:right;font-weight:600;">' + fmtDZD(inv.ttc) + '</td>' +
+            '<td style="text-align:right;color:var(--text-secondary);font-size:11px;">' + inv.date + '</td>' +
+            '<td style="text-align:right;white-space:nowrap;">' +
+              '<button class="btn-secondary" style="font-size:11px;" onclick="app.printInvoice(' + inv._idx + ')">Imprimer</button> ' +
+              '<button class="ghost-btn" onclick="app.deleteInvoice(' + inv._idx + ')">×</button>' +
+            '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+
+    el.innerHTML =
+      '<div style="margin-bottom:20px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+          '<span style="font-size:13px;font-weight:700;color:var(--gray-900);">Factures</span>' +
+          '<span class="badge b-ok">' + factures.length + '</span>' +
+        '</div>' +
+        buildTable(factures, 'Aucune facture émise.') +
+      '</div>' +
+      '<div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+          '<span style="font-size:13px;font-weight:700;color:var(--gray-900);">Factures Proforma</span>' +
+          '<span class="badge b-info">' + proformas.length + '</span>' +
+        '</div>' +
+        buildTable(proformas, 'Aucune facture proforma.') +
+      '</div>';
   }
 
   function addRib() {
@@ -4319,61 +4601,171 @@ window.app = (() => {
       </div>`).join('');
   }
 
+  function numberToWordsFR(n) {
+    const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+    const tens  = ['','dix','vingt','trente','quarante','cinquante','soixante','soixante-dix','quatre-vingt','quatre-vingt-dix'];
+    function below100(x) {
+      if (x < 20) return units[x];
+      const t = Math.floor(x/10), u = x%10;
+      if (t === 7) return u === 0 ? 'soixante-dix' : u === 1 ? 'soixante et onze' : 'soixante-' + units[10+u];
+      if (t === 9) return u === 0 ? 'quatre-vingt-dix' : 'quatre-vingt-' + units[10+u];
+      if (t === 8) return u === 0 ? 'quatre-vingts' : 'quatre-vingt-' + units[u];
+      return tens[t] + (u === 1 && t !== 8 ? ' et ' : u > 0 ? '-' : '') + (u > 0 ? units[u] : '');
+    }
+    function below1000(x) {
+      if (x < 100) return below100(x);
+      const h = Math.floor(x/100), r = x%100;
+      return (h === 1 ? 'cent' : units[h] + ' cent') + (r === 0 ? (h > 1 ? 's' : '') : ' ' + below100(r));
+    }
+    if (n === 0) return 'zéro';
+    const int = Math.floor(n), dec = Math.round((n - int) * 100);
+    let s = '';
+    const mil = Math.floor(int / 1000000);
+    const thou = Math.floor((int % 1000000) / 1000);
+    const rem = int % 1000;
+    if (mil > 0) s += (mil === 1 ? 'un million' : below1000(mil) + ' millions') + ' ';
+    if (thou > 0) s += (thou === 1 ? 'mille' : below1000(thou) + ' mille') + ' ';
+    if (rem > 0) s += below1000(rem);
+    s = s.trim();
+    s = s.charAt(0).toUpperCase() + s.slice(1);
+    s += ' dinars algériens';
+    if (dec > 0) s += ' et ' + below100(dec) + ' centimes';
+    return s;
+  }
+
   function printInvoice(idx) {
     const inv = state.invoices[idx];
     if (!inv) return;
     const typeLabel = { proforma: 'FACTURE PROFORMA', avancement: "FACTURE D'AVANCEMENT", finale: 'FACTURE' }[inv.type] || 'FACTURE';
     const headerEl = document.querySelector('.print-header');
-    const headerHtml = headerEl ? headerEl.outerHTML : '';
+    const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const cd = (state.clientDetails || {})[inv.client] || {};
+
     const w = window.open('', '_blank', 'width=900,height=700');
     if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
-    const linesHtml = inv.lines.map((l, i) => `<tr>
-      <td style="border:1px solid #ddd;padding:8px;">${i+1}</td>
-      <td style="border:1px solid #ddd;padding:8px;">${l.desc}</td>
-      <td style="border:1px solid #ddd;padding:8px;text-align:right;">${l.qty}</td>
-      <td style="border:1px solid #ddd;padding:8px;text-align:right;">${fmtDZD(l.pu)}</td>
-      <td style="border:1px solid #ddd;padding:8px;text-align:right;font-weight:600;">${fmtDZD(l.qty*l.pu)}</td>
-    </tr>`).join('');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title> </title>
-<style>*{box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:12mm;margin:0;}@page{margin:8mm;size:A4;}table{border-collapse:collapse;width:100%;}-webkit-print-color-adjust:exact;print-color-adjust:exact;</style>
-</head><body>
+
+    const linesHtml = inv.lines.map(function(l, i) {
+      return '<tr>' +
+        '<td style="border:1px solid #ddd;padding:6px 8px;text-align:center;">' + (i+1) + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 8px;">' + l.desc + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 8px;text-align:center;">' + l.qty + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 8px;text-align:right;">' + fmtDZD(l.pu) + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 8px;text-align:right;">' + fmtDZD(l.qty*l.pu) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const ttcWords = numberToWordsFR(inv.ttc);
+    const fmtNum = n => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+    const headerClone = headerEl ? headerEl.cloneNode(true) : null;
+    if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if(pi) pi.remove(); }
+    const headerHtml = headerClone ? headerClone.outerHTML : '';
+
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${typeLabel} N° ${inv.number}</title>
+<style>
+  :root { --accent:#C8782A; }
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Arial,sans-serif; font-size:11px; font-weight:400; color:#222; background:white; padding:10mm 12mm; line-height:1.5; }
+  @page { size:A4 portrait; margin:8mm; }
+  @media print { body { padding:0; } }
+  .print-header { display:block !important; margin-bottom:6px; }
+  .print-header img { height:46px; object-fit:contain; }
+  .date { text-align:right; font-size:10px; color:#444; font-weight:500; margin:3px 0 10px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; border:1px solid #ccc; margin:10px 0; }
+  .meta-left { padding:9px 12px; border-right:1px solid #ccc; }
+  .meta-right { padding:9px 12px; }
+  .meta-row { margin-bottom:4px; }
+  .cd-line { margin-bottom:3px; }
+  .inv-title { text-align:center; font-size:14px; font-weight:700; text-decoration:underline; text-transform:uppercase; margin:12px 0 14px; letter-spacing:.03em; }
+  table { border-collapse:collapse; width:100%; font-size:11px; }
+  th { border:1px solid #aaa; background:#efefef !important; padding:6px 8px; text-align:left; font-size:10px; font-weight:600; text-transform:uppercase; }
+  td { border:1px solid #ccc; padding:6px 8px; }
+  .totals-wrap { display:flex; justify-content:flex-end; margin-top:10px; }
+  .totals-table { width:260px; font-size:11px; border-collapse:collapse; }
+  .totals-table td { border:1px solid #ccc; padding:5px 10px; }
+  .ttc-row td { border-top:2px solid #555 !important; font-weight:700; font-size:12px; }
+  .words-box { margin-top:10px; padding:8px 12px; border:1px solid #ccc; font-size:11px; background:#fafafa !important; }
+  .rib-box { margin-top:8px; padding:7px 12px; border:1px solid #ccc; font-size:11px; }
+  .cond-box { margin-top:6px; padding:7px 12px; border:1px solid #ccc; font-size:11px; }
+  .sig { position:fixed; bottom:12mm; right:12mm; width:180px; }
+  .sig-box { text-align:center; }
+  .sig-line { border-top:1px solid #666; margin-top:46px; padding-top:5px; font-size:10px; color:#555; }
+  @media print { .sig { position:fixed; bottom:8mm; right:8mm; } }
+</style></head><body>
+
 ${headerHtml}
-<p style="text-align:right;font-size:11px;color:#111;font-weight:600;margin:4px 0 12px;">Date : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</p>
-<div style="display:flex;justify-content:space-between;margin:20px 0;">
-  <div><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;font-weight:700;">Client</p><p style="margin:0;font-weight:700;font-size:14px;">${inv.client}</p>${inv.project?`<p style="margin:4px 0 0;color:#666;font-size:11px;">Projet : ${inv.project}</p>`:''}</div>
-  <div style="text-align:right;"><p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;font-weight:700;">${typeLabel}</p><p style="margin:0;font-weight:700;font-size:18px;color:#2563EB;">N° ${inv.number}</p><p style="margin:4px 0 0;color:#666;font-size:11px;">Date : ${inv.date}</p></div>
+<p class="date">Date : ${today}</p>
+
+<div class="meta">
+  <div class="meta-left">
+    ${inv.project ? '<div class="meta-row"><span>Projet : </span><b>' + inv.project + '</b></div>' : ''}
+    ${inv.ouvrage ? '<div class="meta-row"><span>Ouvrage : </span><b>' + inv.ouvrage + '</b></div>' : ''}
+    ${inv.site ? '<div class="meta-row"><span>Site : </span><b>' + inv.site + '</b></div>' : ''}
+    ${inv.place ? '<div class="meta-row"><span>Lieu : </span><b>' + inv.place + '</b></div>' : ''}
+  </div>
+  <div class="meta-right">
+    <div class="cd-line"><span>Client : </span><b style="font-size:12px;">${inv.client}</b></div>
+    ${cd.fullname ? '<div class="cd-line">' + cd.fullname + '</div>' : ''}
+    ${cd.address ? '<div class="cd-line">Adresse : ' + cd.address + '</div>' : ''}
+    ${cd.nis ? '<div class="cd-line">NIS : ' + cd.nis + '</div>' : ''}
+    ${cd.nif ? '<div class="cd-line">NIF : ' + cd.nif + '</div>' : ''}
+    ${cd.rc ? '<div class="cd-line">RC : ' + cd.rc + '</div>' : ''}
+    ${cd.ai ? '<div class="cd-line">AI : ' + cd.ai + '</div>' : ''}
+  </div>
 </div>
-<table style="margin-top:14px;">
-  <thead><tr style="background:#f0f0f0;"><th style="border:1px solid #ddd;padding:8px;text-align:left;font-size:11px;">N°</th><th style="border:1px solid #ddd;padding:8px;text-align:left;font-size:11px;">Désignation</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">Qté</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">P.U. HT</th><th style="border:1px solid #ddd;padding:8px;text-align:right;font-size:11px;">Total HT</th></tr></thead>
+
+<div class="inv-title">${typeLabel} N&deg; : ${inv.number}</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:32px;text-align:center;">N&deg;</th>
+      <th>D&eacute;signation</th>
+      <th style="width:52px;text-align:center;">Qt&eacute;</th>
+      <th style="width:110px;text-align:right;">P.U. HT</th>
+      <th style="width:120px;text-align:right;">Total HT</th>
+    </tr>
+  </thead>
   <tbody>${linesHtml}</tbody>
 </table>
-<div style="display:flex;justify-content:flex-end;margin-top:16px;">
-  <table style="width:280px;font-size:13px;">
-    <tr><td style="padding:6px 12px;color:#666;">Total HT</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.ht)}</td></tr>
-    <tr><td style="padding:6px 12px;color:#666;">TVA 19%</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.tva)}</td></tr>
-    ${inv.timbre>0?`<tr><td style="padding:6px 12px;color:#666;">Timbre 1%</td><td style="padding:6px 12px;text-align:right;font-weight:600;">${fmtDZD(inv.timbre)}</td></tr>`:''}
-    <tr style="border-top:2px solid #333;"><td style="padding:8px 12px;font-weight:700;font-size:14px;">Total TTC</td><td style="padding:8px 12px;text-align:right;font-weight:700;font-size:14px;color:#C8782A;">${fmtDZD(inv.ttc)}</td></tr>
+
+<div class="totals-wrap">
+  <table class="totals-table">
+    <tbody>
+    <tr><td>Total HT (DA)</td><td style="text-align:right;">${fmtNum(inv.ht)}</td></tr>
+    <tr><td>TVA 19%</td><td style="text-align:right;">${fmtNum(inv.tva)}</td></tr>
+    ${inv.timbre > 0 ? '<tr><td>Timbre fiscal 1% (DA)</td><td style="text-align:right;">' + fmtNum(inv.timbre) + '</td></tr>' : ''}
+    <tr class="ttc-row"><td>Arr&ecirc;t&eacute; &agrave; la somme TTC (DA)</td><td style="text-align:right;">${fmtNum(inv.ttc)}</td></tr>
+    </tbody>
   </table>
 </div>
-${inv.rib?`<div style="margin-top:10px;padding:10px;background:#eff6ff;border-radius:6px;font-size:11px;"><strong>${inv.rib.bank}</strong> — RIB : ${inv.rib.number}</div>`:''}
-${inv.conditions?`<div style="margin-top:10px;padding:10px;background:#f0f0f0;border-radius:6px;font-size:11px;"><strong>Conditions de paiement :</strong> ${inv.conditions}</div>`:''}
-<div style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:60px;">
-  <div style="text-align:center;"><div style="border-bottom:1px solid #333;margin:40px 10px 6px;"></div><p style="font-size:10px;color:#555;margin:0;">Le Client</p></div>
-  <div style="text-align:center;"><div style="border-bottom:1px solid #333;margin:40px 10px 6px;"></div><p style="font-size:10px;color:#555;margin:0;">I.P.C.M BOUTEMA</p></div>
+
+<div class="words-box"><b>Arr&ecirc;t&eacute; la pr&eacute;sente facture &agrave; la somme de :</b> ${ttcWords}</div>
+
+${inv.rib ? '<div class="rib-box"><b>' + inv.rib.bank + '</b> &nbsp;|&nbsp; RIB : <span style="font-family:monospace;">' + inv.rib.number + '</span></div>' : ''}
+${inv.conditions ? '<div class="cond-box"><b>Conditions de paiement :</b> ' + inv.conditions + '</div>' : ''}
+
+<div class="sig">
+  <div class="sig-box"><div class="sig-line">I.P.C.M BOUTEMA</div></div>
 </div>
+
 <script>window.onload=function(){window.print();window.close();};<\/script>
 </body></html>`);
     w.document.close();
   }
   // ========== END FACTURATION ==========
 
-  function printWorkerSheetFromData(w) {
+  function printWorkerSheetFromData(w, salaryType) {
     if (!w) return;
+    salaryType = salaryType || 'net';
     const age = calculateAge(w.birth);
     const logoSrc = document.querySelector('.print-header img')?.src || '';
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _salary = w.salary ? Number(w.salary).toLocaleString('fr-DZ')+' DZD' : '';
+    const _salaryVal = salaryType === 'base' ? w.baseSalary : w.salary;
+    const _salaryLabel = salaryType === 'base' ? 'Salaire de base' : 'Net à payer';
+    const _salary = _salaryVal && Number(_salaryVal) > 0 ? Number(_salaryVal).toLocaleString('fr-DZ')+' DZD' : '';
     const _expWarn = '';
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' \u2014 ' + (w.contract||'');
 
@@ -4436,7 +4828,7 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 </div>
 
 <hr class="divider"/>
-<div class="row"><span class="lbl">Net &#xe0; payer :</span> ${_salary}</div>
+<div class="row"><span class="lbl">${_salaryLabel} :</span> ${_salary}</div>
 <div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
 
 <hr class="divider"/>
@@ -5293,6 +5685,8 @@ window.onload=function(){
     if (meta) {
       document.getElementById('page-title').textContent = meta.title;
       document.getElementById('page-sub').textContent = meta.sub;
+      const bcCur = document.getElementById('bc-current');
+      if (bcCur) bcCur.textContent = meta.title;
       const mobileTitle = document.getElementById('mobile-page-title');
       if (mobileTitle) mobileTitle.textContent = meta.title;
     }
@@ -6078,6 +6472,75 @@ window.onload=function(){
         </div>
       </div>`).join('');
   }
+
+  function openNewClientModal() {
+    ['nc-name','nc-person','nc-phone','nc-email','nc-address','nc-fullname','nc-nif','nc-nis','nc-rc','nc-ai','nc-tin'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    // Pre-fill name if already typed in inv-client
+    const typed = document.getElementById('inv-client')?.value?.trim();
+    if (typed) document.getElementById('nc-name').value = typed;
+    document.getElementById('new-client-modal').classList.add('active');
+    setTimeout(() => document.getElementById('nc-name')?.focus(), 100);
+  }
+
+  function closeNewClientModal() {
+    document.getElementById('new-client-modal').classList.remove('active');
+  }
+
+  function saveNewClient() {
+    const name = document.getElementById('nc-name')?.value?.trim();
+    if (!name) { alert('Le nom du client est requis'); return; }
+
+    // 1. Add to clientNames if not already there
+    if (!state.clientNames.includes(name)) {
+      state.clientNames.push(name);
+      save(K.clientNames, state.clientNames);
+    }
+
+    // 2. Add to commercial contacts
+    if (!state.commercialContacts) state.commercialContacts = [];
+    const existingContact = state.commercialContacts.find(c => c.category === 'client' && c.name.toUpperCase() === name.toUpperCase());
+    if (!existingContact) {
+      state.commercialContacts.push({
+        category: 'client',
+        name,
+        person: document.getElementById('nc-person')?.value?.trim() || '',
+        phone:   document.getElementById('nc-phone')?.value?.trim() || '',
+        email:   document.getElementById('nc-email')?.value?.trim() || '',
+        address: document.getElementById('nc-address')?.value?.trim() || '',
+        nif:     document.getElementById('nc-nif')?.value?.trim() || '',
+        nis:     document.getElementById('nc-nis')?.value?.trim() || '',
+        rc:      document.getElementById('nc-rc')?.value?.trim() || ''
+      });
+      save(K.commercialContacts, state.commercialContacts);
+    }
+
+    // 3. Save fiscal details
+    const nif     = document.getElementById('nc-nif')?.value?.trim() || '';
+    const nis     = document.getElementById('nc-nis')?.value?.trim() || '';
+    const rc      = document.getElementById('nc-rc')?.value?.trim() || '';
+    const ai      = document.getElementById('nc-ai')?.value?.trim() || '';
+    const tin     = document.getElementById('nc-tin')?.value?.trim() || '';
+    const fullname = document.getElementById('nc-fullname')?.value?.trim() || '';
+    const address  = document.getElementById('nc-address')?.value?.trim() || '';
+    if (nif || nis || rc || ai || tin || fullname) {
+      if (!state.clientDetails) state.clientDetails = {};
+      state.clientDetails[name] = { fullname, address, nif, nis, rc, ai, tin };
+      save(K.clientDetails, state.clientDetails);
+    }
+
+    // 4. Set as selected client in invoice form
+    const invClient = document.getElementById('inv-client');
+    if (invClient) invClient.value = name;
+
+    // 5. Refresh datalist
+    const datalist = document.getElementById('inv-client-list');
+    if (datalist) datalist.innerHTML = state.clientNames.map(c => `<option value="${c}">`).join('');
+
+    closeNewClientModal();
+    alert(`✓ Client "${name}" créé et sélectionné.`);
+  }
+
+  function openNewClientModal_stub() {} // placeholder
 
   function openContactModal() {
     state.editingContactIdx = null;
@@ -7922,8 +8385,11 @@ ${contentClone.outerHTML}
     addRib,
     deleteRib,
     saveClientDetails,
+    setCdMode,
+    saveNewClientFiscal,
     loadClientDetailsToForm,
     deleteClientDetails,
+    renderClientDetailsList,
     deleteSituationPayment,
     deleteFournisseurPayment,
     addProject,
@@ -7948,6 +8414,7 @@ ${contentClone.outerHTML}
     editWorkerInPanel,
     printNewWorkerSheet,
     printWorkerSheet,
+    doPrintWorkerSheet,
     printWorkerSheetFromData,
     editWorker,
     deleteWorker,
@@ -7986,6 +8453,9 @@ ${contentClone.outerHTML}
     switchContactTab,
     renderContacts,
     openContactModal,
+    openNewClientModal,
+    closeNewClientModal,
+    saveNewClient,
     closeContactModal,
     saveContact,
     editContact,
@@ -8014,7 +8484,15 @@ ${contentClone.outerHTML}
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  // Only register the SW when served from a real http(s) origin (deployed app).
+  // When opened as a standalone file (file://) or in a preview sandbox, kill any
+  // stale service worker + caches so the latest version always shows.
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  } else {
+    navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+    if (window.caches) { caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(() => {}); }
+  }
 }
 </script>
 
