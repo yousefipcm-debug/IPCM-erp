@@ -409,6 +409,14 @@
   }
   .ghost-btn:hover { background: var(--danger-bg); color: var(--danger-text); }
 
+  .psm-chk {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);
+    font-size: 12.5px; color: var(--text-primary); cursor: pointer; font-weight: 500;
+  }
+  .psm-chk input { width: 15px; height: 15px; flex-shrink: 0; }
+  .psm-chk:hover { background: var(--bg-hover); }
+
   .empty-state {
     text-align: center; padding: 28px 16px; color: var(--text-tertiary);
     font-size: 12px; font-weight: 500;
@@ -2489,25 +2497,53 @@
       </section>
 
       <!-- Contact Modal -->
-      <!-- PRINT SALARY CHOICE MODAL -->
+      <!-- PRINT FIELD CHOICE MODAL -->
       <div class="modal-overlay" id="print-salary-modal">
-        <div class="modal" style="max-width:380px;width:90%;">
+        <div class="modal" style="max-width:460px;width:90%;">
           <div class="modal-head">
             <p class="modal-title">Imprimer la fiche employé</p>
             <button class="modal-close" onclick="document.getElementById('print-salary-modal').classList.remove('active')">×</button>
           </div>
-          <div class="modal-body">
-            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px;">Quel salaire afficher sur la fiche ?</p>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <button class="btn-primary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.doPrintWorkerSheet('net')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Net à payer
-              </button>
-              <button class="btn-secondary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.doPrintWorkerSheet('base')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                Salaire de base
-              </button>
+          <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <p style="font-size:13px;color:var(--text-secondary);margin:0;">Sélectionnez les informations à imprimer</p>
+              <div style="display:flex;gap:6px;">
+                <button type="button" class="ghost-btn" style="font-size:11px;width:auto;padding:3px 8px;" onclick="app.psmToggleAll(true)">Tout</button>
+                <button type="button" class="ghost-btn" style="font-size:11px;width:auto;padding:3px 8px;" onclick="app.psmToggleAll(false)">Aucun</button>
+              </div>
             </div>
+
+            <p style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);margin:14px 0 6px;">Informations personnelles</p>
+            <div class="psm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <label class="psm-chk"><input type="checkbox" id="psm-name" checked/> Nom</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-surname" checked/> Prénom</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-birth" checked/> Date de naissance</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-cin" checked/> N° CIN</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-blood" checked/> Groupe sanguin</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-status" checked/> Situation familiale</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-kids" checked/> Enfants</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-health" checked/> Situation de santé</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-phone" checked/> Téléphone</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-address" checked/> Adresse</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-photo" checked/> Photo</label>
+            </div>
+
+            <p style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);margin:14px 0 6px;">Informations professionnelles</p>
+            <div class="psm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <label class="psm-chk"><input type="checkbox" id="psm-function" checked/> Fonction</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-ss" checked/> N° Assurance</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-contract" checked/> Contrat</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-cert" checked/> Certificat / Attestation</label>
+            </div>
+
+            <p style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);margin:14px 0 6px;">Rémunération</p>
+            <div class="psm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <label class="psm-chk"><input type="checkbox" id="psm-base"/> Salaire de base</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-net" checked/> Net à payer</label>
+              <label class="psm-chk"><input type="checkbox" id="psm-rib" checked/> RIB</label>
+            </div>
+
+            <button class="btn-primary" style="width:100%;margin-top:18px;" onclick="app.doPrintWorkerSheet()">Imprimer</button>
           </div>
         </div>
       </div>
@@ -4085,23 +4121,44 @@ window.app = (() => {
     if (card) openPrintWindow('Liste du Personnel', card);
   }
 
+  const PSM_FIELD_IDS = ['psm-name','psm-surname','psm-birth','psm-cin','psm-blood','psm-status','psm-kids','psm-health','psm-phone','psm-address','psm-photo','psm-function','psm-ss','psm-contract','psm-cert','psm-base','psm-net','psm-rib'];
+
+  function psmResetDefaults() {
+    PSM_FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = (id !== 'psm-base'); // everything checked by default except "salaire de base"
+    });
+  }
+
+  function psmToggleAll(val) {
+    PSM_FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.checked = val; });
+  }
+
   function printWorkerSheet(idx) {
     const w = state.workers[idx];
     if (!w) return;
     state._printWorkerIdx = idx;
+    psmResetDefaults();
     document.getElementById('print-salary-modal').classList.add('active');
   }
 
-  function doPrintWorkerSheet(salaryType) {
+  function doPrintWorkerSheet() {
+    const sel = {};
+    PSM_FIELD_IDS.forEach(id => { sel[id.replace('psm-','')] = !!document.getElementById(id)?.checked; });
+    if (!sel.base && !sel.net) {
+      // ok to print with no salary at all — only warn if literally nothing at all selected
+    }
+    const anySelected = Object.values(sel).some(v => v);
+    if (!anySelected) { alert('Sélectionnez au moins une information à imprimer.'); return; }
     document.getElementById('print-salary-modal').classList.remove('active');
     if (state._printFromForm && state._printFormWorker) {
       state._printFromForm = false;
-      printWorkerSheetFromData(state._printFormWorker, salaryType);
+      printWorkerSheetFromData(state._printFormWorker, sel);
       state._printFormWorker = null;
       return;
     }
     const w = state.workers[state._printWorkerIdx];
-    if (w) printWorkerSheetFromData(w, salaryType);
+    if (w) printWorkerSheetFromData(w, sel);
   }
 
   function previewWorkerPhoto(input) { previewNewWorkerPhoto(input); }
@@ -4250,6 +4307,7 @@ window.app = (() => {
       photo: state._newWorkerPhoto || null
     };
     state._printFormWorker = w;
+    psmResetDefaults();
     document.getElementById('print-salary-modal').classList.add('active');
     state._printFromForm = true;
   }
@@ -4756,18 +4814,54 @@ ${inv.conditions ? '<div class="cond-box"><b>Conditions de paiement :</b> ' + in
   }
   // ========== END FACTURATION ==========
 
-  function printWorkerSheetFromData(w, salaryType) {
+  function printWorkerSheetFromData(w, sel) {
     if (!w) return;
-    salaryType = salaryType || 'net';
-    const age = calculateAge(w.birth);
+    sel = sel || { name:true, surname:true, birth:true, cin:true, blood:true, status:true, kids:true, health:true, phone:true, address:true, photo:true, function:true, ss:true, contract:true, cert:true, base:false, net:true, rib:true };
     const logoSrc = document.querySelector('.print-header img')?.src || '';
     const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     const _cin = (w.cin||'') + (w.cinExp ? ' (exp. '+w.cinExp+')' : '');
-    const _salaryVal = salaryType === 'base' ? w.baseSalary : w.salary;
-    const _salaryLabel = salaryType === 'base' ? 'Salaire de base' : 'Net à payer';
-    const _salary = _salaryVal && Number(_salaryVal) > 0 ? Number(_salaryVal).toLocaleString('fr-DZ')+' DZD' : '';
-    const _expWarn = '';
+    const _dob = w.birth ? new Date(w.birth).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+
+    // ── Left info column (personal + professional), built row by row per selection ──
+    const _infoRows = [];
+    if (sel.name)     _infoRows.push('<div class="row"><span class="lbl">Nom :</span> ' + (w.name||'') + '</div>');
+    if (sel.surname)  _infoRows.push('<div class="row"><span class="lbl">Pr&#xe9;nom :</span> ' + (w.surname||'') + '</div>');
+    if (sel.function) _infoRows.push('<div class="row"><span class="lbl">Fonction :</span> ' + (w.function||'') + '</div>');
+    if (sel.ss)       _infoRows.push('<div class="row"><span class="lbl">N&#xB0; Assurance :</span> ' + (w.ss||'') + '</div>');
+    if (sel.birth)    _infoRows.push('<div class="row"><span class="lbl">Date de naissance :</span> ' + _dob + '</div>');
+    if (sel.phone)    _infoRows.push('<div class="row"><span class="lbl">T&#xe9;l&#xe9;phone :</span> ' + (w.phone||'') + '</div>');
+    if (sel.cin)      _infoRows.push('<div class="row"><span class="lbl">N&#xB0; CIN :</span> ' + _cin + '</div>');
+    if (sel.health)   _infoRows.push('<div class="row"><span class="lbl">Situation de sant&#xe9; :</span> ' + (w.health||'') + '</div>');
+    if (sel.status)   _infoRows.push('<div class="row"><span class="lbl">Situation familiale :</span> ' + (w.status||'') + '</div>');
+    if (sel.kids)     _infoRows.push('<div class="row"><span class="lbl">Enfants :</span> ' + (w.kids||'0') + '</div>');
+    if (sel.blood)    _infoRows.push('<div class="row"><span class="lbl">Groupe sanguin :</span> ' + (w.blood||'') + '</div>');
+    if (sel.address)  _infoRows.push('<div class="row"><span class="lbl">Adresse :</span> ' + (w.address||'') + '</div>');
+    const _infoHtml = _infoRows.join('\n');
+    const _photoBoxHtml = sel.photo ? '<div class="phb" id="ph-box">Photo</div>' : '';
+
+    // ── Rémunération ──
+    const _salaryRows = [];
+    if (sel.base && w.baseSalary && Number(w.baseSalary) > 0) {
+      _salaryRows.push('<div class="row"><span class="lbl">Salaire de base :</span> ' + Number(w.baseSalary).toLocaleString('fr-DZ') + ' DZD</div>');
+    }
+    if (sel.net && w.salary && Number(w.salary) > 0) {
+      _salaryRows.push('<div class="row"><span class="lbl">Net à payer :</span> ' + Number(w.salary).toLocaleString('fr-DZ') + ' DZD</div>');
+    }
+    if (sel.rib && w.rib) {
+      _salaryRows.push('<div class="row"><span class="lbl">RIB :</span> ' + w.rib + '</div>');
+    }
+    const _salaryHtml = _salaryRows.join('\n');
+    const _salaryBlockHtml = _salaryHtml ? '<hr class="divider"/>\n' + _salaryHtml : '';
+
+    // ── Contrat / certificat ──
     const _contrat = 'du ' + (w.entry||'...') + ' au ' + (w.contractEnd||'...') + ' \u2014 ' + (w.contract||'');
+    const _contractRows = [];
+    if (sel.contract) _contractRows.push('<div class="row"><span class="lbl">Contrat :</span> ' + _contrat + '</div>');
+    if (sel.cert)     _contractRows.push('<div class="row"><span class="lbl">Certificat / Attestation :</span> ' + (w.cert||'') + '</div>');
+    const _contractHtml = _contractRows.join('\n');
+    const _contractBlockHtml = _contractHtml ? '<hr class="divider"/>\n' + _contractHtml : '';
+
+    const _expWarn = '';
 
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) { alert('Autorise les pop-ups pour imprimer.'); return; }
@@ -4811,32 +4905,15 @@ body{font-family:Arial,sans-serif;font-size:13px;color:#111;background:white;pad
 
 <div class="top">
   <div class="infos">
-    <div class="row"><span class="lbl">Nom :</span> ${w.name}</div>
-    <div class="row"><span class="lbl">Pr&#xe9;nom :</span> ${w.surname}</div>
-    <div class="row"><span class="lbl">Fonction :</span> ${w.function||''}</div>
-    <div class="row"><span class="lbl">N&#xB0; Assurance :</span> ${w.ss||''}</div>
-    <div class="row"><span class="lbl">&#xc2;ge :</span> ${age} ans</div>
-    <div class="row"><span class="lbl">T&#xe9;l&#xe9;phone :</span> ${w.phone||''}</div>
-    <div class="row"><span class="lbl">N&#xB0; CIN :</span> ${_cin}</div>
-    <div class="row"><span class="lbl">Situation de sant&#xe9; :</span> ${w.health||''}</div>
-    <div class="row"><span class="lbl">Situation familiale :</span> ${w.status||''}</div>
-    <div class="row"><span class="lbl">Enfants :</span> ${w.kids||'0'}</div>
-    <div class="row"><span class="lbl">Groupe sanguin :</span> ${w.blood||''}</div>
-    <div class="row"><span class="lbl">Adresse :</span> ${w.address||''}</div>
+${_infoHtml}
   </div>
-  <div class="phb" id="ph-box">Photo</div>
+  ${_photoBoxHtml}
 </div>
-
-<hr class="divider"/>
-<div class="row"><span class="lbl">${_salaryLabel} :</span> ${_salary}</div>
-<div class="row"><span class="lbl">RIB :</span> ${w.rib||''}</div>
-
-<hr class="divider"/>
-<div class="row"><span class="lbl">Contrat :</span> ${_contrat}</div>
-<div class="row"><span class="lbl">Certificat / Attestation :</span> ${w.cert||''}</div>
+${_salaryBlockHtml}
+${_contractBlockHtml}
 ${_expWarn}
 
-<script>window._photoSrc = ${ JSON.stringify(w.photo || '') };
+<script>window._photoSrc = ${ sel.photo ? JSON.stringify(w.photo || '') : 'null' };
 window.onload=function(){
   var ph=document.getElementById('ph-box');
   if(window._photoSrc && ph){
@@ -8415,6 +8492,7 @@ ${contentClone.outerHTML}
     printNewWorkerSheet,
     printWorkerSheet,
     doPrintWorkerSheet,
+    psmToggleAll,
     printWorkerSheetFromData,
     editWorker,
     deleteWorker,
