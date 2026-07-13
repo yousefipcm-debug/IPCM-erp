@@ -818,6 +818,7 @@
   /* Auto-tint cells */
   .ptg-cell-p  { background: #DCFCE7 !important; color: #15803D !important; }
   .ptg-cell-d  { background: #FEF9C3 !important; color: #A16207 !important; }
+  .ptg-cell-a  { background: #FEE2E2 !important; color: #DC2626 !important; }
   .ptg-cell-hs { background: #F3E8FF !important; color: #7C3AED !important; }
   tr.ptg-row-top td { border-bottom: none !important; }
   tr.ptg-row-bot td { border-top: none !important; }
@@ -2352,8 +2353,8 @@
               
               
               <div class="field" style="grid-column:1/-1;"><label>Certificats / Attestations</label><textarea id="wnp-cert" rows="2" placeholder="Ex. Attestation de travail, Certificat médical, Diplôme..." oninput="app.updateWorkerPreview()" style="resize:vertical;"></textarea></div>
-              <div class="field" style="grid-column:1/-1;"><label>Chantier affecté</label>
-                <select id="wnp-worksite"><option value="">— Aucun chantier —</option></select>
+              <div class="field" style="grid-column:1/-1;"><label>Affectation</label>
+                <select id="wnp-worksite"><option value="">🏢 Administration (Bureau)</option></select>
               </div>
               <div class="field" style="grid-column:1/-1;">
                 <label>Photo de l'employé</label>
@@ -3227,6 +3228,23 @@ window.app = (() => {
     state.clientDetails = load(K.clientDetails, {});
     state.workers = load(K.workers, []);
     state.workSites = load(K.workSites, []);
+    // One-time cleanup: a worker should only ever belong to ONE worksite.
+    // Older data may have a worker duplicated across several worksites (a past bug) —
+    // keep their first/earliest assignment and strip the duplicates so reassignment works cleanly.
+    (function dedupeWorksiteWorkers() {
+      const seen = new Set();
+      let changed = false;
+      state.workSites.forEach(ws => {
+        if (!ws.workerIds) return;
+        const clean = ws.workerIds.filter(id => {
+          if (seen.has(id)) { changed = true; return false; }
+          seen.add(id);
+          return true;
+        });
+        if (clean.length !== ws.workerIds.length) ws.workerIds = clean;
+      });
+      if (changed) save(K.workSites, state.workSites);
+    })();
     state.hrDocuments = load(K.hrDocuments, []);
     state.hrFolders = load(K.hrFolders, []);
     state.techWorkSites = load(K.techWorkSites, []);
@@ -4193,6 +4211,7 @@ window.app = (() => {
     const st = document.getElementById('wnp-status'); if(st) st.value='';
     const hl = document.getElementById('wnp-health'); if(hl) hl.value='';
     const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDD';
+    const wsSel = document.getElementById('wnp-worksite'); if(wsSel) wsSel.value='';
     const ph = document.getElementById('wnp-photo-preview'); if(ph) { ph.src=''; ph.style.display='none'; }
     state._newWorkerPhoto = null;
     state.editingWorkerIdx = null;
@@ -4229,17 +4248,24 @@ window.app = (() => {
       photo: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.photo || state._newWorkerPhoto || null) : (state._newWorkerPhoto || null),
       history: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.history || []) : []
     };
+    let workerIdx;
     if (state._editingFromPanel && state.editingWorkerIdx !== null) {
       state.workers[state.editingWorkerIdx] = worker;
+      workerIdx = state.editingWorkerIdx;
     } else {
       state.workers.push(worker);
-      if (wsIdx !== '' && wsIdx !== undefined && state.workSites[parseInt(wsIdx)]) {
-        const idx = state.workers.length - 1;
-        if (!state.workSites[parseInt(wsIdx)].workerIds) state.workSites[parseInt(wsIdx)].workerIds = [];
-        state.workSites[parseInt(wsIdx)].workerIds.push(idx);
-        save(K.workSites, state.workSites);
-      }
+      workerIdx = state.workers.length - 1;
     }
+    // Reassign affectation: remove worker from every worksite first, then add to the chosen one (if any).
+    // Leaving "" selected = Administration (no worksite).
+    state.workSites.forEach(ws => {
+      if (ws.workerIds) ws.workerIds = ws.workerIds.filter(id => id !== workerIdx);
+    });
+    if (wsIdx !== '' && wsIdx !== undefined && state.workSites[parseInt(wsIdx)]) {
+      if (!state.workSites[parseInt(wsIdx)].workerIds) state.workSites[parseInt(wsIdx)].workerIds = [];
+      state.workSites[parseInt(wsIdx)].workerIds.push(workerIdx);
+    }
+    save(K.workSites, state.workSites);
     save(K.workers, state.workers);
     resetWorkerForm();
     renderAll();
@@ -5773,7 +5799,15 @@ window.onload=function(){
     if (p === 'tech-work-sites') renderTechWsMgmt();
     if (p === 'worker-new') {
       const sel = document.getElementById('wnp-worksite');
-      if (sel) sel.innerHTML = '<option value="">— Aucun chantier —</option>' + state.workSites.map((ws,i)=>`<option value="${i}">${ws.name}</option>`).join('');
+      if (sel) {
+        sel.innerHTML = '<option value="">🏢 Administration (Bureau)</option>' + state.workSites.map((ws,i)=>`<option value="${i}">🏗️ ${ws.name}</option>`).join('');
+        if (state._editingFromPanel && state.editingWorkerIdx !== null) {
+          const curWsIdx = state.workSites.findIndex(ws => (ws.workerIds || []).includes(state.editingWorkerIdx));
+          sel.value = curWsIdx >= 0 ? String(curWsIdx) : '';
+        } else {
+          sel.value = '';
+        }
+      }
       updateWorkerPreview();
     }
     if (p === 'commercial-contacts') renderContacts();
@@ -6335,6 +6369,17 @@ window.onload=function(){
     } else {
       state.workSites.push(workSite);
     }
+
+    // A worker can only belong to ONE worksite at a time. Any worker just checked
+    // into this worksite must be removed from every OTHER worksite's list, or they'd
+    // stay "stuck" showing up in their old worksite too.
+    const thisIdx = state.editingWorkSiteIdx !== null ? state.editingWorkSiteIdx : state.workSites.length - 1;
+    state.workSites.forEach((ws, i) => {
+      if (i === thisIdx) return;
+      if (ws.workerIds && ws.workerIds.some(id => workerIds.includes(id))) {
+        ws.workerIds = ws.workerIds.filter(id => !workerIds.includes(id));
+      }
+    });
 
     save(K.workSites, state.workSites);
     closeWorkSiteModal();
@@ -7380,14 +7425,15 @@ ${sitesHtml}
         const v0up = c0.val ? c0.val.trim().toUpperCase() : '';
         if (v0up === 'P') joursCount++;
         else if (v0up === 'D') joursCount += 0.5;
-        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : '');
+        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : (!c0.bg && v0up === 'A' ? ' ptg-cell-a' : ''));
         const bg0 = c0.bg ? `background:${c0.bg};` : '';
         cells_html += `<td class="ptg-cell${isWE ? ' weekend' : ''}${autoTint0}" style="${bg0}" data-wi="${wi}" data-d="${d}" data-row="0">
           <input class="ptg-input" value="${c0.val||''}" maxlength="3"
+            data-ptg-key="${key0}" data-ptg-month="${mk}"
             style="${bg0}"
-            oninput="app.onPtgCellInput(this,${wi},${d},0)"
-            onclick="if(app.ptgCellClick)app.ptgCellClick(this,${wi},${d},0)"
-            oncontextmenu="if(app.ptgCellRightClick)app.ptgCellRightClick(event,${wi},${d},0);return false;"/>
+            oninput="app.onPtgCellInput(this)"
+            onclick="if(app.ptgCellClick)app.ptgCellClick(event,'${key0}','${mk}')"
+            oncontextmenu="if(app.ptgCellRightClick)app.ptgCellRightClick(event,'${key0}','${mk}','${isWE}');return false;"/>
         </td>`;
       }
       rows += `<tr>
@@ -7508,7 +7554,7 @@ ${sitesHtml}
         const n1 = parseFloat(c1.val); if (!isNaN(n1)) hsSum += n1;
         const ptrStyle = inPaint ? 'pointer-events:none;' : '';
         const v0up = c0.val ? c0.val.trim().toUpperCase() : '';
-        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : '');
+        const autoTint0 = !c0.bg && v0up === 'P' ? ' ptg-cell-p' : (!c0.bg && v0up === 'D' ? ' ptg-cell-d' : (!c0.bg && v0up === 'A' ? ' ptg-cell-a' : ''));
         const autoTint1 = !c1.bg && c1.val && c1.val.trim() !== '' && !isNaN(parseFloat(c1.val)) ? ' ptg-cell-hs' : '';
         topCells += `<td style="padding:0;background:${bg0};cursor:${inPaint?'crosshair':'text'};"
           onclick="app.ptgCellClick(event,'${k0}','${mk}')"
@@ -7628,9 +7674,10 @@ ${sitesHtml}
     const row = parseInt(parts[2]);
     const val = input.value.trim();
     if (!mData.cells[key].bg) { // only tint if no manual paint color
-      input.classList.remove('ptg-cell-p', 'ptg-cell-hs');
+      input.classList.remove('ptg-cell-p', 'ptg-cell-d', 'ptg-cell-a', 'ptg-cell-hs');
       if (row === 0 && val.toUpperCase() === 'P') input.classList.add('ptg-cell-p');
       else if (row === 0 && val.toUpperCase() === 'D') input.classList.add('ptg-cell-d');
+      else if (row === 0 && val.toUpperCase() === 'A') input.classList.add('ptg-cell-a');
       else if (row === 1 && val !== '' && !isNaN(parseFloat(val))) input.classList.add('ptg-cell-hs');
     }
     // Update row totals without full re-render
@@ -8056,11 +8103,12 @@ ${contentClone.outerHTML}
         const c0   = cells[wi+'_'+d+'_0'] || { val:'', bg:'' };
         const c1   = cells[wi+'_'+d+'_1'] || { val:'', bg:'' };
         const isP  = c0.val && c0.val.trim().toUpperCase() === 'P';
+        const isA  = c0.val && c0.val.trim().toUpperCase() === 'A';
         if (isP) joursCount++; else if (c0.val && c0.val.trim().toUpperCase() === "D") joursCount += 0.5;
         const n1 = parseFloat(c1.val); if (!isNaN(n1)) hsSum += n1;
         const bg0  = c0.bg || (isNow ? '#e2e2e2' : isWE ? '#FFF7ED' : '#fff');
         const bg1  = c1.bg || (isNow ? '#e2e2e2' : isWE ? '#FFF7ED' : '#fff');
-        const clr0 = isP ? '#15803D' : c0.val ? '#171717' : '#c7c7c7';
+        const clr0 = isP ? '#15803D' : isA ? '#DC2626' : c0.val ? '#171717' : '#c7c7c7';
         const clr1 = c1.val ? '#7C3AED' : '#c7c7c7';
         topCells += `<td style="width:34px;padding:0;background:${bg0};border:1px solid #f3f3f3;text-align:center;">
           <div style="width:34px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${clr0};">${c0.val||''}</div></td>`;
