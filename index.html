@@ -1038,14 +1038,15 @@
   Object.entries(LS_TO_SHORT).forEach(([ls, s]) => (SHORT_TO_LS[s] = ls));
 
   const ROLE_MODULES = {
-    admin:     ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'],
-    finance:   ['module-finance', 'module-commercial'],
-    hr:        ['module-rh', 'module-pilotage'],
-    technique: ['module-technique', 'module-pilotage', 'module-commercial']
+    admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'],
+    finance:    ['module-finance', 'module-commercial'],
+    hr:         ['module-rh', 'module-pilotage'],
+    technique:  ['module-technique', 'module-pilotage', 'module-commercial'],
+    commercial: ['module-commercial', 'module-pilotage']
   };
 
   const ROLE_LABELS = {
-    admin: 'Administrateur', finance: 'DFC', hr: 'Ressources Humaines', technique: 'Technique'
+    admin: 'Administrateur', finance: 'DFC', hr: 'Ressources Humaines', technique: 'Technique', commercial: 'Commercial'
   };
 
   // ── localStorage intercept ──────────────────────────────────────────────────
@@ -1065,7 +1066,8 @@
           'admin': { pwd: 'Admin2024!', role: 'admin', dname: 'Administrateur' },
           'finance': { pwd: 'Finance2024!', role: 'finance', dname: 'Responsable DFC' },
           'rh': { pwd: 'RH2024!', role: 'hr', dname: 'Responsable RH' },
-          'technique': { pwd: 'Tech2024!', role: 'technique', dname: 'Responsable Technique' }
+          'technique': { pwd: 'Tech2024!', role: 'technique', dname: 'Responsable Technique' },
+          'commercial': { pwd: 'Commercial2024!', role: 'commercial', dname: 'Responsable Commercial' }
         };
         const u = users[(body.username || '').toLowerCase()];
         if (u && body.password === u.pwd) {
@@ -1239,8 +1241,8 @@
     if (nameEl) nameEl.textContent = displayName || '';
     if (roleEl) roleEl.textContent = ROLE_LABELS[role] || role;
 
-    // HR and Technique see their own Pilotage dashboard — hide finance-only nav items
-    const isLimitedPilotage = role === 'hr' || role === 'technique';
+    // HR, Technique and Commercial see their own Pilotage dashboard — hide finance-only nav items
+    const isLimitedPilotage = role === 'hr' || role === 'technique' || role === 'commercial';
     ['nav-alerts', 'nav-projets'].forEach(id => {
       const el = document.getElementById(id);
       if (el && el.parentElement) el.parentElement.style.display = isLimitedPilotage ? 'none' : '';
@@ -1282,6 +1284,7 @@
     if (role === 'finance')   window.app.switchModule && window.app.switchModule('finance');
     else if (role === 'hr')   window.app.switchModule && window.app.switchModule('rh');
     else if (role === 'technique') window.app.switchModule && window.app.switchModule('technique');
+    else if (role === 'commercial') window.app.switchModule && window.app.switchModule('commercial');
   }
 
   // ── Login ───────────────────────────────────────────────────────────────────
@@ -1783,6 +1786,11 @@
           <li><button class="nav-btn" data-panel="hr-documents">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Documents
+          </button></li>
+          <li><button class="nav-btn" data-panel="commercial-notifications" id="nav-commercial-notifications">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Notification
+            <span class="nav-dot"></span>
           </button></li>
         </ul>
       </div>
@@ -2497,6 +2505,15 @@
         </div>
       </section>
 
+      <section class="panel" data-panel="commercial-notifications">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Notification</p>
+          </div>
+          <div id="commercial-notifications-list"></div>
+        </div>
+      </section>
+
       <!-- Contact Modal -->
       <!-- PRINT FIELD CHOICE MODAL -->
       <div class="modal-overlay" id="print-salary-modal">
@@ -2816,6 +2833,19 @@
           <option value="">— Aucun fournisseur —</option>
         </select>
       </div>
+      <div class="field" id="trans-facture-field" style="display:none;">
+        <label>Facture</label>
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;font-size:12.5px;font-weight:500;">
+            <input type="radio" name="trans-facture-status" id="trans-facture-ok" value="not-needed" checked style="width:15px;height:15px;"/>
+            Facture non nécessaire
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;font-size:12.5px;font-weight:500;">
+            <input type="radio" name="trans-facture-status" id="trans-facture-missing" value="missing" style="width:15px;height:15px;"/>
+            Manque de facture
+          </label>
+        </div>
+      </div>
       <div class="field" id="trans-cheque-field" style="display:none;">
         <label>N° Chèque (optionnel)</label>
         <input type="text" id="trans-cheque" placeholder="Ex. 001234"/>
@@ -3048,7 +3078,8 @@ window.app = (() => {
     techWorkSites: 'ipcm_v2_techWorkSites',
     adminPointage: 'ipcm_v2_adminPointage',
     adminPtgLegend: 'ipcm_v2_adminPtgLegend',
-    commercialContacts: 'ipcm_v2_commercialContacts'
+    commercialContacts: 'ipcm_v2_commercialContacts',
+    missingInvoiceAlerts: 'ipcm_v2_missingInvoiceAlerts'
   };
 
   const state = {
@@ -3087,6 +3118,7 @@ window.app = (() => {
     adminPointage: {},
     adminPtgLegend: [],
     commercialContacts: [],
+    missingInvoiceAlerts: [],
     currentContactTab: 'fournisseur',
     editingContactIdx: null,
     adminPtgActiveColor: null
@@ -3128,6 +3160,7 @@ window.app = (() => {
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
     'hr-contracts': { title: 'Suivi Contrat', sub: 'Historique et suivi des contrats du personnel' },
     'hr-notifications': { title: 'Notification', sub: 'Alertes et notifications importantes' },
+    'commercial-notifications': { title: 'Notification', sub: 'Alertes et notifications importantes' },
     'rh-daily-pointage': { title: 'Présence du Jour', sub: 'Mise à jour automatique — pointage global journalier' },
     'tech-work-sites': { title: 'Chantiers (Tech)', sub: 'Suivi technique des chantiers' },
     'tech-project-detail': { title: 'Projet', sub: 'Pointage et rapports du chantier' },
@@ -3251,6 +3284,7 @@ window.app = (() => {
     state.adminPointage  = load(K.adminPointage,  {});
     state.adminPtgLegend = load(K.adminPtgLegend, []);
     state.commercialContacts = load(K.commercialContacts, []);
+    state.missingInvoiceAlerts = load(K.missingInvoiceAlerts, []);
     const _now = new Date();
     state.adminPointageMonth = _now.getMonth();
     state.adminPointageYear  = _now.getFullYear();
@@ -3335,6 +3369,19 @@ window.app = (() => {
     return tres + creances - monthlyChg;
   }
 
+  // Shared by DFC alerts + Commercial notifications: sortie transactions flagged
+  // "Manque de facture", with days-since computed live (not stored) so it's always current.
+  function computeMissingInvoiceAlerts() {
+    const today = new Date();
+    return (state.missingInvoiceAlerts || [])
+      .map(a => {
+        const d = parseD(a.date) || new Date(a.createdAt || Date.now());
+        const days = daysBetween(d, today);
+        return { ...a, days: days === null ? 0 : Math.max(days, 0) };
+      })
+      .sort((a, b) => b.days - a.days);
+  }
+
   function computeAlerts() {
     const a = [];
     const tres = journalBalance('caisse') + journalBalance('banque');
@@ -3361,8 +3408,7 @@ window.app = (() => {
         a.push({ level: 'red', title: `Fournisseur: ${f.name}`, desc: `Dette atteint le seuil d'alerte. Action requise.` });
       }
     });
-    if (a.length === 0) a.push({ level: 'ok', title: 'Aucune alerte', desc: 'Tout est sous contrôle.' });
-    
+
     // Contract expiration alerts
     const today = new Date();
     state.workers.forEach(w => {
@@ -3378,6 +3424,17 @@ window.app = (() => {
         }
       }
     });
+
+    // Missing-invoice alerts (sorties marquées "Manque de facture" dans les journaux)
+    computeMissingInvoiceAlerts().forEach(m => {
+      a.push({
+        level: m.days >= 15 ? 'red' : 'warn',
+        title: `Facture manquante — ${m.fournisseur}`,
+        desc: `${fmtDZD(m.amount)} le ${m.date}${m.desc ? ' — ' + m.desc : ''} — en attente depuis ${m.days} jour${m.days > 1 ? 's' : ''}.`
+      });
+    });
+
+    if (a.length === 0) a.push({ level: 'ok', title: 'Aucune alerte', desc: 'Tout est sous contrôle.' });
 
     return a;
   }
@@ -3606,9 +3663,10 @@ window.app = (() => {
         <thead><tr><th>Journal</th><th>Description</th><th>Client</th><th>Fournisseur</th><th>N° Chèque</th><th style="text-align:right">Montant</th><th></th><th style="text-align:right">Date</th></tr></thead>
         <tbody>${recent.map(t => {
           const realIdx = state.transactions.indexOf(t);
-          return `<tr>
+          const isMissing = t.type === 'out' && t.factureStatus === 'missing';
+          return `<tr${isMissing ? ' style="background:var(--danger-bg);"' : ''}>
           <td><span class="badge b-neutral">${t.journal}</span></td>
-          <td>${t.desc || '—'}</td>
+          <td>${t.desc || '—'}${isMissing ? ' <span class="badge b-danger" style="margin-left:4px;">Facture manquante</span>' : ''}</td>
           <td style="font-size:11px;color:var(--text-secondary);">${t.client || '—'}</td>
           <td style="font-size:11px;color:var(--text-secondary);">${t.fournisseur || '—'}</td>
           <td style="font-size:11px;font-family:monospace;">${t.cheque ? `<span class="badge b-info">${t.cheque}</span>` : '—'}</td>
@@ -3616,6 +3674,7 @@ window.app = (() => {
             ${t.type === 'in' ? '+' : '−'}${fmtDZD(t.amount)}
           </td>
           <td style="text-align:right; white-space:nowrap;">
+            ${isMissing ? `<button class="ghost-btn" title="Marquer facture reçue" onclick="app.resolveMissingInvoiceAlert(${t.id})" style="color:var(--ok-text);">&#10003;</button>` : ''}
             <button class="ghost-btn" title="Modifier" onclick="app.editTransaction(${realIdx})">&#9998;</button>
             <button class="ghost-btn" title="Supprimer" onclick="app.deleteTransaction(${realIdx})">×</button>
           </td>
@@ -4086,6 +4145,88 @@ window.app = (() => {
         </div>
         <p style="font-size:12px;margin:6px 0 0;">Contrat ${w.contract || ''} — fin le <strong>${w.contractEnd}</strong></p>
       </div>`).join('');
+  }
+
+  function renderCommercialNotifications() {
+    const el = document.getElementById('commercial-notifications-list');
+    if (!el) return;
+    const today = new Date();
+    const clientNames = state.clientNames || [];
+    const invoices = state.invoices || [];
+    const clientDetails = state.clientDetails || {};
+
+    const notifs = [];
+
+    // 1) Clients with zero invoices ever recorded — flag as a compliance/business risk
+    clientNames.forEach(client => {
+      const hasInvoice = invoices.some(inv => inv.client === client);
+      if (!hasInvoice) {
+        notifs.push({ type: 'no-invoice', severity: 'danger', client, msg: 'Aucune facture ni proforma enregistrée pour ce client.' });
+      }
+    });
+
+    // 2) Clients with no fiscal info on file (NIF/NIS/RC all missing)
+    clientNames.forEach(client => {
+      const d = clientDetails[client];
+      const hasFiscal = d && (d.nif || d.nis || d.rc || d.fullname);
+      if (!hasFiscal) {
+        notifs.push({ type: 'no-fiscal', severity: 'warn', client, msg: 'Informations fiscales manquantes (NIF, NIS, RC).' });
+      }
+    });
+
+    // 3) Proforma older than 30 days with no follow-up facture for the same client since
+    invoices.filter(inv => inv.type === 'proforma' && inv.date).forEach(prof => {
+      const days = daysBetween(new Date(prof.date), today);
+      if (days === null || days < 30) return;
+      const followedUp = invoices.some(inv => inv.type !== 'proforma' && inv.client === prof.client && inv.date && new Date(inv.date) >= new Date(prof.date));
+      if (!followedUp) {
+        notifs.push({ type: 'stale-proforma', severity: 'info', client: prof.client, days, number: prof.number, msg: `Devis N° ${prof.number} en attente depuis ${days}j — aucune facture de suivi.` });
+      }
+    });
+
+    // 4) Sorties DFC marquées "Manque de facture" — remontées par la Comptabilité (journaux)
+    computeMissingInvoiceAlerts().forEach(m => {
+      notifs.push({
+        type: 'missing-invoice',
+        severity: m.days >= 15 ? 'danger' : 'warn',
+        client: m.fournisseur,
+        days: m.days,
+        msg: `Facture manquante — ${fmtDZD(m.amount)} le ${m.date}${m.desc ? ' — ' + m.desc : ''} — signalé par la DFC depuis ${m.days} jour${m.days > 1 ? 's' : ''}.`
+      });
+    });
+
+    // Badge on nav item
+    const navBtn = document.getElementById('nav-commercial-notifications');
+    if (navBtn) {
+      let badge = navBtn.querySelector('.notif-badge');
+      if (notifs.length > 0) {
+        if (!badge) { badge = document.createElement('span'); badge.className = 'notif-badge'; navBtn.appendChild(badge); }
+        badge.textContent = notifs.length;
+      } else if (badge) badge.remove();
+    }
+
+    if (notifs.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucune notification — tout est à jour.</div>';
+      return;
+    }
+
+    const sevOrder = { danger: 0, warn: 1, info: 2 };
+    notifs.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);
+
+    el.innerHTML = notifs.map(n => {
+      const borderColor = n.severity === 'danger' ? 'var(--danger-text)' : n.severity === 'warn' ? 'var(--warn-text)' : 'var(--info-text)';
+      const badgeClass = n.severity === 'danger' ? 'b-danger' : n.severity === 'warn' ? 'b-warn' : 'b-info';
+      const badgeLabel = n.type === 'no-invoice' ? 'Sans facture' : n.type === 'no-fiscal' ? 'Fiscal manquant' : n.type === 'missing-invoice' ? 'Facture manquante' : 'Devis en attente';
+      return `<div class="card" style="border-left:3px solid ${borderColor}; margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <p style="font-weight:700;margin:0;">${n.client}</p>
+            <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">${n.msg}</p>
+          </div>
+          <span class="badge ${badgeClass}" style="white-space:nowrap;">${badgeLabel}</span>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // ========== FACTURATION ==========
@@ -4978,6 +5119,7 @@ window.onload=function(){
     renderHrDocuments();
     renderHrContracts();
     renderHrNotifications();
+    renderCommercialNotifications();
     renderTechWorkSites();
     renderAdminPointage();
   }
@@ -4986,10 +5128,12 @@ window.onload=function(){
     const type = document.getElementById('trans-type').value;
     const clientField = document.getElementById('trans-client-field');
     const fournField = document.getElementById('trans-fourn-field');
+    const factureField = document.getElementById('trans-facture-field');
     
     if (type === 'in') {
       clientField.style.display = 'flex';
       fournField.style.display = 'none';
+      factureField.style.display = 'none';
       document.getElementById('trans-cheque-field').style.display = 'flex';
       // Group unpaid situations by client
       const clientTotals = {};
@@ -5007,6 +5151,7 @@ window.onload=function(){
     } else {
       clientField.style.display = 'none';
       fournField.style.display = 'flex';
+      factureField.style.display = 'flex';
       document.getElementById('trans-cheque-field').style.display = 'flex';
       // Group unpaid situations by fournisseur
       const fournTotals = {};
@@ -5030,6 +5175,8 @@ window.onload=function(){
     document.getElementById('transaction-modal-title').textContent = `Nouveau mouvement — ${journal.charAt(0).toUpperCase() + journal.slice(1)}`;
     document.getElementById('trans-date').value = todayISO();
     document.getElementById('trans-type').value = 'in';
+    const okRadio = document.getElementById('trans-facture-ok');
+    if (okRadio) okRadio.checked = true;
     const projSel = document.getElementById('trans-project');
     projSel.innerHTML = '<option value="">— Aucun projet —</option>' +
       state.projects.filter(p => p.status === 'active').map((p, i) => {
@@ -5060,13 +5207,17 @@ window.onload=function(){
     const fournisseur = type === 'out' ? (document.getElementById('trans-fourn-sit').value || null) : null;
     const client = type === 'in' ? (document.getElementById('trans-client-sit').value || null) : null;
     const cheque = document.getElementById('trans-cheque').value.trim();
+    const factureStatus = type === 'out' ? (document.querySelector('input[name="trans-facture-status"]:checked')?.value || 'not-needed') : null;
     if (amount <= 0) { alert('Montant requis'); return; }
     if (state.editingTransIdx !== null) {
-      state.transactions[state.editingTransIdx] = { journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, id: state.transactions[state.editingTransIdx].id };
+      const transId = state.transactions[state.editingTransIdx].id;
+      state.transactions[state.editingTransIdx] = { journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, factureStatus, id: transId };
       state.editingTransIdx = null;
+      syncMissingInvoiceAlert(transId, type, factureStatus, fournisseur, amount, date, desc, state.currentJournal);
     } else {
       const transId = Date.now();
-      state.transactions.push({ journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, id: transId });
+      state.transactions.push({ journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, factureStatus, id: transId });
+      syncMissingInvoiceAlert(transId, type, factureStatus, fournisseur, amount, date, desc, state.currentJournal);
       // Link to project
       if (projectIdx !== '') {
         const pIdx = parseInt(projectIdx);
@@ -5125,6 +5276,41 @@ window.onload=function(){
     }
     save(K.transactions, state.transactions);
     closeTransactionModal();
+    renderAll();
+  }
+
+  // Keep the missingInvoiceAlerts list in sync with a single sortie transaction.
+  // One alert entry per transaction (linked via transId) so DFC and Commercial always
+  // see the real current picture — created when flagged "missing", removed if the
+  // transaction is later edited back to "not-needed" or deleted.
+  function syncMissingInvoiceAlert(transId, type, factureStatus, fournisseur, amount, date, desc, journal) {
+    if (!state.missingInvoiceAlerts) state.missingInvoiceAlerts = [];
+    const existingIdx = state.missingInvoiceAlerts.findIndex(a => a.transId === transId);
+    if (type === 'out' && factureStatus === 'missing') {
+      const entry = {
+        transId,
+        fournisseur: fournisseur || 'Fournisseur non renseigné',
+        amount,
+        date,
+        desc: desc || '',
+        journal,
+        createdAt: existingIdx >= 0 ? state.missingInvoiceAlerts[existingIdx].createdAt : Date.now()
+      };
+      if (existingIdx >= 0) state.missingInvoiceAlerts[existingIdx] = entry;
+      else state.missingInvoiceAlerts.push(entry);
+    } else if (existingIdx >= 0) {
+      state.missingInvoiceAlerts.splice(existingIdx, 1);
+    }
+    save(K.missingInvoiceAlerts, state.missingInvoiceAlerts);
+  }
+
+  function resolveMissingInvoiceAlert(transId) {
+    if (!confirm('Marquer cette facture comme reçue et retirer l\'alerte ?')) return;
+    state.missingInvoiceAlerts = (state.missingInvoiceAlerts || []).filter(a => a.transId !== transId);
+    save(K.missingInvoiceAlerts, state.missingInvoiceAlerts);
+    // Also flip the underlying transaction back to not-needed so re-editing doesn't re-flag it
+    const t = state.transactions.find(t => t.id === transId);
+    if (t) { t.factureStatus = 'not-needed'; save(K.transactions, state.transactions); }
     renderAll();
   }
 
@@ -5249,6 +5435,12 @@ window.onload=function(){
       if (p.payments) p.payments = p.payments.filter(v => v.transId !== transId);
     });
     save(K.projects, state.projects);
+
+    // Remove any missing-invoice alert tied to this transaction
+    if (state.missingInvoiceAlerts && state.missingInvoiceAlerts.length) {
+      state.missingInvoiceAlerts = state.missingInvoiceAlerts.filter(a => a.transId !== transId);
+      save(K.missingInvoiceAlerts, state.missingInvoiceAlerts);
+    }
     
     state.transactions.splice(idx, 1);
     save(K.transactions, state.transactions);
@@ -5264,6 +5456,15 @@ window.onload=function(){
     document.getElementById('trans-amount').value = t.amount;
     document.getElementById('trans-desc').value = t.desc || '';
     document.getElementById('trans-date').value = t.date;
+    document.getElementById('trans-cheque').value = t.cheque || '';
+    updateTransSitDropdowns();
+    if (t.type === 'in' && t.client) document.getElementById('trans-client-sit').value = t.client;
+    if (t.type === 'out' && t.fournisseur) document.getElementById('trans-fourn-sit').value = t.fournisseur;
+    if (t.type === 'out') {
+      const status = t.factureStatus || 'not-needed';
+      const radio = document.getElementById(status === 'missing' ? 'trans-facture-missing' : 'trans-facture-ok');
+      if (radio) radio.checked = true;
+    }
     document.getElementById('transaction-modal').classList.add('active');
   }
 
@@ -8465,6 +8666,7 @@ ${contentClone.outerHTML}
     saveTransaction,
     editTransaction,
     deleteTransaction,
+    resolveMissingInvoiceAlert,
     openSituationModal,
     closeSituationModal,
     saveSituation,

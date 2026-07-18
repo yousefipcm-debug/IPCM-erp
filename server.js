@@ -14,12 +14,13 @@ let db; // will be set to either pgDB or memDB
 // ── In-memory fallback store ──────────────────────────────────────────────────
 function buildMemDB() {
   const seed = [
-    { id: 1, username: 'admin',     password_hash: bcrypt.hashSync('Admin2024!', 10),    role: 'admin',     display_name: 'Administrateur' },
-    { id: 2, username: 'finance',   password_hash: bcrypt.hashSync('Finance2024!', 10),  role: 'finance',   display_name: 'Responsable DFC' },
-    { id: 3, username: 'rh',        password_hash: bcrypt.hashSync('RH2024!', 10),       role: 'hr',        display_name: 'Responsable RH' },
-    { id: 4, username: 'technique', password_hash: bcrypt.hashSync('Tech2024!', 10),     role: 'technique', display_name: 'Responsable Technique' },
+    { id: 1, username: 'admin',      password_hash: bcrypt.hashSync('Admin2024!', 10),      role: 'admin',      display_name: 'Administrateur' },
+    { id: 2, username: 'finance',    password_hash: bcrypt.hashSync('Finance2024!', 10),    role: 'finance',    display_name: 'Responsable DFC' },
+    { id: 3, username: 'rh',         password_hash: bcrypt.hashSync('RH2024!', 10),         role: 'hr',         display_name: 'Responsable RH' },
+    { id: 4, username: 'technique',  password_hash: bcrypt.hashSync('Tech2024!', 10),       role: 'technique',  display_name: 'Responsable Technique' },
+    { id: 5, username: 'commercial', password_hash: bcrypt.hashSync('Commercial2024!', 10), role: 'commercial', display_name: 'Responsable Commercial' },
   ];
-  let nextId = 5;
+  let nextId = 6;
   const users = [...seed];
   const kv = {};
 
@@ -61,7 +62,7 @@ async function buildPgDB() {
       id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('admin','finance','hr','technique')),
+      role TEXT NOT NULL CHECK(role IN ('admin','finance','hr','technique','commercial')),
       display_name TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
@@ -72,13 +73,23 @@ async function buildPgDB() {
     );
   `);
 
+  // Migration: databases created before the 'commercial' role existed still have the
+  // old CHECK constraint (admin/finance/hr/technique only) and would reject it. Widen it.
+  try {
+    await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+    await pool.query("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin','finance','hr','technique','commercial'))");
+  } catch (e) {
+    console.log('Role constraint migration skipped:', e.message);
+  }
+
   const { rows } = await pool.query('SELECT COUNT(*) AS n FROM users');
   if (parseInt(rows[0].n) === 0) {
     const seed = [
-      { username: 'admin',     password: 'Admin2024!',    role: 'admin',     display_name: 'Administrateur' },
-      { username: 'finance',   password: 'Finance2024!',  role: 'finance',   display_name: 'Responsable DFC' },
-      { username: 'rh',        password: 'RH2024!',       role: 'hr',        display_name: 'Responsable RH' },
-      { username: 'technique', password: 'Tech2024!',     role: 'technique', display_name: 'Responsable Technique' },
+      { username: 'admin',      password: 'Admin2024!',      role: 'admin',      display_name: 'Administrateur' },
+      { username: 'finance',    password: 'Finance2024!',    role: 'finance',    display_name: 'Responsable DFC' },
+      { username: 'rh',         password: 'RH2024!',         role: 'hr',         display_name: 'Responsable RH' },
+      { username: 'technique',  password: 'Tech2024!',       role: 'technique',  display_name: 'Responsable Technique' },
+      { username: 'commercial', password: 'Commercial2024!', role: 'commercial', display_name: 'Responsable Commercial' },
     ];
     for (const u of seed) {
       await pool.query(
@@ -87,6 +98,17 @@ async function buildPgDB() {
       );
     }
     console.log('Default accounts created.');
+  } else {
+    // Database already existed before the 'commercial' role was introduced —
+    // the block above never runs again, so make sure this one account gets added regardless.
+    const existing = await pool.query("SELECT id FROM users WHERE username = 'commercial'");
+    if (existing.rows.length === 0) {
+      await pool.query(
+        'INSERT INTO users (username, password_hash, role, display_name) VALUES ($1, $2, $3, $4)',
+        ['commercial', bcrypt.hashSync('Commercial2024!', 10), 'commercial', 'Responsable Commercial']
+      );
+      console.log('Commercial account added to existing database.');
+    }
   }
 
   return {
@@ -144,10 +166,11 @@ async function buildPgDB() {
 
 // ── Role config ────────────────────────────────────────────────────────────────
 const ROLE_KEYS = {
-  finance:   ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts'],
-  hr:        ['workers','workSites','hrDocuments','hrFolders','adminPointage'],
-  technique: ['techWorkSites','workSites','workers','hrDocuments','hrFolders','commercialContacts','adminPointage','adminPtgLegend'],
-  admin:     ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts']
+  finance:    ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts'],
+  hr:         ['workers','workSites','hrDocuments','hrFolders','adminPointage'],
+  technique:  ['techWorkSites','workSites','workers','hrDocuments','hrFolders','commercialContacts','adminPointage','adminPtgLegend'],
+  commercial: ['clientNames','fournisseurNames','invoices','ribList','clientDetails','commercialContacts','hrDocuments','hrFolders'],
+  admin:      ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts']
 };
 
 app.use(express.json({ limit: '50mb' }));
