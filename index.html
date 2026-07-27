@@ -1670,6 +1670,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Simulateur
           </button></li>
+          <li><button class="nav-btn" data-panel="caisse-terkmane">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+            Caisse Mme Terkmane
+          </button></li>
           <li><button class="nav-btn" data-panel="hr-documents">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             Documents
@@ -1964,6 +1968,98 @@
           <div class="tbl-wrap" id="transactions-recent-table"></div>
         </div>
       </section>
+
+      <!-- ============ CAISSE MME TERKMANE ============ -->
+      <section class="panel" data-panel="caisse-terkmane">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Solde actuel de la caisse</p>
+              <div class="kpi-icon-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg></div>
+            </div>
+            <p class="kpi-val" id="ct-balance">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Total versé (depuis le début)</p></div>
+            <p class="kpi-val" id="ct-total-in" style="color:var(--ok-text);">—</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><p class="kpi-lbl">Total retiré (depuis le début)</p></div>
+            <p class="kpi-val" id="ct-total-out" style="color:var(--danger-text);">—</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Caisse de Mme Terkmane</p>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-secondary" onclick="app.openCaisseTerkmaneVersement()">+ Versement</button>
+              <button class="btn-primary" onclick="app.openCaisseTerkmaneDecharge()">+ Nouvelle Décharge</button>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-tertiary);margin:0 0 14px;">Chaque retrait génère automatiquement une décharge signée que vous pouvez imprimer ou réimprimer à tout moment.</p>
+          <div id="ct-history"></div>
+        </div>
+      </section>
+
+      <!-- CAISSE TERKMANE — VERSEMENT MODAL -->
+      <div class="modal-overlay" id="ct-versement-modal">
+        <div class="modal" style="max-width:420px;width:90%;">
+          <div class="modal-head">
+            <p class="modal-title">Ajouter un versement à la caisse</p>
+            <button class="modal-close" onclick="document.getElementById('ct-versement-modal').classList.remove('active')">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid" style="grid-template-columns:1fr;">
+              <div class="field"><label>Montant (DZD)</label><input type="number" id="ctv-amount" placeholder="Ex. 1000000" min="0"/></div>
+              <div class="field"><label>Date</label><input type="date" id="ctv-date"/></div>
+              <div class="field"><label>Description (optionnel)</label><input type="text" id="ctv-desc" placeholder="Ex. Réapprovisionnement caisse"/></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn-secondary" onclick="document.getElementById('ct-versement-modal').classList.remove('active')">Annuler</button>
+            <button class="btn-primary" onclick="app.saveCaisseTerkmaneVersement()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAISSE TERKMANE — DECHARGE MODAL -->
+      <div class="modal-overlay" id="ct-decharge-modal">
+        <div class="modal" style="max-width:480px;width:90%;">
+          <div class="modal-head">
+            <p class="modal-title">Nouvelle Décharge — Retrait de Caisse</p>
+            <button class="modal-close" onclick="document.getElementById('ct-decharge-modal').classList.remove('active')">×</button>
+          </div>
+          <div class="modal-body">
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <button type="button" id="ctd-mode-person" onclick="app.setCtdMode('person')" style="flex:1;height:36px;border-radius:8px;border:2px solid var(--gray-900);background:var(--gray-900);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">Personne (Nom & Prénom)</button>
+              <button type="button" id="ctd-mode-fourn" onclick="app.setCtdMode('fourn')" style="flex:1;height:36px;border-radius:8px;border:2px solid var(--border);background:var(--bg);color:var(--text-secondary);font-size:12.5px;font-weight:600;cursor:pointer;">Fournisseur</button>
+            </div>
+
+            <div id="ctd-section-person" class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="field"><label>Nom</label><input type="text" id="ctd-nom" placeholder="Ex. Terkmane"/></div>
+              <div class="field"><label>Prénom</label><input type="text" id="ctd-prenom" placeholder="Ex. Fatiha"/></div>
+            </div>
+            <div id="ctd-section-fourn" class="form-grid" style="grid-template-columns:1fr; display:none;">
+              <div class="field"><label>Fournisseur</label>
+                <select id="ctd-fournisseur"><option value="">— Sélectionner —</option></select>
+              </div>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns:1fr 1fr; margin-top:10px;">
+              <div class="field"><label>Montant (DZD)</label><input type="number" id="ctd-amount" placeholder="Ex. 50000" min="0"/></div>
+              <div class="field"><label>Date</label><input type="date" id="ctd-date"/></div>
+              <div class="field" style="grid-column:1/-1;"><label>Motif / Description</label><input type="text" id="ctd-reason" placeholder="Ex. Achat de matériel de chantier"/></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn-secondary" onclick="document.getElementById('ct-decharge-modal').classList.remove('active')">Annuler</button>
+            <button class="btn-primary" onclick="app.saveCaisseTerkmaneDecharge()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistrer et générer la décharge
+            </button>
+          </div>
+        </div>
+      </div>
 
       <section class="panel" data-panel="situations">
         <div class="kpi-grid">
@@ -3079,7 +3175,8 @@ window.app = (() => {
     adminPointage: 'ipcm_v2_adminPointage',
     adminPtgLegend: 'ipcm_v2_adminPtgLegend',
     commercialContacts: 'ipcm_v2_commercialContacts',
-    missingInvoiceAlerts: 'ipcm_v2_missingInvoiceAlerts'
+    missingInvoiceAlerts: 'ipcm_v2_missingInvoiceAlerts',
+    caisseTerkmane: 'ipcm_v2_caisseTerkmane'
   };
 
   const state = {
@@ -3119,6 +3216,7 @@ window.app = (() => {
     adminPtgLegend: [],
     commercialContacts: [],
     missingInvoiceAlerts: [],
+    caisseTerkmane: [],
     currentContactTab: 'fournisseur',
     editingContactIdx: null,
     adminPtgActiveColor: null
@@ -3161,6 +3259,7 @@ window.app = (() => {
     'hr-contracts': { title: 'Suivi Contrat', sub: 'Historique et suivi des contrats du personnel' },
     'hr-notifications': { title: 'Notification', sub: 'Alertes et notifications importantes' },
     'commercial-notifications': { title: 'Notification', sub: 'Alertes et notifications importantes' },
+    'caisse-terkmane': { title: 'Caisse Mme Terkmane', sub: 'Gestion de la caisse et décharges de retrait' },
     'rh-daily-pointage': { title: 'Présence du Jour', sub: 'Mise à jour automatique — pointage global journalier' },
     'tech-work-sites': { title: 'Chantiers (Tech)', sub: 'Suivi technique des chantiers' },
     'tech-project-detail': { title: 'Projet', sub: 'Pointage et rapports du chantier' },
@@ -3285,6 +3384,7 @@ window.app = (() => {
     state.adminPtgLegend = load(K.adminPtgLegend, []);
     state.commercialContacts = load(K.commercialContacts, []);
     state.missingInvoiceAlerts = load(K.missingInvoiceAlerts, []);
+    state.caisseTerkmane = load(K.caisseTerkmane, []);
     const _now = new Date();
     state.adminPointageMonth = _now.getMonth();
     state.adminPointageYear  = _now.getFullYear();
@@ -5120,6 +5220,7 @@ window.onload=function(){
     renderHrContracts();
     renderHrNotifications();
     renderCommercialNotifications();
+    renderCaisseTerkmane();
     renderTechWorkSites();
     renderAdminPointage();
   }
@@ -5312,6 +5413,281 @@ window.onload=function(){
     const t = state.transactions.find(t => t.id === transId);
     if (t) { t.factureStatus = 'not-needed'; save(K.transactions, state.transactions); }
     renderAll();
+  }
+
+  // ============================================================
+  // ============ CAISSE MME TERKMANE ============
+  // ============================================================
+
+  // Arabic number-to-words for DA amounts on the décharge document.
+  // Simplified but correct-reading Arabic, matching how real Algerian
+  // discharge/receipt documents phrase amounts (see: "سبعة ملايين دينار جزائري").
+  function numberToWordsAR(n) {
+    const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
+    const teens = ['عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+    const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+    const hundreds = ['', 'مائة', 'مئتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+
+    function threeDigits(num) {
+      const parts = [];
+      const h = Math.floor(num / 100);
+      const rem = num % 100;
+      if (h > 0) parts.push(hundreds[h]);
+      if (rem > 0) {
+        if (rem < 10) parts.push(ones[rem]);
+        else if (rem < 20) parts.push(teens[rem - 10]);
+        else {
+          const t = Math.floor(rem / 10);
+          const o = rem % 10;
+          parts.push(o > 0 ? (ones[o] + ' و' + tens[t]) : tens[t]);
+        }
+      }
+      return parts.join(' و');
+    }
+
+    function groupWord(num, singular, dual, plural3to10, pluralAbove10) {
+      if (num === 1) return singular;
+      if (num === 2) return dual;
+      if (num >= 3 && num <= 10) return threeDigits(num) + ' ' + plural3to10;
+      return threeDigits(num) + ' ' + pluralAbove10;
+    }
+
+    if (n === 0) return 'صفر دينار جزائري';
+
+    const intPart = Math.floor(n);
+    const decPart = Math.round((n - intPart) * 100);
+
+    const billions = Math.floor(intPart / 1000000000);
+    const millions = Math.floor((intPart % 1000000000) / 1000000);
+    const thousands = Math.floor((intPart % 1000000) / 1000);
+    const rest = intPart % 1000;
+
+    const segments = [];
+    if (billions > 0) segments.push(groupWord(billions, 'مليار', 'ملياران', 'مليارات', 'مليار'));
+    if (millions > 0) segments.push(groupWord(millions, 'مليون', 'مليونان', 'ملايين', 'مليون'));
+    if (thousands > 0) segments.push(groupWord(thousands, 'ألف', 'ألفان', 'آلاف', 'ألف'));
+    if (rest > 0) segments.push(threeDigits(rest));
+
+    let result = segments.join(' و') || 'صفر';
+    result += ' دينار جزائري';
+    if (decPart > 0) result += ' و' + threeDigits(decPart) + ' سنتيم';
+    return result;
+  }
+
+  function ctBalance() {
+    return (state.caisseTerkmane || []).reduce((sum, m) => sum + (m.type === 'in' ? m.amount : -m.amount), 0);
+  }
+
+  function openCaisseTerkmaneVersement() {
+    document.getElementById('ctv-amount').value = '';
+    document.getElementById('ctv-desc').value = '';
+    document.getElementById('ctv-date').value = todayISO();
+    document.getElementById('ct-versement-modal').classList.add('active');
+  }
+
+  function saveCaisseTerkmaneVersement() {
+    const amount = parseFloat(document.getElementById('ctv-amount').value) || 0;
+    const date = document.getElementById('ctv-date').value || todayISO();
+    const desc = document.getElementById('ctv-desc').value.trim();
+    if (amount <= 0) { alert('Montant requis'); return; }
+    if (!state.caisseTerkmane) state.caisseTerkmane = [];
+    state.caisseTerkmane.push({ id: Date.now(), type: 'in', amount, date, desc });
+    save(K.caisseTerkmane, state.caisseTerkmane);
+    document.getElementById('ct-versement-modal').classList.remove('active');
+    renderCaisseTerkmane();
+    alert('✓ Versement enregistré.');
+  }
+
+  function setCtdMode(mode) {
+    const pBtn = document.getElementById('ctd-mode-person');
+    const fBtn = document.getElementById('ctd-mode-fourn');
+    const pSec = document.getElementById('ctd-section-person');
+    const fSec = document.getElementById('ctd-section-fourn');
+    if (mode === 'person') {
+      pBtn.style.background = 'var(--gray-900)'; pBtn.style.color = '#fff'; pBtn.style.borderColor = 'var(--gray-900)';
+      fBtn.style.background = 'var(--bg)'; fBtn.style.color = 'var(--text-secondary)'; fBtn.style.borderColor = 'var(--border)';
+      pSec.style.display = ''; fSec.style.display = 'none';
+    } else {
+      fBtn.style.background = 'var(--gray-900)'; fBtn.style.color = '#fff'; fBtn.style.borderColor = 'var(--gray-900)';
+      pBtn.style.background = 'var(--bg)'; pBtn.style.color = 'var(--text-secondary)'; pBtn.style.borderColor = 'var(--border)';
+      fSec.style.display = ''; pSec.style.display = 'none';
+    }
+    state._ctdMode = mode;
+  }
+
+  function openCaisseTerkmaneDecharge() {
+    document.getElementById('ctd-nom').value = '';
+    document.getElementById('ctd-prenom').value = '';
+    document.getElementById('ctd-amount').value = '';
+    document.getElementById('ctd-reason').value = '';
+    document.getElementById('ctd-date').value = todayISO();
+    const fournSel = document.getElementById('ctd-fournisseur');
+    fournSel.innerHTML = '<option value="">— Sélectionner —</option>' + (state.fournisseurNames || []).map(n => `<option value="${n}">${n}</option>`).join('');
+    setCtdMode('person');
+    document.getElementById('ct-decharge-modal').classList.add('active');
+  }
+
+  function saveCaisseTerkmaneDecharge() {
+    const mode = state._ctdMode || 'person';
+    const amount = parseFloat(document.getElementById('ctd-amount').value) || 0;
+    const date = document.getElementById('ctd-date').value || todayISO();
+    const reason = document.getElementById('ctd-reason').value.trim();
+    let beneficiaire = '';
+    let isFournisseur = false;
+
+    if (mode === 'person') {
+      const nom = document.getElementById('ctd-nom').value.trim();
+      const prenom = document.getElementById('ctd-prenom').value.trim();
+      if (!nom || !prenom) { alert('Nom et prénom requis'); return; }
+      beneficiaire = nom + ' ' + prenom;
+    } else {
+      const fourn = document.getElementById('ctd-fournisseur').value;
+      if (!fourn) { alert('Sélectionner un fournisseur'); return; }
+      beneficiaire = fourn;
+      isFournisseur = true;
+    }
+
+    if (amount <= 0) { alert('Montant requis'); return; }
+
+    const balance = ctBalance();
+    if (amount > balance) {
+      if (!confirm(`Attention : le solde actuel de la caisse est de ${fmtDZD(balance)}, ce retrait de ${fmtDZD(amount)} le dépasse.\n\nEnregistrer quand même ?`)) return;
+    }
+
+    if (!state.caisseTerkmane) state.caisseTerkmane = [];
+    const movement = { id: Date.now(), type: 'out', amount, date, reason, beneficiaire, isFournisseur };
+    state.caisseTerkmane.push(movement);
+    save(K.caisseTerkmane, state.caisseTerkmane);
+    document.getElementById('ct-decharge-modal').classList.remove('active');
+    renderCaisseTerkmane();
+    printCaisseTerkmaneDecharge(movement.id);
+  }
+
+  function deleteCaisseTerkmaneMovement(id) {
+    if (!confirm('Supprimer ce mouvement de caisse ?')) return;
+    state.caisseTerkmane = (state.caisseTerkmane || []).filter(m => m.id !== id);
+    save(K.caisseTerkmane, state.caisseTerkmane);
+    renderCaisseTerkmane();
+  }
+
+  function renderCaisseTerkmane() {
+    const balEl = document.getElementById('ct-balance');
+    if (!balEl) return;
+    const movements = state.caisseTerkmane || [];
+    const totalIn = movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+    const totalOut = movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+    balEl.textContent = fmtDZD(totalIn - totalOut);
+    document.getElementById('ct-total-in').textContent = fmtDZD(totalIn);
+    document.getElementById('ct-total-out').textContent = fmtDZD(totalOut);
+
+    const el = document.getElementById('ct-history');
+    if (!el) return;
+    if (movements.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun mouvement enregistré. Commencez par ajouter un versement.</div>';
+      return;
+    }
+    const sorted = movements.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+    // Compute running balance chronologically (oldest first), then look up per-row for display
+    let running = 0;
+    const runningById = {};
+    movements.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id).forEach(m => {
+      running += m.type === 'in' ? m.amount : -m.amount;
+      runningById[m.id] = running;
+    });
+
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>Date</th><th>Type</th><th>Bénéficiaire / Source</th><th>Motif</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde après</th><th></th></tr></thead>
+      <tbody>${sorted.map(m => `<tr>
+        <td style="font-size:11px;color:var(--text-secondary);">${m.date}</td>
+        <td><span class="badge ${m.type === 'in' ? 'b-ok' : 'b-danger'}">${m.type === 'in' ? 'Versement' : 'Retrait'}</span></td>
+        <td style="font-weight:600;">${m.type === 'in' ? '—' : (m.beneficiaire || '—')}${m.isFournisseur ? ' <span class="badge b-info" style="margin-left:4px;">Fournisseur</span>' : ''}</td>
+        <td style="font-size:12px;color:var(--text-secondary);">${m.type === 'in' ? (m.desc || '—') : (m.reason || '—')}</td>
+        <td style="text-align:right;font-weight:600;color:${m.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'};">${m.type === 'in' ? '+' : '−'}${fmtDZD(m.amount)}</td>
+        <td style="text-align:right;font-size:12px;color:var(--text-secondary);">${fmtDZD(runningById[m.id])}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          ${m.type === 'out' ? `<button class="ghost-btn" title="Imprimer la décharge" onclick="app.printCaisseTerkmaneDecharge(${m.id})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
+          <button class="ghost-btn" title="Supprimer" onclick="app.deleteCaisseTerkmaneMovement(${m.id})">×</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function printCaisseTerkmaneDecharge(id) {
+    const m = (state.caisseTerkmane || []).find(x => x.id === id);
+    if (!m) return;
+    const headerEl = document.querySelector('.print-header');
+    const headerClone = headerEl ? headerEl.cloneNode(true) : null;
+    if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if (pi) pi.remove(); }
+    const headerHtml = headerClone ? headerClone.outerHTML : '';
+    const todayFr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dateAr = new Date(m.date).toLocaleDateString('ar-DZ', { day: 'numeric', month: 'long', year: 'numeric' });
+    const amountWords = numberToWordsAR(m.amount);
+    const amountNum = fmtDZD(m.amount);
+    const beneficiaireLabel = m.isFournisseur ? 'المؤسسة' : 'السيد(ة)';
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
+
+    w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<title>وصل استلام مبلغ مالي</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { font-family:'Traditional Arabic','Arial',sans-serif; font-size:14px; color:#111; background:#fff; padding:12mm; line-height:2; }
+  @page { size:A4 portrait; margin:10mm; }
+  .print-header { direction:ltr; text-align:left; margin-bottom:10px; }
+  .date-fr { direction:ltr; text-align:left; font-size:11px; color:#444; margin-bottom:16px; }
+  .title { text-align:center; font-size:20px; font-weight:700; text-decoration:underline; margin:16px 0 26px; letter-spacing:.02em; }
+  .place-date { text-align:left; font-size:13px; margin-bottom:20px; }
+  .body-text { font-size:15px; line-height:2.1; text-align:justify; margin-bottom:24px; }
+  .body-text b { font-weight:700; }
+  .amount-box { border:1px solid #999; padding:12px 16px; margin:16px 0; font-size:14px; background:#fafafa; }
+  .amount-box .num { font-weight:700; font-size:16px; }
+  .footer-note { font-size:12px; color:#555; margin-top:20px; }
+  .sig-row { display:flex; justify-content:space-between; margin-top:60px; }
+  .sig-box { text-align:center; width:45%; }
+  .sig-label { font-weight:700; font-size:13px; margin-bottom:50px; }
+  .sig-line { border-top:1px solid #333; padding-top:6px; font-size:11px; color:#555; }
+</style>
+</head><body>
+
+${headerHtml}
+<p class="date-fr">Date : ${todayFr}</p>
+
+<div class="title">وصل استلام مبلغ مالي (إبراء ذمة)</div>
+
+<p class="place-date">البليدة، في ${dateAr}</p>
+
+<div class="body-text">
+  أنا الموقع(ة) أدناه ${beneficiaireLabel}: <b>${m.beneficiaire}</b>،<br/>
+  أشهد وأقرّ بأنني استلمت من مؤسسة <b>I.P.C.M BOUTEMA</b> مبلغاً مالياً قدره:
+</div>
+
+<div class="amount-box">
+  <div class="num">${amountNum} (بالأرقام)</div>
+  <div>${amountWords} <span style="color:#555;">(بالحروف)</span></div>
+</div>
+
+<div class="body-text">
+  ${m.reason ? `وذلك مقابل: <b>${m.reason}</b>.<br/>` : ''}
+  وبهذا أقرّ وألتزم بصحة استلام هذا المبلغ كاملاً، ولا يحق لي أي مطالبة إضافية بخصوصه مستقبلاً.
+</div>
+
+<p class="footer-note">حرر هذا الوصل لاستعماله عند الحاجة وفي حدود ما يسمح به القانون.</p>
+
+<div class="sig-row">
+  <div class="sig-box">
+    <div class="sig-label">إمضاء المستلم</div>
+    <div class="sig-line">${m.beneficiaire}</div>
+  </div>
+  <div class="sig-box">
+    <div class="sig-label">إمضاء المسؤول عن الصندوق</div>
+    <div class="sig-line">I.P.C.M BOUTEMA</div>
+  </div>
+</div>
+
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
+</body></html>`);
+    w.document.close();
   }
 
   function openSituationModal() {
@@ -8667,6 +9043,13 @@ ${contentClone.outerHTML}
     editTransaction,
     deleteTransaction,
     resolveMissingInvoiceAlert,
+    openCaisseTerkmaneVersement,
+    saveCaisseTerkmaneVersement,
+    setCtdMode,
+    openCaisseTerkmaneDecharge,
+    saveCaisseTerkmaneDecharge,
+    deleteCaisseTerkmaneMovement,
+    printCaisseTerkmaneDecharge,
     openSituationModal,
     closeSituationModal,
     saveSituation,
