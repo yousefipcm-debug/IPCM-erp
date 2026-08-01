@@ -10,6 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'ipcm_secret_change_in_production_p
 // ── Storage: PostgreSQL if available, in-memory otherwise ─────────────────────
 
 let db; // will be set to either pgDB or memDB
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ── In-memory fallback store ──────────────────────────────────────────────────
 function buildMemDB() {
@@ -54,7 +55,16 @@ async function buildPgDB() {
   const { Pool } = require('pg');
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 15000, // give a sleeping Railway Postgres time to wake up
+    idleTimeoutMillis: 30000,
+    max: 10
+  });
+
+  // Without this, a connection that drops while idle (e.g. Postgres going back to
+  // sleep) throws an unhandled error that can crash the whole Node process.
+  pool.on('error', (err) => {
+    console.error('Postgres pool idle client error (recovered, not fatal):', err.message);
   });
 
   await pool.query(`
@@ -278,17 +288,54 @@ app.get('/api/health', (req, res) => {
 });
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
+// Connects to Postgres with several retries (a Railway database that's been
+// asleep can take a few seconds to wake up — a single attempt right at boot
+// isn't enough). If every attempt fails, falls back to memory for now, but
+// keeps quietly retrying in the background so it self-heals without needing
+// a manual redeploy the moment the database comes back.
+async function connectToPostgresWithRetry(maxAttempts = 5) {
+  const delays = [2000, 4000, 8000, 16000, 30000];
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`Connecting to PostgreSQL (attempt ${attempt}/${maxAttempts})...`);
+      const pgDb = await buildPgDB();
+      console.log('PostgreSQL connected — data will persist.');
+      return pgDb;
+    } catch (e) {
+      console.error(`PostgreSQL attempt ${attempt} failed:`, e.message);
+      if (attempt < maxAttempts) {
+        const wait = delays[attempt - 1] || 30000;
+        console.log(`Retrying in ${wait / 1000}s...`);
+        await sleep(wait);
+      }
+    }
+  }
+  return null;
+}
+
+function startBackgroundReconnect() {
+  // Only relevant while running on the memory fallback — checks every 2 minutes
+  // and swaps over to Postgres transparently the moment it becomes reachable.
+  setInterval(async () => {
+    if (db && db.type === 'postgres') return;
+    try {
+      const pgDb = await buildPgDB();
+      db = pgDb;
+      console.log('PostgreSQL became reachable — switched over from memory automatically.');
+    } catch (e) {
+      // still asleep/unreachable — silently try again next interval
+    }
+  }, 2 * 60 * 1000);
+}
+
 async function start() {
   if (process.env.DATABASE_URL) {
-    try {
-      console.log('Connecting to PostgreSQL...');
-      db = await buildPgDB();
-      console.log('PostgreSQL connected — data will persist.');
-    } catch (e) {
-      console.error('PostgreSQL FAILED:', e.message);
-      console.warn('Falling back to in-memory store — DATA WILL BE LOST ON RESTART.');
+    db = await connectToPostgresWithRetry();
+    if (!db) {
+      console.warn('Falling back to in-memory store for now — DATA ENTERED WHILE ON MEMORY WILL BE LOST ON RESTART.');
       db = buildMemDB();
     }
+    startBackgroundReconnect();
   } else {
     console.error('NO DATABASE_URL SET — using in-memory store. DATA WILL BE LOST ON EVERY DEPLOY.');
     db = buildMemDB();
