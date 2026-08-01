@@ -1991,12 +1991,23 @@
         <div class="card">
           <div class="card-head">
             <p class="card-title">Caisse de Mme Terkmane</p>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <button class="btn-secondary" onclick="app.openCaisseTerkmaneVersement()">+ Versement</button>
               <button class="btn-primary" onclick="app.openCaisseTerkmaneDecharge()">+ Nouvelle Décharge</button>
             </div>
           </div>
           <p style="font-size:12px;color:var(--text-tertiary);margin:0 0 14px;">Chaque retrait génère automatiquement une décharge signée que vous pouvez imprimer ou réimprimer à tout moment.</p>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:var(--bg-muted); border-radius:var(--radius-md);">
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Rapport pour le versement :</span>
+            <select id="ct-report-versement" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);min-width:260px;">
+            </select>
+            <button class="btn-primary" onclick="app.printCaisseTerkmaneRapport()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimer le rapport de ce versement
+            </button>
+          </div>
+
           <div id="ct-history"></div>
         </div>
       </section>
@@ -5573,6 +5584,7 @@ window.onload=function(){
   function renderCaisseTerkmane() {
     const balEl = document.getElementById('ct-balance');
     if (!balEl) return;
+    populateCtVersementDropdown();
     const movements = state.caisseTerkmane || [];
     const totalIn = movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
     const totalOut = movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
@@ -5669,7 +5681,7 @@ ${headerHtml}
 
 <div class="body-text">
   ${m.reason ? `وذلك مقابل: <b>${m.reason}</b>.<br/>` : ''}
-  وبهذا أقرّ وألتزم بصحة استلام هذا المبلغ كاملاً، ولا يحق لي أي مطالبة إضافية بخصوصه مستقبلاً.
+  وبهذا أقرّ وألتزم بصحة استلام هذا المبلغ كاملاً.
 </div>
 
 <p class="footer-note">حرر هذا الوصل لاستعماله عند الحاجة وفي حدود ما يسمح به القانون.</p>
@@ -5682,6 +5694,158 @@ ${headerHtml}
   <div class="sig-box">
     <div class="sig-label">إمضاء المسؤول عن الصندوق</div>
     <div class="sig-line">I.P.C.M BOUTEMA</div>
+  </div>
+</div>
+
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
+</body></html>`);
+    w.document.close();
+  }
+
+  // Groups all caisse movements into "cycles": one cycle per versement, containing
+  // that versement plus every retrait that follows it, up until the NEXT versement.
+  // Whatever remains at the end of a cycle carries over automatically as the
+  // opening balance of the next one — exactly like handing over cash in real life.
+  function getCaisseTerkmaneCycles() {
+    const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
+    const cycles = [];
+    let current = null;
+    let running = 0;
+
+    all.forEach(m => {
+      if (m.type === 'in') {
+        current = { versement: m, openingBalance: running, movements: [m] };
+        cycles.push(current);
+        running += m.amount;
+      } else {
+        if (!current) { current = { versement: null, openingBalance: 0, movements: [] }; cycles.push(current); }
+        current.movements.push(m);
+        running -= m.amount;
+      }
+      current.closingBalance = running;
+    });
+
+    return cycles;
+  }
+
+  function populateCtVersementDropdown() {
+    const sel = document.getElementById('ct-report-versement');
+    if (!sel) return;
+    const previousValue = sel.value;
+    const cycles = getCaisseTerkmaneCycles();
+    if (cycles.length === 0) {
+      sel.innerHTML = '<option value="">Aucun versement enregistré</option>';
+      return;
+    }
+    // Most recent first, for convenience
+    sel.innerHTML = cycles.slice().reverse().map(c => {
+      if (!c.versement) return `<option value="pre">Retraits sans versement associé (à régulariser)</option>`;
+      return `<option value="${c.versement.id}">${c.versement.date} — ${fmtDZD(c.versement.amount)}</option>`;
+    }).join('');
+    // Keep whatever the user had selected if it still exists, otherwise default to the newest (first option)
+    if (previousValue && [...sel.options].some(o => o.value === previousValue)) {
+      sel.value = previousValue;
+    }
+  }
+
+  function printCaisseTerkmaneRapport() {
+    const sel = document.getElementById('ct-report-versement');
+    const selectedValue = sel?.value;
+    if (!selectedValue) { alert('Aucun versement à imprimer.'); return; }
+
+    const cycles = getCaisseTerkmaneCycles();
+    const cycle = selectedValue === 'pre'
+      ? cycles.find(c => !c.versement)
+      : cycles.find(c => c.versement && String(c.versement.id) === String(selectedValue));
+    if (!cycle) { alert('Versement introuvable.'); return; }
+
+    const openingBalance = cycle.openingBalance;
+    const closingBalance = cycle.closingBalance;
+    const versementAmount = cycle.versement ? cycle.versement.amount : 0;
+    const totalOut = cycle.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+
+    let running = openingBalance;
+    const rows = cycle.movements.map(m => {
+      running += (m.type === 'in' ? m.amount : -m.amount);
+      return { ...m, runningBalance: running };
+    });
+
+    const headerEl = document.querySelector('.print-header');
+    const headerClone = headerEl ? headerEl.cloneNode(true) : null;
+    if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if (pi) pi.remove(); }
+    const headerHtml = headerClone ? headerClone.outerHTML : '';
+    const todayFr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const cycleLabel = cycle.versement ? `Versement du ${cycle.versement.date} — ${fmtDZD(cycle.versement.amount)}` : 'Retraits sans versement associé';
+
+    const rowsHtml = rows.map(function(m) {
+      const dest = m.type === 'in' ? '—' : (m.beneficiaire || '—') + (m.isFournisseur ? ' (Fournisseur)' : '');
+      const motif = m.type === 'in' ? (m.desc || '—') : (m.reason || '—');
+      const sign = m.type === 'in' ? '+' : '−';
+      const color = m.type === 'in' ? '#16803D' : '#B91C1C';
+      return '<tr>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + m.date + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Versement' : 'Retrait') + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + dest + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + motif + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;color:' + color + ';font-weight:600;">' + sign + fmtDZD(m.amount) + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;">' + fmtDZD(m.runningBalance) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
+
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Rapport de Caisse</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { font-family:Arial,sans-serif; font-size:12px; color:#111; background:#fff; padding:10mm 12mm; }
+  @page { size:A4 portrait; margin:8mm; }
+  .date-fr { text-align:right; font-size:11px; color:#444; font-weight:600; margin:4px 0 12px; }
+  .title { text-align:center; font-size:17px; font-weight:700; text-decoration:underline; text-transform:uppercase; margin:14px 0 4px; letter-spacing:.03em; }
+  .subtitle { text-align:center; font-size:12px; color:#555; margin-bottom:18px; }
+  .summary { display:flex; justify-content:space-between; gap:12px; margin-bottom:18px; }
+  .sum-box { flex:1; border:1px solid #ccc; padding:10px 14px; text-align:center; }
+  .sum-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#666; margin-bottom:4px; }
+  .sum-val { font-size:15px; font-weight:700; }
+  table { border-collapse:collapse; width:100%; font-size:11px; margin-top:6px; }
+  th { border:1px solid #999; background:#f0f0f0; padding:7px 10px; text-align:left; font-size:10px; text-transform:uppercase; font-weight:700; }
+  .sig { margin-top:50px; display:flex; justify-content:flex-end; }
+  .sig-box { text-align:center; width:220px; }
+  .sig-line { border-top:1px solid #333; margin-top:44px; padding-top:6px; font-size:11px; color:#555; }
+</style>
+</head><body>
+
+${headerHtml}
+<p class="date-fr">Date d'édition : ${todayFr}</p>
+
+<div class="title">Rapport de Caisse</div>
+<p class="subtitle">Mme Terkmane — ${cycleLabel}</p>
+
+<div class="summary">
+  <div class="sum-box"><div class="sum-lbl">Solde reporté (avant ce versement)</div><div class="sum-val">${fmtDZD(openingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Versement</div><div class="sum-val" style="color:#16803D;">+${fmtDZD(versementAmount)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Total retiré</div><div class="sum-val" style="color:#B91C1C;">−${fmtDZD(totalOut)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde restant</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
+</div>
+
+<table>
+  <thead><tr>
+    <th style="width:80px;">Date</th>
+    <th style="width:80px;">Type</th>
+    <th>Bénéficiaire / Source</th>
+    <th>Motif</th>
+    <th style="width:110px;text-align:right;">Montant</th>
+    <th style="width:110px;text-align:right;">Solde après</th>
+  </tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+
+<p style="font-size:11px;color:#666;margin-top:10px;">Le solde restant de ${fmtDZD(closingBalance)} sera reporté automatiquement sur le prochain versement.</p>
+
+<div class="sig">
+  <div class="sig-box">
+    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
   </div>
 </div>
 
@@ -6394,6 +6558,9 @@ ${headerHtml}
       const ys = document.getElementById('salaire-year');
       if (ms && !ms.dataset.init) { ms.value = now.getMonth(); ys.value = now.getFullYear(); ms.dataset.init = '1'; }
       renderSalaires();
+    }
+    if (p === 'caisse-terkmane') {
+      renderCaisseTerkmane();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -9050,6 +9217,7 @@ ${contentClone.outerHTML}
     saveCaisseTerkmaneDecharge,
     deleteCaisseTerkmaneMovement,
     printCaisseTerkmaneDecharge,
+    printCaisseTerkmaneRapport,
     openSituationModal,
     closeSituationModal,
     saveSituation,
