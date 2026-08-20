@@ -2032,19 +2032,24 @@
           <div class="card-head">
             <p class="card-title">Caisse de Mme Terkmane</p>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              <button class="btn-secondary" onclick="app.openCaisseTerkmaneVersement()">+ Versement</button>
+              <button class="btn-secondary" onclick="app.openCaisseTerkmaneVersement()">+ Entrée</button>
               <button class="btn-primary" onclick="app.openCaisseTerkmaneDecharge()">+ Nouvelle Décharge</button>
             </div>
           </div>
           <p style="font-size:12px;color:var(--text-tertiary);margin:0 0 14px;">Chaque retrait génère automatiquement une décharge signée que vous pouvez imprimer ou réimprimer à tout moment.</p>
 
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:var(--bg-muted); border-radius:var(--radius-md);">
-            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Rapport pour le versement :</span>
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Rapport du mois :</span>
             <select id="ct-report-versement" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);min-width:260px;">
             </select>
             <button class="btn-primary" onclick="app.printCaisseTerkmaneRapport()">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimer le rapport de ce versement
+              Imprimer le rapport de ce mois
+            </button>
+            <span style="width:1px;height:24px;background:var(--border);margin:0 2px;"></span>
+            <button class="btn-secondary" onclick="app.printCaisseTerkmaneRapportGlobal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimer le rapport global (depuis le début)
             </button>
           </div>
 
@@ -2056,7 +2061,7 @@
       <div class="modal-overlay" id="ct-versement-modal">
         <div class="modal" style="max-width:420px;width:90%;">
           <div class="modal-head">
-            <p class="modal-title">Ajouter un versement à la caisse</p>
+            <p class="modal-title">Ajouter une entrée à la caisse</p>
             <button class="modal-close" onclick="document.getElementById('ct-versement-modal').classList.remove('active')">×</button>
           </div>
           <div class="modal-body">
@@ -5546,7 +5551,7 @@ window.onload=function(){
     save(K.caisseTerkmane, state.caisseTerkmane);
     document.getElementById('ct-versement-modal').classList.remove('active');
     renderCaisseTerkmane();
-    alert('✓ Versement enregistré.');
+    alert('✓ Entrée enregistrée.');
   }
 
   function setCtdMode(mode) {
@@ -5635,33 +5640,62 @@ window.onload=function(){
     const el = document.getElementById('ct-history');
     if (!el) return;
     if (movements.length === 0) {
-      el.innerHTML = '<div class="empty-state">Aucun mouvement enregistré. Commencez par ajouter un versement.</div>';
+      el.innerHTML = '<div class="empty-state">Aucun mouvement enregistré. Commencez par ajouter une entrée.</div>';
       return;
     }
-    const sorted = movements.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+
     // Compute running balance chronologically (oldest first), then look up per-row for display
+    const chrono = movements.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
     let running = 0;
     const runningById = {};
-    movements.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id).forEach(m => {
+    chrono.forEach(m => {
       running += m.type === 'in' ? m.amount : -m.amount;
       runningById[m.id] = running;
     });
 
-    el.innerHTML = `<table class="mod">
-      <thead><tr><th>Date</th><th>Type</th><th>Bénéficiaire / Source</th><th>Motif</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde après</th><th></th></tr></thead>
-      <tbody>${sorted.map(m => `<tr>
-        <td style="font-size:11px;color:var(--text-secondary);">${m.date}</td>
-        <td><span class="badge ${m.type === 'in' ? 'b-ok' : 'b-danger'}">${m.type === 'in' ? 'Versement' : 'Retrait'}</span></td>
-        <td style="font-weight:600;">${m.type === 'in' ? '—' : (m.beneficiaire || '—')}${m.isFournisseur ? ' <span class="badge b-info" style="margin-left:4px;">Fournisseur</span>' : ''}</td>
-        <td style="font-size:12px;color:var(--text-secondary);">${m.type === 'in' ? (m.desc || '—') : (m.reason || '—')}</td>
-        <td style="text-align:right;font-weight:600;color:${m.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'};">${m.type === 'in' ? '+' : '−'}${fmtDZD(m.amount)}</td>
-        <td style="text-align:right;font-size:12px;color:var(--text-secondary);">${fmtDZD(runningById[m.id])}</td>
-        <td style="text-align:right;white-space:nowrap;">
-          ${m.type === 'out' ? `<button class="ghost-btn" title="Imprimer la décharge" onclick="app.printCaisseTerkmaneDecharge(${m.id})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
-          <button class="ghost-btn" title="Supprimer" onclick="app.deleteCaisseTerkmaneMovement(${m.id})">×</button>
-        </td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+    // Group by month (newest month first, movements within each month newest first)
+    const monthGroups = getCaisseTerkmaneMonths();
+    const monthKeys = Object.keys(monthGroups).sort().reverse(); // newest month first
+
+    let html = '';
+    monthKeys.forEach(mk => {
+      const grp = monthGroups[mk];
+      const [y, mo] = mk.split('-');
+      const monthLabel = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
+      const mIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+      const mOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+      const sorted = grp.movements.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+
+      html += `<div style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--gray-900);border-radius:var(--radius-md) var(--radius-md) 0 0;">
+          <span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.04em;">${monthLabel}</span>
+          <span style="font-size:11px;color:var(--gray-400);">
+            <span style="color:#6EE7B7;">+${fmtDZD(mIn)}</span>
+            <span style="margin:0 6px;">|</span>
+            <span style="color:#FCA5A5;">−${fmtDZD(mOut)}</span>
+            <span style="margin:0 6px;">|</span>
+            <span style="color:#e2e2e2;font-weight:600;">Solde fin : ${fmtDZD(grp.closingBalance)}</span>
+          </span>
+        </div>
+        <table class="mod" style="border-radius:0 0 var(--radius-md) var(--radius-md);overflow:hidden;">
+          <thead><tr><th>Date</th><th>Type</th><th>Bénéficiaire / Source</th><th>Motif</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde après</th><th></th></tr></thead>
+          <tbody>${sorted.map(m => `<tr>
+            <td style="font-size:11px;color:var(--text-secondary);">${m.date}</td>
+            <td><span class="badge ${m.type === 'in' ? 'b-ok' : 'b-danger'}">${m.type === 'in' ? 'Entrée' : 'Retrait'}</span></td>
+            <td style="font-weight:600;">${m.type === 'in' ? '—' : (m.beneficiaire || '—')}${m.isFournisseur ? ' <span class="badge b-info" style="margin-left:4px;">Fournisseur</span>' : ''}</td>
+            <td style="font-size:12px;color:var(--text-secondary);">${m.type === 'in' ? (m.desc || '—') : (m.reason || '—')}</td>
+            <td style="text-align:right;font-weight:600;color:${m.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'};">${m.type === 'in' ? '+' : '−'}${fmtDZD(m.amount)}</td>
+            <td style="text-align:right;font-size:12px;color:var(--text-secondary);">${fmtDZD(runningById[m.id])}</td>
+            <td style="text-align:right;white-space:nowrap;">
+              ${m.type === 'out' ? `<button class="ghost-btn" title="Imprimer la décharge" onclick="app.printCaisseTerkmaneDecharge(${m.id})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
+              <button class="ghost-btn" title="Supprimer" onclick="app.deleteCaisseTerkmaneMovement(${m.id})">×</button>
+            </td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+    });
+
+    el.innerHTML = html;
   }
 
   function printCaisseTerkmaneDecharge(id) {
@@ -5746,43 +5780,46 @@ ${headerHtml}
   // that versement plus every retrait that follows it, up until the NEXT versement.
   // Whatever remains at the end of a cycle carries over automatically as the
   // opening balance of the next one — exactly like handing over cash in real life.
-  function getCaisseTerkmaneCycles() {
+  function getCaisseTerkmaneMonths() {
     const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
-    const cycles = [];
-    let current = null;
+    const groups = {}; // keyed by 'YYYY-MM'
     let running = 0;
 
     all.forEach(m => {
-      if (m.type === 'in') {
-        current = { versement: m, openingBalance: running, movements: [m] };
-        cycles.push(current);
-        running += m.amount;
-      } else {
-        if (!current) { current = { versement: null, openingBalance: 0, movements: [] }; cycles.push(current); }
-        current.movements.push(m);
-        running -= m.amount;
-      }
-      current.closingBalance = running;
+      const mk = (m.date || '').slice(0, 7) || 'unknown';
+      if (!groups[mk]) groups[mk] = { movements: [], openingBalance: running, closingBalance: running };
+      running += (m.type === 'in' ? m.amount : -m.amount);
+      groups[mk].movements.push(m);
+      groups[mk].closingBalance = running;
     });
 
-    return cycles;
+    // Set opening balances correctly for each month
+    const sortedKeys = Object.keys(groups).sort();
+    for (let i = 1; i < sortedKeys.length; i++) {
+      groups[sortedKeys[i]].openingBalance = groups[sortedKeys[i - 1]].closingBalance;
+    }
+
+    return groups;
   }
 
   function populateCtVersementDropdown() {
     const sel = document.getElementById('ct-report-versement');
     if (!sel) return;
     const previousValue = sel.value;
-    const cycles = getCaisseTerkmaneCycles();
-    if (cycles.length === 0) {
-      sel.innerHTML = '<option value="">Aucun versement enregistré</option>';
+    const groups = getCaisseTerkmaneMonths();
+    const monthKeys = Object.keys(groups).sort().reverse(); // newest first
+    if (monthKeys.length === 0) {
+      sel.innerHTML = '<option value="">Aucun mouvement enregistré</option>';
       return;
     }
-    // Most recent first, for convenience
-    sel.innerHTML = cycles.slice().reverse().map(c => {
-      if (!c.versement) return `<option value="pre">Retraits sans versement associé (à régulariser)</option>`;
-      return `<option value="${c.versement.id}">${c.versement.date} — ${fmtDZD(c.versement.amount)}</option>`;
+    sel.innerHTML = monthKeys.map(mk => {
+      const [y, mo] = mk.split('-');
+      const label = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
+      const grp = groups[mk];
+      const mIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+      const mOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+      return `<option value="${mk}">${label} — Entrées: ${fmtDZD(mIn)} | Retraits: ${fmtDZD(mOut)}</option>`;
     }).join('');
-    // Keep whatever the user had selected if it still exists, otherwise default to the newest (first option)
     if (previousValue && [...sel.options].some(o => o.value === previousValue)) {
       sel.value = previousValue;
     }
@@ -5791,21 +5828,21 @@ ${headerHtml}
   function printCaisseTerkmaneRapport() {
     const sel = document.getElementById('ct-report-versement');
     const selectedValue = sel?.value;
-    if (!selectedValue) { alert('Aucun versement à imprimer.'); return; }
+    if (!selectedValue) { alert('Aucun mois à imprimer.'); return; }
 
-    const cycles = getCaisseTerkmaneCycles();
-    const cycle = selectedValue === 'pre'
-      ? cycles.find(c => !c.versement)
-      : cycles.find(c => c.versement && String(c.versement.id) === String(selectedValue));
-    if (!cycle) { alert('Versement introuvable.'); return; }
+    const groups = getCaisseTerkmaneMonths();
+    const grp = groups[selectedValue];
+    if (!grp) { alert('Mois introuvable.'); return; }
 
-    const openingBalance = cycle.openingBalance;
-    const closingBalance = cycle.closingBalance;
-    const versementAmount = cycle.versement ? cycle.versement.amount : 0;
-    const totalOut = cycle.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+    const [y, mo] = selectedValue.split('-');
+    const monthLabel = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
+    const openingBalance = grp.openingBalance;
+    const closingBalance = grp.closingBalance;
+    const totalIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+    const totalOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
 
     let running = openingBalance;
-    const rows = cycle.movements.map(m => {
+    const rows = grp.movements.map(m => {
       running += (m.type === 'in' ? m.amount : -m.amount);
       return { ...m, runningBalance: running };
     });
@@ -5815,7 +5852,6 @@ ${headerHtml}
     if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if (pi) pi.remove(); }
     const headerHtml = headerClone ? headerClone.outerHTML : '';
     const todayFr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const cycleLabel = cycle.versement ? `Versement du ${cycle.versement.date} — ${fmtDZD(cycle.versement.amount)}` : 'Retraits sans versement associé';
 
     const rowsHtml = rows.map(function(m) {
       const dest = m.type === 'in' ? '—' : (m.beneficiaire || '—') + (m.isFournisseur ? ' (Fournisseur)' : '');
@@ -5824,7 +5860,7 @@ ${headerHtml}
       const color = m.type === 'in' ? '#16803D' : '#B91C1C';
       return '<tr>' +
         '<td style="border:1px solid #ddd;padding:6px 10px;">' + m.date + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Versement' : 'Retrait') + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Entrée' : 'Retrait') + '</td>' +
         '<td style="border:1px solid #ddd;padding:6px 10px;">' + dest + '</td>' +
         '<td style="border:1px solid #ddd;padding:6px 10px;">' + motif + '</td>' +
         '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;color:' + color + ';font-weight:600;">' + sign + fmtDZD(m.amount) + '</td>' +
@@ -5836,7 +5872,7 @@ ${headerHtml}
     if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
     w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Rapport de Caisse</title>
+<title>Rapport de Caisse — ${monthLabel}</title>
 <style>
   * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
   body { font-family:Arial,sans-serif; font-size:12px; color:#111; background:#fff; padding:10mm 12mm; }
@@ -5860,13 +5896,13 @@ ${headerHtml}
 <p class="date-fr">Date d'édition : ${todayFr}</p>
 
 <div class="title">Rapport de Caisse</div>
-<p class="subtitle">Mme Terkmane — ${cycleLabel}</p>
+<p class="subtitle">Mme Terkmane — ${monthLabel}</p>
 
 <div class="summary">
-  <div class="sum-box"><div class="sum-lbl">Solde reporté (avant ce versement)</div><div class="sum-val">${fmtDZD(openingBalance)}</div></div>
-  <div class="sum-box"><div class="sum-lbl">Versement</div><div class="sum-val" style="color:#16803D;">+${fmtDZD(versementAmount)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde reporté (début du mois)</div><div class="sum-val">${fmtDZD(openingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Total entrées</div><div class="sum-val" style="color:#16803D;">+${fmtDZD(totalIn)}</div></div>
   <div class="sum-box"><div class="sum-lbl">Total retiré</div><div class="sum-val" style="color:#B91C1C;">−${fmtDZD(totalOut)}</div></div>
-  <div class="sum-box"><div class="sum-lbl">Solde restant</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde fin de mois</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
 </div>
 
 <table>
@@ -5881,7 +5917,106 @@ ${headerHtml}
   <tbody>${rowsHtml}</tbody>
 </table>
 
-<p style="font-size:11px;color:#666;margin-top:10px;">Le solde restant de ${fmtDZD(closingBalance)} sera reporté automatiquement sur le prochain versement.</p>
+<p style="font-size:11px;color:#666;margin-top:10px;">Le solde de ${fmtDZD(closingBalance)} sera reporté automatiquement sur le mois suivant.</p>
+
+<div class="sig">
+  <div class="sig-box">
+    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
+  </div>
+</div>
+
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
+</body></html>`);
+    w.document.close();
+  }
+
+  function printCaisseTerkmaneRapportGlobal() {
+    const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
+    if (all.length === 0) { alert('Aucun mouvement enregistré dans la caisse.'); return; }
+
+    let running = 0;
+    const rows = all.map(m => {
+      running += (m.type === 'in' ? m.amount : -m.amount);
+      return { ...m, runningBalance: running };
+    });
+
+    const totalIn = all.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+    const totalOut = all.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+    const closingBalance = totalIn - totalOut;
+    const firstDate = all[0].date;
+    const lastDate = all[all.length - 1].date;
+
+    const headerEl = document.querySelector('.print-header');
+    const headerClone = headerEl ? headerEl.cloneNode(true) : null;
+    if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if (pi) pi.remove(); }
+    const headerHtml = headerClone ? headerClone.outerHTML : '';
+    const todayFr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const rowsHtml = rows.map(function(m) {
+      const dest = m.type === 'in' ? '—' : (m.beneficiaire || '—') + (m.isFournisseur ? ' (Fournisseur)' : '');
+      const motif = m.type === 'in' ? (m.desc || '—') : (m.reason || '—');
+      const sign = m.type === 'in' ? '+' : '−';
+      const color = m.type === 'in' ? '#16803D' : '#B91C1C';
+      return '<tr>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + m.date + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Entrée' : 'Retrait') + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + dest + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;">' + motif + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;color:' + color + ';font-weight:600;">' + sign + fmtDZD(m.amount) + '</td>' +
+        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;">' + fmtDZD(m.runningBalance) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
+
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Rapport Global de Caisse</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { font-family:Arial,sans-serif; font-size:12px; color:#111; background:#fff; padding:10mm 12mm; }
+  @page { size:A4 portrait; margin:8mm; }
+  .date-fr { text-align:right; font-size:11px; color:#444; font-weight:600; margin:4px 0 12px; }
+  .title { text-align:center; font-size:17px; font-weight:700; text-decoration:underline; text-transform:uppercase; margin:14px 0 4px; letter-spacing:.03em; }
+  .subtitle { text-align:center; font-size:12px; color:#555; margin-bottom:18px; }
+  .summary { display:flex; justify-content:space-between; gap:12px; margin-bottom:18px; }
+  .sum-box { flex:1; border:1px solid #ccc; padding:10px 14px; text-align:center; }
+  .sum-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#666; margin-bottom:4px; }
+  .sum-val { font-size:15px; font-weight:700; }
+  table { border-collapse:collapse; width:100%; font-size:11px; margin-top:6px; }
+  thead { display:table-header-group; }
+  tr { page-break-inside:avoid; }
+  th { border:1px solid #999; background:#f0f0f0; padding:7px 10px; text-align:left; font-size:10px; text-transform:uppercase; font-weight:700; }
+  .sig { margin-top:50px; display:flex; justify-content:flex-end; }
+  .sig-box { text-align:center; width:220px; }
+  .sig-line { border-top:1px solid #333; margin-top:44px; padding-top:6px; font-size:11px; color:#555; }
+</style>
+</head><body>
+
+${headerHtml}
+<p class="date-fr">Date d'édition : ${todayFr}</p>
+
+<div class="title">Rapport Global de Caisse</div>
+<p class="subtitle">Mme Terkmane — Historique complet du ${firstDate} au ${lastDate}</p>
+
+<div class="summary">
+  <div class="sum-box"><div class="sum-lbl">Total des entrées</div><div class="sum-val" style="color:#16803D;">+${fmtDZD(totalIn)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Total des retraits</div><div class="sum-val" style="color:#B91C1C;">−${fmtDZD(totalOut)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde actuel</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Nombre de mouvements</div><div class="sum-val">${all.length}</div></div>
+</div>
+
+<table>
+  <thead><tr>
+    <th style="width:80px;">Date</th>
+    <th style="width:80px;">Type</th>
+    <th>Bénéficiaire / Source</th>
+    <th>Motif</th>
+    <th style="width:110px;text-align:right;">Montant</th>
+    <th style="width:110px;text-align:right;">Solde après</th>
+  </tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
 
 <div class="sig">
   <div class="sig-box">
@@ -9258,6 +9393,7 @@ ${contentClone.outerHTML}
     deleteCaisseTerkmaneMovement,
     printCaisseTerkmaneDecharge,
     printCaisseTerkmaneRapport,
+    printCaisseTerkmaneRapportGlobal,
     openSituationModal,
     closeSituationModal,
     saveSituation,
