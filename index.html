@@ -3448,6 +3448,9 @@ window.app = (() => {
   }
 
   function journalBalance(journal) {
+    if (journal === 'caisse') {
+      return ctBalance();
+    }
     return state.transactions
       .filter(t => t.journal === journal)
       .reduce((sum, t) => sum + (t.type === 'in' ? t.amount : -t.amount), 0);
@@ -3628,15 +3631,15 @@ window.app = (() => {
       </div>`).join('');
 
     const journals = [
-      { name: 'Caisse', bal: journalBalance('caisse'), count: state.transactions.filter(t => t.journal === 'caisse').length },
-      { name: 'Banque', bal: journalBalance('banque'), count: state.transactions.filter(t => t.journal === 'banque').length },
-      { name: 'Clients', bal: totalCreances(), count: state.situations.filter(s => !sitIsPaid(s)).length }
+      { name: 'Caisse', bal: journalBalance('caisse'), count: (state.caisseTerkmane || []).length, panel: 'caisse-terkmane' },
+      { name: 'Banque', bal: journalBalance('banque'), count: state.transactions.filter(t => t.journal === 'banque').length, panel: 'journaux' },
+      { name: 'Clients', bal: totalCreances(), count: state.situations.filter(s => !sitIsPaid(s)).length, panel: 'situations' }
     ];
     document.getElementById('journal-summary').innerHTML = journals.map(j => `
-      <div class="journal-card">
+      <div class="journal-card" onclick="app.switchPanel('${j.panel}')" style="cursor:pointer;" title="Accéder à ${j.name}">
         <p class="journal-title">${j.name}</p>
         <p class="journal-balance">${fmtDZD(j.bal)}</p>
-        <p class="journal-hint">${j.count} entrée(s)</p>
+        <p class="journal-hint">${j.count} mouvement(s)</p>
       </div>`).join('');
   }
 
@@ -3778,7 +3781,7 @@ window.app = (() => {
     document.getElementById('journal-banque-bal').textContent = fmtDZD(journalBalance('banque'));
     document.getElementById('journal-clients-bal').textContent = fmtDZD(totalCreances());
 
-    const cCount = state.transactions.filter(t => t.journal === 'caisse').length;
+    const cCount = (state.caisseTerkmane || []).length;
     const bCount = state.transactions.filter(t => t.journal === 'banque').length;
     const sitCount = state.situations.filter(s => !sitIsPaid(s)).length;
     document.getElementById('journal-caisse-hint').textContent = `${cCount} mouvement(s)`;
@@ -5551,6 +5554,11 @@ window.onload=function(){
     save(K.caisseTerkmane, state.caisseTerkmane);
     document.getElementById('ct-versement-modal').classList.remove('active');
     renderCaisseTerkmane();
+    renderOverview();
+    renderJournaux();
+    renderAlerts();
+    renderForecast();
+    renderSimulateur();
     alert('✓ Entrée enregistrée.');
   }
 
@@ -5616,6 +5624,11 @@ window.onload=function(){
     save(K.caisseTerkmane, state.caisseTerkmane);
     document.getElementById('ct-decharge-modal').classList.remove('active');
     renderCaisseTerkmane();
+    renderOverview();
+    renderJournaux();
+    renderAlerts();
+    renderForecast();
+    renderSimulateur();
     printCaisseTerkmaneDecharge(movement.id);
   }
 
@@ -5624,6 +5637,11 @@ window.onload=function(){
     state.caisseTerkmane = (state.caisseTerkmane || []).filter(m => m.id !== id);
     save(K.caisseTerkmane, state.caisseTerkmane);
     renderCaisseTerkmane();
+    renderOverview();
+    renderJournaux();
+    renderAlerts();
+    renderForecast();
+    renderSimulateur();
   }
 
   function renderCaisseTerkmane() {
