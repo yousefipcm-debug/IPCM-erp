@@ -6968,13 +6968,13 @@ ${headerHtml}
       </div>`;
     }).join('');
 
-    const bankBal = journalBalance('banque') + journalBalance('caisse');
+    const bankBal = journalBalance('banque');
     const bankAfter = bankBal - grandTotalToPay;
 
     el.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
         <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
-          <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Trésorerie actuelle</p>
+          <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Solde banque actuel</p>
           <p style="font-size:16px; font-weight:700; margin:0;">${fmtDZD(bankBal)}</p>
         </div>
         <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
