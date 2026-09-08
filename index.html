@@ -489,10 +489,10 @@
       --bg-hover: #EEEEF2;
       --border:        #E8E8EE;
       --border-strong: #D8D8E2;
-      --radius-sm: 10px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 13px;
+      --radius-xl: 16px;
       --shadow-xs: 0 1px 2px rgba(20,20,30,.04);
       --shadow-sm: 0 1px 3px rgba(20,20,30,.04), 0 6px 16px rgba(20,20,30,.05);
       --shadow-md: 0 4px 10px rgba(20,20,30,.05), 0 14px 36px rgba(20,20,30,.08);
@@ -536,17 +536,17 @@
     .mhd-menu-btn svg { width: 19px; height: 19px; }
     .mhd-menu-btn:active { opacity: 0.6; transform: scale(0.94); }
     .sidebar .brand { border-bottom-color: var(--border); }
-    .sidebar .module-btn { height: 46px; font-size: 14.5px; border-radius: 12px; }
+    .sidebar .module-btn { height: 42px; font-size: 13.5px; border-radius: 10px; }
     .sidebar .module-btn.active { background: var(--accent-bg); }
-    .sidebar .nav-btn { height: 46px; font-size: 14.5px; border-radius: 12px; }
+    .sidebar .nav-btn { height: 42px; font-size: 13.5px; border-radius: 10px; }
     .sidebar .nav-btn.active { background: var(--accent-bg); font-weight: 700; }
-    .sidebar .brand { height: auto; padding: 20px 18px 16px; }
+    .sidebar .brand { height: auto; padding: 18px 16px 14px; }
     .sidebar-user { border-top-color: var(--border); }
-    .sidebar .logout-btn { border-radius: 12px; height: 38px; }
+    .sidebar .logout-btn { border-radius: 10px; height: 36px; }
 
     .topbar { display: none; }
     .main { padding-bottom: 0; }
-    .content { padding: 14px 16px calc(24px + 72px + env(safe-area-inset-bottom, 10px)); }
+    .content { padding: 12px 14px calc(20px + 68px + env(safe-area-inset-bottom, 10px)); }
 
     /* ── Mobile top header — translucent, blurred, native nav-bar feel ── */
     .mobile-header {
@@ -560,17 +560,17 @@
       border-bottom: 0.5px solid rgba(20,20,30,.09);
       position: sticky;
       top: 0; z-index: 50;
-      height: 60px;
+      height: 52px;
       flex-shrink: 0;
     }
     .mhd-left { display: flex; flex-direction: column; justify-content: center; }
     .mhd-brand {
-      font-size: 9px; font-weight: 700; color: var(--text-tertiary);
-      text-transform: uppercase; letter-spacing: 0.12em; line-height: 1;
+      font-size: 8.5px; font-weight: 700; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.1em; line-height: 1;
     }
     .mhd-title {
-      font-size: 19px; font-weight: 800; margin: 3px 0 0;
-      letter-spacing: -0.015em;
+      font-size: 16px; font-weight: 700; margin: 2px 0 0;
+      letter-spacing: -0.01em;
       color: var(--gray-900); line-height: 1.2;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw;
     }
@@ -660,12 +660,12 @@
     .mobile-nav-btn.has-alert .nav-badge { display: block; }
 
     /* ── KPI cards ── */
-    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi-card { padding: 16px; border-radius: 18px; border: none; box-shadow: var(--shadow-sm); }
-    .kpi-lbl { font-size: 9.5px; letter-spacing: .07em; }
-    .kpi-val { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
-    .kpi-hint { font-size: 11px; }
-    .kpi-icon-chip { width: 28px; height: 28px; border-radius: 9px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi-card { padding: 13px 14px; border-radius: 14px; border: none; box-shadow: var(--shadow-sm); }
+    .kpi-lbl { font-size: 9px; letter-spacing: .05em; }
+    .kpi-val { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+    .kpi-hint { font-size: 10.5px; }
+    .kpi-icon-chip { width: 24px; height: 24px; border-radius: 8px; }
     /* A lone card left over at the end of a 2-col grid (e.g. 5 KPIs) spans
        full width instead of dangling next to an empty gap. */
     .kpi-grid .kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
@@ -675,10 +675,10 @@
        making it just another gray box in a dense grid. ── */
     #kpi-overview .kpi-card:first-child {
       grid-column: 1 / -1;
-      padding: 22px 22px 20px;
-      border-radius: 22px;
+      padding: 16px 18px 15px;
+      border-radius: 16px;
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-      box-shadow: 0 10px 28px -6px rgba(30,58,95,.45);
+      box-shadow: 0 6px 18px -6px rgba(30,58,95,.4);
     }
     #kpi-overview .kpi-card.danger:first-child {
       background: linear-gradient(135deg, #E5484D 0%, #C22F34 100%);
@@ -695,8 +695,8 @@
     #kpi-overview .kpi-card:first-child .kpi-lbl,
     #kpi-overview .kpi-card:first-child .kpi-val,
     #kpi-overview .kpi-card:first-child .kpi-hint { color: #fff !important; }
-    #kpi-overview .kpi-card:first-child .kpi-lbl { color: rgba(255,255,255,.78) !important; font-size: 11px; }
-    #kpi-overview .kpi-card:first-child .kpi-val { font-size: 34px; font-weight: 800; margin-top: 6px; }
+    #kpi-overview .kpi-card:first-child .kpi-lbl { color: rgba(255,255,255,.78) !important; font-size: 10.5px; }
+    #kpi-overview .kpi-card:first-child .kpi-val { font-size: 26px; font-weight: 700; margin-top: 4px; }
     /* The hero card offsets the 2-col flow by one, so parity flips for
        #kpi-overview specifically: an ODD total child count (5 — Trésorerie
        + 4) ends up perfectly even after the hero, no dangling; an EVEN
@@ -705,22 +705,22 @@
     #kpi-overview .kpi-card:last-child:nth-child(even) { grid-column: 1 / -1; }
 
     /* ── Journal cards ── */
-    .journal-grid { grid-template-columns: 1fr; gap: 12px; }
-    .journal-card { padding: 18px 20px; border-radius: 20px; border: none; box-shadow: var(--shadow-sm); }
-    .journal-balance { font-size: 27px; font-weight: 800; letter-spacing: -0.02em; }
-    .journal-title { font-size: 14px; }
-    .journal-action { font-size: 13.5px; font-weight: 700; padding: 8px 16px; height: 38px; border-radius: 12px; }
+    .journal-grid { grid-template-columns: 1fr; gap: 10px; }
+    .journal-card { padding: 15px 16px; border-radius: 15px; border: none; box-shadow: var(--shadow-sm); }
+    .journal-balance { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+    .journal-title { font-size: 12.5px; font-weight: 600; }
+    .journal-action { font-size: 12.5px; font-weight: 700; padding: 7px 14px; height: 34px; border-radius: 10px; }
 
     /* ── Cards ── */
-    .card { padding: 18px; border-radius: 18px; border: none; box-shadow: var(--shadow-sm); }
-    .card-title { font-size: 14.5px; font-weight: 700; }
+    .card { padding: 15px; border-radius: 15px; border: none; box-shadow: var(--shadow-sm); }
+    .card-title { font-size: 13.5px; font-weight: 700; }
     .grid-2 { grid-template-columns: 1fr; }
 
     /* ── Card-head action rows (Imprimer / Importer / Ajouter…) — wrap instead of overflowing ── */
     .card-head {
       row-gap: 8px;
-      margin: -18px -18px 14px; padding: 12px 18px;
-      border-radius: 18px 18px 0 0;
+      margin: -15px -15px 12px; padding: 11px 15px;
+      border-radius: 15px 15px 0 0;
       background: var(--bg-muted);
       border-bottom-color: var(--border);
     }
@@ -738,10 +738,10 @@
 
     /* ── Forms — filled iOS-style fields: soft gray fill, no visible border
        until focus, instead of the boxed/outlined look used on desktop. ── */
-    .form-grid { grid-template-columns: 1fr !important; gap: 14px; }
+    .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
     input[type="text"], input[type="number"], input[type="date"], input[type="tel"], input[type="email"], input[type="file"], input[type="password"], select, textarea {
-      height: 46px; font-size: 16px !important;
-      border-radius: 13px; padding: 0 14px;
+      height: 44px; font-size: 16px !important;
+      border-radius: 11px; padding: 0 13px;
       background: var(--bg-muted) !important;
       border: 1.5px solid transparent !important;
       transition: background 0.15s, border-color 0.15s;
@@ -752,22 +752,22 @@
       border-color: var(--accent) !important;
       outline: none;
     }
-    textarea { height: auto; min-height: 84px; padding: 12px 14px; }
-    .btn-primary  { height: 46px; font-size: 15.5px; font-weight: 700; border-radius: 13px; width: 100%; letter-spacing: -0.01em; }
+    textarea { height: auto; min-height: 76px; padding: 11px 13px; }
+    .btn-primary  { height: 44px; font-size: 14.5px; font-weight: 700; border-radius: 11px; width: 100%; letter-spacing: -0.01em; }
     .btn-primary:active { opacity: 0.8; }
     .btn-secondary {
-      height: 42px; font-size: 14px; font-weight: 600; border-radius: 13px;
+      height: 40px; font-size: 13px; font-weight: 600; border-radius: 11px;
       background: var(--accent-bg); color: var(--accent); border: none;
     }
     .btn-secondary:active { opacity: 0.7; }
-    .field label { font-size: 12.5px; margin-bottom: 5px; font-weight: 600; color: var(--text-secondary); }
+    .field label { font-size: 11.5px; margin-bottom: 4px; font-weight: 600; color: var(--text-secondary); }
     /* Grid/flex items don't shrink below their content's intrinsic min-width by
        default — native <input>/<select> elements can refuse to shrink to their
        track's width, overflowing the card on narrow screens. Force them to. */
     .field, .form-grid > *, [style*="grid-template-columns"] > * { min-width: 0; }
 
     /* ── Badges ── */
-    .badge { font-size: 11px; padding: 4px 10px; border-radius: 8px; font-weight: 700; }
+    .badge { font-size: 10.5px; padding: 3px 9px; border-radius: 7px; font-weight: 700; }
 
     /* ── Modals — slide up as bottom sheet, with a native spring-like entrance ── */
     .modal-overlay {
@@ -781,45 +781,45 @@
     @keyframes mSheetFade { from { background: rgba(20,20,30,0); } to { background: rgba(20,20,30,.32); } }
     @keyframes mSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal {
-      border-radius: 22px 22px 0 0;
+      border-radius: 18px 18px 0 0;
       max-height: 92dvh; width: 100%; max-width: 100%;
-      padding: 0 20px 20px;
+      padding: 0 18px 18px;
       border: none;
       box-shadow: 0 -8px 40px rgba(20,20,30,.16);
-      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      padding-bottom: max(18px, env(safe-area-inset-bottom));
     }
     .modal::before {
       content: '';
-      display: block; width: 36px; height: 5px;
+      display: block; width: 34px; height: 4px;
       background: var(--border-strong); border-radius: 3px;
-      margin: 10px auto 16px;
+      margin: 8px auto 14px;
     }
-    .modal-head { margin-bottom: 16px; }
-    .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+    .modal-head { margin-bottom: 14px; }
+    .modal-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
     .modal-close {
-      width: 30px; height: 30px; font-size: 18px; border-radius: 50%;
+      width: 28px; height: 28px; font-size: 16px; border-radius: 50%;
       background: var(--bg-muted); color: var(--text-secondary);
     }
 
     /* ── Ghost buttons ── */
-    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 44px; min-height: 44px; border-radius: 12px; }
+    .ghost-btn { font-size: 18px; padding: 8px 10px; min-width: 40px; min-height: 40px; border-radius: 10px; }
 
     /* ── Aging ── */
-    .aging-table { grid-template-columns: 1fr 1fr; border-radius: 14px; overflow: hidden; }
-    .aging-cell { padding: 10px 12px; font-size: 13px; }
+    .aging-table { grid-template-columns: 1fr 1fr; border-radius: 12px; overflow: hidden; }
+    .aging-cell { padding: 9px 11px; font-size: 12.5px; }
 
     /* ── Empty state ── */
-    .empty-state { font-size: 13.5px; padding: 40px 20px; color: var(--text-tertiary); }
+    .empty-state { font-size: 13px; padding: 32px 20px; color: var(--text-tertiary); }
 
     /* ── Informal banner ── */
-    .informal-banner { border-radius: 16px; padding: 14px 16px; font-size: 14px; border: none; box-shadow: var(--shadow-sm); }
-    .banner-body .bt { font-size: 14px; }
-    .banner-body .bs { font-size: 13px; }
+    .informal-banner { border-radius: 13px; padding: 12px 14px; font-size: 13px; border: none; box-shadow: var(--shadow-sm); }
+    .banner-body .bt { font-size: 13px; }
+    .banner-body .bs { font-size: 12px; }
 
     /* ── Toast ── */
     .toast {
-      bottom: calc(78px + env(safe-area-inset-bottom, 10px)); right: 16px; left: 16px;
-      text-align: center; border-radius: 14px; font-size: 13.5px; font-weight: 600;
+      bottom: calc(74px + env(safe-area-inset-bottom, 10px)); right: 16px; left: 16px;
+      text-align: center; border-radius: 12px; font-size: 13px; font-weight: 600;
       box-shadow: var(--shadow-md);
     }
 
@@ -830,12 +830,12 @@
     /* ── Login — calm, native feel ── */
     #login-overlay { background: var(--bg-page); }
     .login-card {
-      padding: 36px 26px 30px; border-radius: 24px; border: none;
+      padding: 30px 22px 26px; border-radius: 20px; border: none;
       box-shadow: var(--shadow-md);
     }
-    .login-input { height: 48px; font-size: 16px; border-radius: 13px; background: var(--bg-muted); border: 1.5px solid transparent; }
+    .login-input { height: 44px; font-size: 16px; border-radius: 11px; background: var(--bg-muted); border: 1.5px solid transparent; }
     .login-input:focus { background: #fff; border-color: var(--accent); }
-    .login-btn { height: 48px; font-size: 15.5px; font-weight: 700; border-radius: 13px; }
+    .login-btn { height: 44px; font-size: 14.5px; font-weight: 700; border-radius: 11px; }
     .login-btn:active { opacity: 0.85; }
 
     /* ── Full-page form panels with a side "live preview" column (e.g. new-employee) —
