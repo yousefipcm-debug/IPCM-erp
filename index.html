@@ -475,6 +475,31 @@
 
   /* ===== MOBILE APP EXPERIENCE ===== */
   @media (max-width: 900px) {
+    /* ══════════════════════════════════════════════════════════════════════
+       iOS-NATIVE DESIGN TOKENS — mobile only. Redefining the shared tokens
+       inside this media query re-themes every component that already
+       references var(--radius-*) / var(--shadow-*) / var(--bg-page) etc.
+       without touching a single desktop rule (this block never matches
+       above 900px, so the plain :root values keep governing the PC layout
+       exactly as before).
+       ══════════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-page:  #F4F4F7;
+      --bg-muted: #F3F3F6;
+      --bg-hover: #EEEEF2;
+      --border:        #E8E8EE;
+      --border-strong: #D8D8E2;
+      --radius-sm: 10px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-xs: 0 1px 2px rgba(20,20,30,.04);
+      --shadow-sm: 0 1px 3px rgba(20,20,30,.04), 0 6px 16px rgba(20,20,30,.05);
+      --shadow-md: 0 4px 10px rgba(20,20,30,.05), 0 14px 36px rgba(20,20,30,.08);
+    }
+    html { -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-page); }
+
     /* ── Layout ── */
     .app-shell { grid-template-columns: 1fr; min-height: 100vh; min-height: 100dvh; }
 
@@ -486,105 +511,123 @@
       position: fixed; top: 0; left: 0; z-index: 300;
       height: 100vh; height: 100dvh; width: 82vw; max-width: 300px;
       transform: translateX(-100%);
-      transition: transform 0.25s ease;
+      transition: transform 0.32s cubic-bezier(.32,.72,0,1);
       box-shadow: none;
+      background: rgba(255,255,255,.92);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
+      border-right: none;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
-    .sidebar.mobile-open { transform: translateX(0); box-shadow: 12px 0 32px rgba(0,0,0,.18); }
+    .sidebar.mobile-open { transform: translateX(0); box-shadow: 16px 0 40px rgba(20,20,30,.14); }
     .sidebar-backdrop {
       display: none; position: fixed; inset: 0; z-index: 299;
-      background: rgba(0,0,0,.35); opacity: 0; transition: opacity 0.25s ease;
+      background: rgba(20,20,30,.28); opacity: 0; transition: opacity 0.32s ease;
+      -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px);
     }
     .sidebar-backdrop.open { display: block; opacity: 1; }
     .mhd-menu-btn {
-      background: none; border: none; color: var(--gray-900); cursor: pointer;
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; padding: 0; margin: 0 -6px 0 -8px;
+      background: var(--bg-muted); border: none; color: var(--gray-900); cursor: pointer;
+      width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; padding: 0; margin: 0 0 0 -2px;
     }
-    .mhd-menu-btn svg { width: 22px; height: 22px; }
-    .mhd-menu-btn:active { opacity: 0.6; }
-    .sidebar .module-btn { height: 44px; font-size: 14px; }
-    .sidebar .nav-btn { height: 44px; font-size: 14px; }
-    .sidebar .brand { height: auto; padding: 16px; }
+    .mhd-menu-btn svg { width: 19px; height: 19px; }
+    .mhd-menu-btn:active { opacity: 0.6; transform: scale(0.94); }
+    .sidebar .brand { border-bottom-color: var(--border); }
+    .sidebar .module-btn { height: 46px; font-size: 14.5px; border-radius: 12px; }
+    .sidebar .module-btn.active { background: var(--accent-bg); }
+    .sidebar .nav-btn { height: 46px; font-size: 14.5px; border-radius: 12px; }
+    .sidebar .nav-btn.active { background: var(--accent-bg); font-weight: 700; }
+    .sidebar .brand { height: auto; padding: 20px 18px 16px; }
+    .sidebar-user { border-top-color: var(--border); }
+    .sidebar .logout-btn { border-radius: 12px; height: 38px; }
 
     .topbar { display: none; }
     .main { padding-bottom: 0; }
     .content { padding: 14px 16px calc(24px + 72px + env(safe-area-inset-bottom, 10px)); }
 
-    /* ── Mobile top header ── */
+    /* ── Mobile top header — translucent, blurred, native nav-bar feel ── */
     .mobile-header {
       display: flex !important;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
+      padding: 0 14px;
+      background: rgba(255,255,255,.86);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 0.5px solid rgba(20,20,30,.09);
       position: sticky;
       top: 0; z-index: 50;
-      height: 54px;
+      height: 60px;
       flex-shrink: 0;
     }
     .mhd-left { display: flex; flex-direction: column; justify-content: center; }
     .mhd-brand {
-      font-size: 9px; font-weight: 800; color: var(--text-tertiary);
-      text-transform: uppercase; letter-spacing: 0.1em; line-height: 1;
+      font-size: 9px; font-weight: 700; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.12em; line-height: 1;
     }
     .mhd-title {
-      font-size: 16px; font-weight: 700; margin: 2px 0 0;
+      font-size: 19px; font-weight: 800; margin: 3px 0 0;
+      letter-spacing: -0.015em;
       color: var(--gray-900); line-height: 1.2;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58vw;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw;
     }
     .mhd-right { display: flex; align-items: center; gap: 10px; position: relative; }
     .mhd-sync {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #16A34A; display: inline-block; flex-shrink: 0;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #34C759; display: inline-block; flex-shrink: 0;
       transition: background 0.3s;
     }
-    .mhd-sync.offline { background: #DC2626; }
+    .mhd-sync.offline { background: #FF3B30; }
     .mhd-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       background: var(--gray-900); color: #fff;
       border: none; cursor: pointer;
-      font-size: 13px; font-weight: 800;
+      font-size: 12.5px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       font-family: inherit; flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, transform 0.15s;
     }
-    .mhd-avatar:active { opacity: 0.75; }
+    .mhd-avatar:active { opacity: 0.75; transform: scale(0.94); }
     .mhd-dropdown {
-      position: absolute; top: 42px; right: 0;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 14px; padding: 4px;
-      box-shadow: 0 8px 32px rgba(0,0,0,.16);
-      z-index: 200; min-width: 200px;
+      position: absolute; top: 40px; right: 0;
+      background: rgba(255,255,255,.92);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 0.5px solid rgba(20,20,30,.08);
+      border-radius: 16px; padding: 6px;
+      box-shadow: var(--shadow-md);
+      z-index: 200; min-width: 210px;
       display: none;
     }
     .mhd-dropdown.open { display: block; }
-    .mhd-user-info { padding: 10px 12px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .mhd-user-info { padding: 10px 12px 10px; border-bottom: 0.5px solid rgba(20,20,30,.08); margin-bottom: 4px; }
     .mhd-logout-btn {
-      display: block; width: 100%; padding: 10px 12px;
+      display: block; width: 100%; padding: 11px 12px;
       background: var(--danger-bg); color: var(--danger-text);
-      border: none; border-radius: 10px; font-family: inherit;
-      font-size: 13px; font-weight: 600; cursor: pointer; text-align: left;
+      border: none; border-radius: 11px; font-family: inherit;
+      font-size: 13.5px; font-weight: 600; cursor: pointer; text-align: left;
     }
-    .mhd-logout-btn:active { opacity: 0.8; }
+    .mhd-logout-btn:active { opacity: 0.7; }
 
-    /* ── Bottom tab bar ── */
+    /* ── Bottom tab bar — translucent, blurred ── */
     .mobile-nav {
       display: flex !important;
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: var(--bg);
-      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,.86);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-top: 0.5px solid rgba(20,20,30,.09);
       z-index: 100;
       padding: 0 4px;
       padding-bottom: env(safe-area-inset-bottom, 10px);
       min-height: 62px;
       align-items: stretch;
-      box-shadow: 0 -2px 16px rgba(0,0,0,.07);
+      box-shadow: none;
     }
     .mobile-nav-btn {
       display: flex; flex-direction: column;
@@ -601,49 +644,49 @@
       position: relative;
       -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav-btn svg { width: 22px; height: 22px; flex-shrink: 0; transition: transform 0.12s; }
-    .mobile-nav-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .mobile-nav-btn.active { color: var(--gray-900); }
-    .mobile-nav-btn.active svg { transform: scale(1.06); }
-    .mobile-nav-btn.active::after {
-      content: '';
-      position: absolute; top: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 22px; height: 3px;
-      background: var(--gray-900);
-      border-radius: 0 0 3px 3px;
-    }
+    .mobile-nav-btn svg { width: 23px; height: 23px; flex-shrink: 0; transition: transform 0.15s cubic-bezier(.34,1.56,.64,1); }
+    .mobile-nav-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; transition: color 0.12s; }
+    .mobile-nav-btn.active { color: var(--accent); }
+    .mobile-nav-btn.active svg { transform: scale(1.1); }
+    .mobile-nav-btn:active svg { transform: scale(0.88); }
+    .mobile-nav-btn.active::after { content: none; }
     .nav-badge {
       position: absolute; top: 6px;
-      right: calc(50% - 16px);
+      right: calc(50% - 15px);
       width: 8px; height: 8px;
-      border-radius: 50%; background: #E24B4A;
+      border-radius: 50%; background: #FF3B30;
       display: none; border: 1.5px solid var(--bg);
     }
     .mobile-nav-btn.has-alert .nav-badge { display: block; }
 
     /* ── KPI cards ── */
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi-card { padding: 14px 14px; border-radius: 14px; }
-    .kpi-lbl { font-size: 9.5px; }
-    .kpi-val { font-size: 24px; font-weight: 800; }
+    .kpi-card { padding: 16px; border-radius: 18px; border: none; box-shadow: var(--shadow-sm); }
+    .kpi-lbl { font-size: 9.5px; letter-spacing: .07em; }
+    .kpi-val { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
     .kpi-hint { font-size: 11px; }
-    .kpi-icon-chip { width: 26px; height: 26px; }
+    .kpi-icon-chip { width: 28px; height: 28px; border-radius: 9px; }
 
     /* ── Journal cards ── */
-    .journal-grid { grid-template-columns: 1fr; gap: 10px; }
-    .journal-card { padding: 16px 18px; border-radius: 14px; }
-    .journal-balance { font-size: 26px; font-weight: 800; }
+    .journal-grid { grid-template-columns: 1fr; gap: 12px; }
+    .journal-card { padding: 18px 20px; border-radius: 20px; border: none; box-shadow: var(--shadow-sm); }
+    .journal-balance { font-size: 27px; font-weight: 800; letter-spacing: -0.02em; }
     .journal-title { font-size: 14px; }
-    .journal-action { font-size: 13px; padding: 8px 16px; height: 36px; }
+    .journal-action { font-size: 13.5px; font-weight: 700; padding: 8px 16px; height: 38px; border-radius: 12px; }
 
     /* ── Cards ── */
-    .card { padding: 16px; border-radius: 14px; }
-    .card-title { font-size: 14px; }
+    .card { padding: 18px; border-radius: 18px; border: none; box-shadow: var(--shadow-sm); }
+    .card-title { font-size: 14.5px; font-weight: 700; }
     .grid-2 { grid-template-columns: 1fr; }
 
     /* ── Card-head action rows (Imprimer / Importer / Ajouter…) — wrap instead of overflowing ── */
-    .card-head { row-gap: 8px; }
+    .card-head {
+      row-gap: 8px;
+      margin: -18px -18px 14px; padding: 12px 18px;
+      border-radius: 18px 18px 0 0;
+      background: var(--bg-muted);
+      border-bottom-color: var(--border);
+    }
     .card-head > div { flex-wrap: wrap; gap: 8px !important; width: 100%; }
     .card-head > div > .btn-primary,
     .card-head > div > .print-btn,
@@ -651,74 +694,112 @@
     .card-head > div > label.btn-secondary { flex: 1 1 auto; white-space: nowrap; }
 
     /* ── Tables ── */
-    .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; }
     table.mod { font-size: 13px; }
-    table.mod th { font-size: 10px; padding: 8px 10px; }
+    table.mod th { font-size: 10px; padding: 8px 10px; background: var(--bg-muted); }
     table.mod td { padding: 10px; min-height: 44px; }
 
-    /* ── Forms ── */
-    .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
+    /* ── Forms — filled iOS-style fields: soft gray fill, no visible border
+       until focus, instead of the boxed/outlined look used on desktop. ── */
+    .form-grid { grid-template-columns: 1fr !important; gap: 14px; }
     input[type="text"], input[type="number"], input[type="date"], input[type="tel"], input[type="email"], input[type="file"], input[type="password"], select, textarea {
-      height: 44px; font-size: 16px !important;
-      border-radius: 10px; padding: 0 14px;
+      height: 46px; font-size: 16px !important;
+      border-radius: 13px; padding: 0 14px;
+      background: var(--bg-muted) !important;
+      border: 1.5px solid transparent !important;
+      transition: background 0.15s, border-color 0.15s;
+      width: 100%; min-width: 0; max-width: 100%;
     }
-    textarea { height: auto; min-height: 80px; padding: 12px 14px; }
-    .btn-primary  { height: 44px; font-size: 15px; border-radius: 10px; width: 100%; }
-    .btn-secondary { height: 40px; font-size: 13px; border-radius: 10px; }
-    .field label { font-size: 12px; margin-bottom: 3px; }
+    input:focus, select:focus, textarea:focus {
+      background: #fff !important;
+      border-color: var(--accent) !important;
+      outline: none;
+    }
+    textarea { height: auto; min-height: 84px; padding: 12px 14px; }
+    .btn-primary  { height: 46px; font-size: 15.5px; font-weight: 700; border-radius: 13px; width: 100%; letter-spacing: -0.01em; }
+    .btn-primary:active { opacity: 0.8; }
+    .btn-secondary {
+      height: 42px; font-size: 14px; font-weight: 600; border-radius: 13px;
+      background: var(--accent-bg); color: var(--accent); border: none;
+    }
+    .btn-secondary:active { opacity: 0.7; }
+    .field label { font-size: 12.5px; margin-bottom: 5px; font-weight: 600; color: var(--text-secondary); }
+    /* Grid/flex items don't shrink below their content's intrinsic min-width by
+       default — native <input>/<select> elements can refuse to shrink to their
+       track's width, overflowing the card on narrow screens. Force them to. */
+    .field, .form-grid > *, [style*="grid-template-columns"] > * { min-width: 0; }
 
     /* ── Badges ── */
-    .badge { font-size: 11px; padding: 4px 10px; }
+    .badge { font-size: 11px; padding: 4px 10px; border-radius: 8px; font-weight: 700; }
 
-    /* ── Modals — slide up as bottom sheet ── */
+    /* ── Modals — slide up as bottom sheet, with a native spring-like entrance ── */
     .modal-overlay {
       align-items: flex-end;
       padding: 0;
-      background: rgba(0,0,0,.38);
+      background: rgba(20,20,30,.32);
+      -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
     }
+    .modal-overlay.active { animation: mSheetFade .3s ease; }
+    .modal-overlay.active .modal { animation: mSheetUp .38s cubic-bezier(.32,.72,0,1); }
+    @keyframes mSheetFade { from { background: rgba(20,20,30,0); } to { background: rgba(20,20,30,.32); } }
+    @keyframes mSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal {
-      border-radius: 20px 20px 0 0;
+      border-radius: 22px 22px 0 0;
       max-height: 92dvh; width: 100%; max-width: 100%;
       padding: 0 20px 20px;
       border: none;
+      box-shadow: 0 -8px 40px rgba(20,20,30,.16);
       padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
     .modal::before {
       content: '';
-      display: block; width: 36px; height: 4px;
-      background: var(--border-strong); border-radius: 2px;
+      display: block; width: 36px; height: 5px;
+      background: var(--border-strong); border-radius: 3px;
       margin: 10px auto 16px;
     }
-    .modal-head { margin-bottom: 14px; }
-    .modal-title { font-size: 17px; }
-    .modal-close { width: 30px; height: 30px; font-size: 22px; }
+    .modal-head { margin-bottom: 16px; }
+    .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+    .modal-close {
+      width: 30px; height: 30px; font-size: 18px; border-radius: 50%;
+      background: var(--bg-muted); color: var(--text-secondary);
+    }
 
     /* ── Ghost buttons ── */
-    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 44px; min-height: 44px; }
+    .ghost-btn { font-size: 20px; padding: 8px 10px; min-width: 44px; min-height: 44px; border-radius: 12px; }
 
     /* ── Aging ── */
-    .aging-table { grid-template-columns: 1fr 1fr; }
+    .aging-table { grid-template-columns: 1fr 1fr; border-radius: 14px; overflow: hidden; }
     .aging-cell { padding: 10px 12px; font-size: 13px; }
 
     /* ── Empty state ── */
-    .empty-state { font-size: 13px; padding: 32px 20px; }
+    .empty-state { font-size: 13.5px; padding: 40px 20px; color: var(--text-tertiary); }
 
     /* ── Informal banner ── */
-    .informal-banner { border-radius: 12px; padding: 14px 16px; font-size: 14px; }
+    .informal-banner { border-radius: 16px; padding: 14px 16px; font-size: 14px; border: none; box-shadow: var(--shadow-sm); }
     .banner-body .bt { font-size: 14px; }
     .banner-body .bs { font-size: 13px; }
 
     /* ── Toast ── */
-    .toast { bottom: 80px; right: 16px; left: 16px; text-align: center; border-radius: 10px; font-size: 13px; }
+    .toast {
+      bottom: calc(78px + env(safe-area-inset-bottom, 10px)); right: 16px; left: 16px;
+      text-align: center; border-radius: 14px; font-size: 13.5px; font-weight: 600;
+      box-shadow: var(--shadow-md);
+    }
 
     /* ── Ptg table ── */
     .ptg-toolbar { padding: 8px 12px; }
     .ptg-month-label { font-size: 11px; min-width: 100px; }
 
-    /* ── Login (touch-friendly tap targets) ── */
-    .login-card { padding: 32px 24px 28px; }
-    .login-input { height: 44px; font-size: 16px; }
-    .login-btn { height: 46px; font-size: 15px; }
+    /* ── Login — calm, native feel ── */
+    #login-overlay { background: var(--bg-page); }
+    .login-card {
+      padding: 36px 26px 30px; border-radius: 24px; border: none;
+      box-shadow: var(--shadow-md);
+    }
+    .login-input { height: 48px; font-size: 16px; border-radius: 13px; background: var(--bg-muted); border: 1.5px solid transparent; }
+    .login-input:focus { background: #fff; border-color: var(--accent); }
+    .login-btn { height: 48px; font-size: 15.5px; font-weight: 700; border-radius: 13px; }
+    .login-btn:active { opacity: 0.85; }
 
     /* ── Full-page form panels with a side "live preview" column (e.g. new-employee) —
        these use inline grid styles for the desktop 2-column layout, so force them
