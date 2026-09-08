@@ -666,6 +666,43 @@
     .kpi-val { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
     .kpi-hint { font-size: 11px; }
     .kpi-icon-chip { width: 28px; height: 28px; border-radius: 9px; }
+    /* A lone card left over at the end of a 2-col grid (e.g. 5 KPIs) spans
+       full width instead of dangling next to an empty gap. */
+    .kpi-grid .kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+    /* ── Headline KPI as a hero balance card (à la Wallet/banking apps) —
+       gives the single most important figure real visual weight instead of
+       making it just another gray box in a dense grid. ── */
+    #kpi-overview .kpi-card:first-child {
+      grid-column: 1 / -1;
+      padding: 22px 22px 20px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      box-shadow: 0 10px 28px -6px rgba(30,58,95,.45);
+    }
+    #kpi-overview .kpi-card.danger:first-child {
+      background: linear-gradient(135deg, #E5484D 0%, #C22F34 100%);
+      box-shadow: 0 10px 28px -6px rgba(194,47,52,.4);
+    }
+    #kpi-overview .kpi-card.kpi-warn:first-child {
+      background: linear-gradient(135deg, #F0A93E 0%, #C97F1B 100%);
+      box-shadow: 0 10px 28px -6px rgba(201,127,27,.4);
+    }
+    #kpi-overview .kpi-card.kpi-ok:first-child {
+      background: linear-gradient(135deg, #2FAE60 0%, #1E8449 100%);
+      box-shadow: 0 10px 28px -6px rgba(30,132,73,.4);
+    }
+    #kpi-overview .kpi-card:first-child .kpi-lbl,
+    #kpi-overview .kpi-card:first-child .kpi-val,
+    #kpi-overview .kpi-card:first-child .kpi-hint { color: #fff !important; }
+    #kpi-overview .kpi-card:first-child .kpi-lbl { color: rgba(255,255,255,.78) !important; font-size: 11px; }
+    #kpi-overview .kpi-card:first-child .kpi-val { font-size: 34px; font-weight: 800; margin-top: 6px; }
+    /* The hero card offsets the 2-col flow by one, so parity flips for
+       #kpi-overview specifically: an ODD total child count (5 — Trésorerie
+       + 4) ends up perfectly even after the hero, no dangling; an EVEN
+       total (6 — HR's overview) leaves one stat dangling alone instead. */
+    #kpi-overview .kpi-card:last-child:nth-child(odd)  { grid-column: auto; }
+    #kpi-overview .kpi-card:last-child:nth-child(even) { grid-column: 1 / -1; }
 
     /* ── Journal cards ── */
     .journal-grid { grid-template-columns: 1fr; gap: 12px; }
