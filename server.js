@@ -176,11 +176,11 @@ async function buildPgDB() {
 
 // ── Role config ────────────────────────────────────────────────────────────────
 const ROLE_KEYS = {
-  finance:    ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts','caisseTerkmane','missingInvoiceAlerts'],
+  finance:    ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts'],
   hr:         ['workers','workSites','hrDocuments','hrFolders','adminPointage'],
   technique:  ['techWorkSites','workSites','workers','hrDocuments','hrFolders','commercialContacts','adminPointage','adminPtgLegend'],
   commercial: ['clientNames','fournisseurNames','invoices','ribList','clientDetails','commercialContacts','hrDocuments','hrFolders'],
-  admin:      ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts','caisseTerkmane','missingInvoiceAlerts']
+  admin:      ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts']
 };
 
 app.use(express.json({ limit: '50mb' }));

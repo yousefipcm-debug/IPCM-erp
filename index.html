@@ -94,6 +94,12 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; }
+  button, .nav-btn, .mobile-nav-btn, .mhd-avatar, .ghost-btn, .btn-primary, .btn-secondary, .journal-action, .kpi-card, .card-title, a {
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
+  button:focus, .nav-btn:focus, .mobile-nav-btn:focus { outline: none; }
+  button:focus-visible, .nav-btn:focus-visible, .mobile-nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   body {
     font-family: var(--font-stack);
     background: var(--bg-page);
@@ -121,6 +127,9 @@
     height: 100vh;
     width: var(--sidebar-width);
   }
+  /* Mobile-only drawer backdrop — kept out of grid/document flow at every
+     viewport so it never disturbs .app-shell's 2-column desktop grid. */
+  .sidebar-backdrop { display: none; position: fixed; }
 
   .brand {
     padding: 12px 16px;
@@ -468,7 +477,38 @@
   @media (max-width: 900px) {
     /* ── Layout ── */
     .app-shell { grid-template-columns: 1fr; min-height: 100vh; min-height: 100dvh; }
-    .sidebar { display: none; }
+
+    /* ── Sidebar becomes an off-canvas drawer, reached via the ☰ button —
+       every module (DFC, RH, Technique, Admin, Commercial…) that only fits
+       in the desktop sidebar stays reachable on mobile through here. ── */
+    .sidebar {
+      display: flex !important;
+      position: fixed; top: 0; left: 0; z-index: 300;
+      height: 100vh; height: 100dvh; width: 82vw; max-width: 300px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      box-shadow: none;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .sidebar.mobile-open { transform: translateX(0); box-shadow: 12px 0 32px rgba(0,0,0,.18); }
+    .sidebar-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 299;
+      background: rgba(0,0,0,.35); opacity: 0; transition: opacity 0.25s ease;
+    }
+    .sidebar-backdrop.open { display: block; opacity: 1; }
+    .mhd-menu-btn {
+      background: none; border: none; color: var(--gray-900); cursor: pointer;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; padding: 0; margin: 0 -6px 0 -8px;
+    }
+    .mhd-menu-btn svg { width: 22px; height: 22px; }
+    .mhd-menu-btn:active { opacity: 0.6; }
+    .sidebar .module-btn { height: 44px; font-size: 14px; }
+    .sidebar .nav-btn { height: 44px; font-size: 14px; }
+    .sidebar .brand { height: auto; padding: 16px; }
+
     .topbar { display: none; }
     .main { padding-bottom: 0; }
     .content { padding: 14px 16px calc(24px + 72px + env(safe-area-inset-bottom, 10px)); }
@@ -602,6 +642,14 @@
     .card-title { font-size: 14px; }
     .grid-2 { grid-template-columns: 1fr; }
 
+    /* ── Card-head action rows (Imprimer / Importer / Ajouter…) — wrap instead of overflowing ── */
+    .card-head { row-gap: 8px; }
+    .card-head > div { flex-wrap: wrap; gap: 8px !important; width: 100%; }
+    .card-head > div > .btn-primary,
+    .card-head > div > .print-btn,
+    .card-head > div > .btn-secondary,
+    .card-head > div > label.btn-secondary { flex: 1 1 auto; white-space: nowrap; }
+
     /* ── Tables ── */
     .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table.mod { font-size: 13px; }
@@ -609,12 +657,12 @@
     table.mod td { padding: 10px; min-height: 44px; }
 
     /* ── Forms ── */
-    .form-grid { grid-template-columns: 1fr; gap: 12px; }
-    input[type="text"], input[type="number"], input[type="date"], select, textarea {
-      height: 44px; font-size: 16px;
+    .form-grid { grid-template-columns: 1fr !important; gap: 12px; }
+    input[type="text"], input[type="number"], input[type="date"], input[type="tel"], input[type="email"], input[type="file"], input[type="password"], select, textarea {
+      height: 44px; font-size: 16px !important;
       border-radius: 10px; padding: 0 14px;
     }
-    textarea { height: auto; min-height: 80px; padding: 12px 14px; font-size: 14px; }
+    textarea { height: auto; min-height: 80px; padding: 12px 14px; }
     .btn-primary  { height: 44px; font-size: 15px; border-radius: 10px; width: 100%; }
     .btn-secondary { height: 40px; font-size: 13px; border-radius: 10px; }
     .field label { font-size: 12px; margin-bottom: 3px; }
@@ -666,6 +714,26 @@
     /* ── Ptg table ── */
     .ptg-toolbar { padding: 8px 12px; }
     .ptg-month-label { font-size: 11px; min-width: 100px; }
+
+    /* ── Login (touch-friendly tap targets) ── */
+    .login-card { padding: 32px 24px 28px; }
+    .login-input { height: 44px; font-size: 16px; }
+    .login-btn { height: 46px; font-size: 15px; }
+
+    /* ── Full-page form panels with a side "live preview" column (e.g. new-employee) —
+       these use inline grid styles for the desktop 2-column layout, so force them
+       to stack on mobile instead of overflowing sideways. ── */
+    .panel[data-panel="worker-new"] > div[style*="grid-template-columns"] {
+      display: block !important;
+    }
+    .panel[data-panel="worker-new"] .card > div[style*="grid-template-columns:1fr 1fr"] {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+    .panel[data-panel="worker-new"] div[style*="position:sticky"] {
+      position: static !important;
+      margin-top: 14px;
+    }
   }
 
   /* Hide mobile elements on desktop */
@@ -1348,16 +1416,16 @@
     banner.id = 'db-warning-banner';
     banner.innerHTML = `
       <div style="
-        position:fixed;top:0;left:0;right:0;z-index:99999;
+        position:relative;z-index:99999;
+        padding-top:env(safe-area-inset-top, 0px);
         background:#DC2626;color:#fff;
-        padding:10px 20px;
         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        font-size:13px;font-weight:600;
-        display:flex;align-items:center;justify-content:space-between;gap:12px;
         box-shadow:0 2px 8px rgba(0,0,0,.25);
       ">
-        <span>⚠️ BASE DE DONNÉES NON CONNECTÉE — Les données sont en mémoire et seront perdues au prochain redémarrage. Reconnexion automatique en cours...</span>
-        <button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">OK</button>
+        <div style="padding:10px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span>⚠️ BASE DE DONNÉES NON CONNECTÉE — Les données sont en mémoire et seront perdues au prochain redémarrage. Reconnexion automatique en cours...</span>
+          <button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 12px;min-height:32px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">OK</button>
+        </div>
       </div>`;
     document.body.prepend(banner);
   }
@@ -1371,16 +1439,16 @@
     banner.id = 'db-reconnected-banner';
     banner.innerHTML = `
       <div style="
-        position:fixed;top:0;left:0;right:0;z-index:99999;
+        position:relative;z-index:99999;
+        padding-top:env(safe-area-inset-top, 0px);
         background:#16803D;color:#fff;
-        padding:10px 20px;
         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        font-size:13px;font-weight:600;
-        display:flex;align-items:center;justify-content:space-between;gap:12px;
         box-shadow:0 2px 8px rgba(0,0,0,.25);
       ">
-        <span>✓ Base de données reconnectée. Actualisez la page pour continuer en toute sécurité.</span>
-        <button onclick="window.location.reload()" style="background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 12px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">Recharger</button>
+        <div style="padding:10px 20px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span>✓ Base de données reconnectée. Actualisez la page pour continuer en toute sécurité.</span>
+          <button onclick="window.location.reload()" style="background:rgba(255,255,255,.25);border:none;color:#fff;padding:8px 14px;min-height:32px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">Recharger</button>
+        </div>
       </div>`;
     document.body.prepend(banner);
   }
@@ -1437,26 +1505,26 @@
           </span>
         </td>
         <td style="padding:9px 12px;color:#999;font-size:12px;">${(u.created_at||'').slice(0,10)}</td>
-        <td style="padding:9px 12px;text-align:right;">
+        <td style="padding:9px 12px;text-align:right;white-space:nowrap;">
           <button onclick="window.__syncEditUser(${u.id},'${esc(u.username)}','${esc(u.display_name)}','${u.role}')"
-            style="font-size:11px;padding:3px 10px;border:1px solid #e2e2e2;border-radius:5px;background:#fff;cursor:pointer;margin-right:6px;">
+            style="font-size:12px;min-height:34px;padding:6px 12px;border:1px solid #e2e2e2;border-radius:5px;background:#fff;cursor:pointer;margin-right:6px;">
             Modifier
           </button>
           <button onclick="window.__syncDeleteUser(${u.id},'${esc(u.username)}')"
-            style="font-size:11px;padding:3px 10px;border:1px solid #fecaca;border-radius:5px;background:#fef2f2;color:#dc2626;cursor:pointer;">
+            style="font-size:12px;min-height:34px;padding:6px 12px;border:1px solid #fecaca;border-radius:5px;background:#fef2f2;color:#dc2626;cursor:pointer;">
             Supprimer
           </button>
         </td>
       </tr>`).join('');
     return `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
         <span style="font-size:13px;color:#525252;">${users.length} utilisateur${users.length!==1?'s':''}</span>
         <button onclick="window.__syncAddUser()"
-          style="height:28px;padding:0 14px;background:#171717;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+          style="height:34px;padding:0 14px;background:#171717;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
           + Ajouter un utilisateur
         </button>
       </div>
-      <div style="border:1px solid #ededed;border-radius:8px;overflow:hidden;">
+      <div class="tbl-wrap" style="border:1px solid #ededed;border-radius:8px;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead>
             <tr style="background:#f8f8f8;">
@@ -1476,49 +1544,82 @@
     return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  window.__syncAddUser = async function () {
-    const username     = prompt('Identifiant :');
-    if (!username) return;
-    const display_name = prompt('Nom complet affiché:');
-    if (!display_name) return;
-    const role = prompt('Rôle:\n  admin\n  finance\n  hr\n  technique');
-    if (!['admin','finance','hr','technique'].includes(role)) { alert('Rôle invalide.'); return; }
-    const password = prompt('Mot de passe (min 6 caractères):');
-    if (!password || password.length < 6) { alert('Mot de passe trop court.'); return; }
-    try {
-      const r = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-        body: JSON.stringify({ username: username.trim().toLowerCase(), password, role, display_name })
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
-      loadUsersPanel();
-    } catch (e) { alert('Erreur : ' + e.message); }
+  let __umMode = 'add', __umId = null, __umUsername = '';
+
+  window.__syncAddUser = function () {
+    __umMode = 'add'; __umId = null; __umUsername = '';
+    document.getElementById('user-modal-title').textContent = 'Nouvel utilisateur';
+    const uEl = document.getElementById('um-username');
+    uEl.value = ''; uEl.disabled = false;
+    document.getElementById('um-display-name').value = '';
+    document.getElementById('um-role').value = 'finance';
+    document.getElementById('um-password').value = '';
+    document.getElementById('um-password-label').textContent = 'Mot de passe';
+    document.getElementById('um-error').textContent = '';
+    document.getElementById('user-modal').classList.add('active');
   };
 
-  window.__syncEditUser = async function (id, username, displayName, currentRole) {
-    const newName = prompt('Nom complet:', displayName);
-    const newRole = prompt('Rôle (admin / finance / hr / technique):', currentRole);
-    const newPwd  = prompt('Nouveau mot de passe (laisser vide pour ne pas changer):');
-    const body = {};
-    if (newName && newName !== displayName) body.display_name = newName;
-    if (newRole && ['admin','finance','hr','technique'].includes(newRole)) body.role = newRole;
-    if (newPwd) {
-      if (newPwd.length < 6) { alert('Mot de passe trop court.'); return; }
-      body.password = newPwd;
-    }
-    if (!Object.keys(body).length) return;
+  window.__syncEditUser = function (id, username, displayName, currentRole) {
+    __umMode = 'edit'; __umId = id; __umUsername = username;
+    document.getElementById('user-modal-title').textContent = 'Modifier utilisateur';
+    const uEl = document.getElementById('um-username');
+    uEl.value = username; uEl.disabled = true;
+    document.getElementById('um-display-name').value = displayName;
+    document.getElementById('um-role').value = currentRole;
+    document.getElementById('um-password').value = '';
+    document.getElementById('um-password-label').textContent = 'Nouveau mot de passe (laisser vide pour ne pas changer)';
+    document.getElementById('um-error').textContent = '';
+    document.getElementById('user-modal').classList.add('active');
+  };
+
+  window.__closeUserModal = function () {
+    document.getElementById('user-modal').classList.remove('active');
+  };
+
+  window.__saveUserModal = async function () {
+    const errEl = document.getElementById('um-error');
+    errEl.textContent = '';
+    const display_name = document.getElementById('um-display-name').value.trim();
+    const role = document.getElementById('um-role').value;
+    const password = document.getElementById('um-password').value;
+    const btn = document.getElementById('um-save-btn');
+    btn.disabled = true;
     try {
-      const r = await fetch('/api/users/' + id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-        body: JSON.stringify(body)
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
+      if (__umMode === 'add') {
+        const username = document.getElementById('um-username').value.trim();
+        if (!username) throw new Error('Identifiant requis.');
+        if (!display_name) throw new Error('Nom complet requis.');
+        if (!password || password.length < 6) throw new Error('Mot de passe trop court (min 6 caractères).');
+        const r = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          body: JSON.stringify({ username: username.toLowerCase(), password, role, display_name })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+      } else {
+        const body = {};
+        if (display_name) body.display_name = display_name;
+        if (role) body.role = role;
+        if (password) {
+          if (password.length < 6) throw new Error('Mot de passe trop court (min 6 caractères).');
+          body.password = password;
+        }
+        const r = await fetch('/api/users/' + __umId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+      }
+      window.__closeUserModal();
       loadUsersPanel();
-    } catch (e) { alert('Erreur : ' + e.message); }
+    } catch (e) {
+      errEl.textContent = e.message || 'Erreur inconnue.';
+    } finally {
+      btn.disabled = false;
+    }
   };
 
   window.__syncDeleteUser = async function (id, username) {
@@ -1632,7 +1733,8 @@
 
 <div class="app-shell">
 
-  <aside class="sidebar">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-row">
         <div>
@@ -1878,9 +1980,14 @@
     <div class="content">
 
       <div class="mobile-header" id="mobile-header">
-        <div class="mhd-left">
-          <p class="mhd-brand">ARCIS</p>
-          <h1 class="mhd-title" id="mobile-page-title">Vue d'ensemble</h1>
+        <div class="mhd-left" style="flex-direction:row;align-items:center;gap:10px;">
+          <button class="mhd-menu-btn" id="mhd-menu-btn" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div>
+            <p class="mhd-brand">ARCIS</p>
+            <h1 class="mhd-title" id="mobile-page-title">Vue d'ensemble</h1>
+          </div>
         </div>
         <div class="mhd-right">
           <span class="mhd-sync" id="mhd-sync" title="Connecté"></span>
@@ -2002,7 +2109,6 @@
           </div>
           <div class="tbl-wrap" style="margin-bottom:10px;display:flex;gap:8px;">
             <input type="text" id="journal-search" placeholder="Rechercher par nom, description, fournisseur, client, N° chèque, date..." oninput="if(window.app)app.renderJournaux();" onkeydown="if(event.key==='Enter'&&window.app)app.renderJournaux();" style="flex:1;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
-            <button onclick="if(window.app)app.renderJournaux();" style="height:38px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:var(--gray-900);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Rechercher</button>
             <button onclick="document.getElementById('journal-search').value='';if(window.app)app.renderJournaux();" style="height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-secondary);font-size:13px;cursor:pointer;">✕</button>
           </div>
           <div class="tbl-wrap" id="transactions-recent-table"></div>
@@ -2039,15 +2145,22 @@
           <p style="font-size:12px;color:var(--text-tertiary);margin:0 0 14px;">Chaque retrait génère automatiquement une décharge signée que vous pouvez imprimer ou réimprimer à tout moment.</p>
 
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:var(--bg-muted); border-radius:var(--radius-md);">
-            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Rapport du mois :</span>
-            <select id="ct-report-versement" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);min-width:260px;">
+            <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Rapport pour le mois :</span>
+            <select id="ct-report-month" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+              <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+              <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+              <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+              <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
             </select>
-            <button class="btn-primary" onclick="app.printCaisseTerkmaneRapport()">
+            <select id="ct-report-year" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+              <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+            </select>
+            <button class="btn-primary" onclick="app.openCtReportSigChoice('monthly')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimer le rapport de ce mois
+              Imprimer le rapport mensuel
             </button>
             <span style="width:1px;height:24px;background:var(--border);margin:0 2px;"></span>
-            <button class="btn-secondary" onclick="app.printCaisseTerkmaneRapportGlobal()">
+            <button class="btn-secondary" onclick="app.openCtReportSigChoice('global')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               Imprimer le rapport global (depuis le début)
             </button>
@@ -2056,6 +2169,29 @@
           <div id="ct-history"></div>
         </div>
       </section>
+
+      <!-- CAISSE TERKMANE — REPORT SIGNATURE CHOICE MODAL -->
+      <div class="modal-overlay" id="ct-report-sig-modal">
+        <div class="modal" style="max-width:400px;width:90%;">
+          <div class="modal-head">
+            <p class="modal-title">Imprimer le rapport</p>
+            <button class="modal-close" onclick="document.getElementById('ct-report-sig-modal').classList.remove('active')">×</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 16px;">Ce rapport est-il destiné à être signé ?</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn-primary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.confirmCtReportPrint(true)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                Oui — à faire signer par Mme Terkmane
+              </button>
+              <button class="btn-secondary" style="width:100%;height:42px;justify-content:flex-start;gap:10px;" onclick="app.confirmCtReportPrint(false)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Non — pas nécessaire
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- CAISSE TERKMANE — VERSEMENT MODAL -->
       <div class="modal-overlay" id="ct-versement-modal">
@@ -2559,7 +2695,6 @@
           </div>
           <div class="tbl-wrap" style="margin-bottom:10px;display:flex;gap:8px;">
             <input type="text" id="workers-search" placeholder="Rechercher par nom, prénom, fonction, N° assurance..." oninput="if(window.app)app.renderWorkers();" onkeydown="if(event.key==='Enter'&&window.app)app.renderWorkers();" style="flex:1;height:38px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;background:var(--bg);color:var(--text-primary);font-family:inherit;"/>
-            <button onclick="if(window.app)app.renderWorkers();" style="height:38px;padding:0 16px;border:1px solid var(--border);border-radius:8px;background:var(--gray-900);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Rechercher</button>
             <button onclick="document.getElementById('workers-search').value='';if(window.app)app.renderWorkers();" style="height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-secondary);font-size:13px;cursor:pointer;">✕</button>
           </div>
           <div class="tbl-wrap" id="workers-table"></div>
@@ -2948,6 +3083,34 @@
     <div style="margin-top:20px; display:flex; gap:10px;">
       <button class="btn-primary" onclick="app.saveWorkSite()">Enregistrer</button>
       <button class="btn-secondary" onclick="app.closeWorkSiteModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="user-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <p class="modal-title" id="user-modal-title">Nouvel utilisateur</p>
+      <button class="modal-close" onclick="window.__closeUserModal()">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="field"><label>Identifiant</label><input type="text" id="um-username" placeholder="Ex. finance2" autocapitalize="off" autocorrect="off"/></div>
+      <div class="field"><label>Nom complet affiché</label><input type="text" id="um-display-name" placeholder="Ex. Responsable DFC"/></div>
+      <div class="field"><label>Rôle</label>
+        <select id="um-role">
+          <option value="admin">Administrateur</option>
+          <option value="finance">DFC (Finance)</option>
+          <option value="hr">Ressources Humaines</option>
+          <option value="technique">Technique</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </div>
+      <div class="field"><label id="um-password-label">Mot de passe</label><input type="password" id="um-password" placeholder="Min. 6 caractères" autocomplete="new-password"/></div>
+    </div>
+    <p id="um-error" style="color:var(--danger-text);font-size:12px;margin:10px 0 0;min-height:16px;"></p>
+    <div class="modal-foot" style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn-secondary" onclick="window.__closeUserModal()">Annuler</button>
+      <button class="btn-primary" id="um-save-btn" onclick="window.__saveUserModal()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -3448,9 +3611,6 @@ window.app = (() => {
   }
 
   function journalBalance(journal) {
-    if (journal === 'caisse') {
-      return ctBalance();
-    }
     return state.transactions
       .filter(t => t.journal === journal)
       .reduce((sum, t) => sum + (t.type === 'in' ? t.amount : -t.amount), 0);
@@ -3631,15 +3791,15 @@ window.app = (() => {
       </div>`).join('');
 
     const journals = [
-      { name: 'Caisse', bal: journalBalance('caisse'), count: (state.caisseTerkmane || []).length, panel: 'caisse-terkmane' },
-      { name: 'Banque', bal: journalBalance('banque'), count: state.transactions.filter(t => t.journal === 'banque').length, panel: 'journaux' },
-      { name: 'Clients', bal: totalCreances(), count: state.situations.filter(s => !sitIsPaid(s)).length, panel: 'situations' }
+      { name: 'Caisse', bal: journalBalance('caisse'), count: state.transactions.filter(t => t.journal === 'caisse').length },
+      { name: 'Banque', bal: journalBalance('banque'), count: state.transactions.filter(t => t.journal === 'banque').length },
+      { name: 'Clients', bal: totalCreances(), count: state.situations.filter(s => !sitIsPaid(s)).length }
     ];
     document.getElementById('journal-summary').innerHTML = journals.map(j => `
-      <div class="journal-card" onclick="app.switchPanel('${j.panel}')" style="cursor:pointer;" title="Accéder à ${j.name}">
+      <div class="journal-card">
         <p class="journal-title">${j.name}</p>
         <p class="journal-balance">${fmtDZD(j.bal)}</p>
-        <p class="journal-hint">${j.count} mouvement(s)</p>
+        <p class="journal-hint">${j.count} entrée(s)</p>
       </div>`).join('');
   }
 
@@ -3781,7 +3941,7 @@ window.app = (() => {
     document.getElementById('journal-banque-bal').textContent = fmtDZD(journalBalance('banque'));
     document.getElementById('journal-clients-bal').textContent = fmtDZD(totalCreances());
 
-    const cCount = (state.caisseTerkmane || []).length;
+    const cCount = state.transactions.filter(t => t.journal === 'caisse').length;
     const bCount = state.transactions.filter(t => t.journal === 'banque').length;
     const sitCount = state.situations.filter(s => !sitIsPaid(s)).length;
     document.getElementById('journal-caisse-hint').textContent = `${cCount} mouvement(s)`;
@@ -5358,6 +5518,73 @@ window.onload=function(){
     state.editingTransIdx = null;
   }
 
+  // Removes every project expense/payment, client-situation payment, and
+  // fournisseur payment that was linked to this transaction — used both when
+  // deleting a transaction and right before re-saving an edited one, so an
+  // edit never leaves stale or duplicate payments behind.
+  function removeTransactionCascadeEffects(transId) {
+    state.situations.forEach(s => {
+      if (s.payments) s.payments = s.payments.filter(p => p.transId !== transId);
+    });
+    state.fournisseurs.forEach(f => {
+      if (f.payments) f.payments = f.payments.filter(p => p.transId !== transId);
+    });
+    state.projects.forEach(p => {
+      if (p.expenses) p.expenses = p.expenses.filter(e => e.transId !== transId);
+      if (p.payments) p.payments = p.payments.filter(v => v.transId !== transId);
+    });
+  }
+
+  // Re-creates the project/situation/fournisseur cascade for a transaction —
+  // shared by both "new transaction" and "edited transaction" (after the old
+  // effects have been cleared by removeTransactionCascadeEffects).
+  function applyTransactionCascadeEffects(transId, type, amount, date, desc, journal, projectIdx, clientName, fournName) {
+    if (projectIdx !== '' && projectIdx != null) {
+      const pIdx = parseInt(projectIdx);
+      if (state.projects[pIdx]) {
+        if (type === 'out') {
+          if (!state.projects[pIdx].expenses) state.projects[pIdx].expenses = [];
+          state.projects[pIdx].expenses.push({ desc: desc || `${journal} sortie`, amount, date, id: transId, fromJournal: true, transId });
+        } else if (type === 'in') {
+          if (!state.projects[pIdx].payments) state.projects[pIdx].payments = [];
+          state.projects[pIdx].payments.push({ amount, ref: desc || `${journal} entrée`, date, id: transId, fromJournal: true, transId });
+        }
+      }
+    }
+
+    if (type === 'in' && clientName) {
+      let remaining = amount;
+      const clientSits = state.situations
+        .map((s, i) => ({ sit: s, idx: i }))
+        .filter(x => x.sit.client === clientName && !sitIsPaid(x.sit))
+        .sort((a, b) => (a.sit.date || '').localeCompare(b.sit.date || ''));
+      for (const { sit, idx } of clientSits) {
+        if (remaining <= 0) break;
+        const rem = sitRemaining(sit);
+        const payAmount = Math.min(remaining, rem);
+        if (!state.situations[idx].payments) state.situations[idx].payments = [];
+        state.situations[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
+        remaining -= payAmount;
+      }
+    }
+
+    if (type === 'out' && fournName) {
+      let remaining = amount;
+      const fournSits = state.fournisseurs
+        .map((f, i) => ({ four: f, idx: i }))
+        .filter(x => x.four.name === fournName && !fIsPaid(x.four))
+        .sort((a, b) => (a.four.date || '').localeCompare(b.four.date || ''));
+      for (const { four, idx } of fournSits) {
+        if (remaining <= 0) break;
+        const rem = fRemaining(four);
+        const payAmount = Math.min(remaining, rem);
+        if (!state.fournisseurs[idx].payments) state.fournisseurs[idx].payments = [];
+        state.fournisseurs[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
+        remaining -= payAmount;
+      }
+    }
+  }
+
   function saveTransaction() {
     const type = document.getElementById('trans-type').value;
     const amount = parseFloat(document.getElementById('trans-amount').value) || 0;
@@ -5369,70 +5596,29 @@ window.onload=function(){
     const cheque = document.getElementById('trans-cheque').value.trim();
     const factureStatus = type === 'out' ? (document.querySelector('input[name="trans-facture-status"]:checked')?.value || 'not-needed') : null;
     if (amount <= 0) { alert('Montant requis'); return; }
+
     if (state.editingTransIdx !== null) {
       const transId = state.transactions[state.editingTransIdx].id;
+      // Undo whatever this transaction previously did (old fournisseur/client
+      // payment, old project link) before reapplying it with the current values —
+      // otherwise editing (e.g. picking the fournisseur now that the invoice
+      // arrived) never actually updates their debt.
+      removeTransactionCascadeEffects(transId);
       state.transactions[state.editingTransIdx] = { journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, factureStatus, id: transId };
       state.editingTransIdx = null;
       syncMissingInvoiceAlert(transId, type, factureStatus, fournisseur, amount, date, desc, state.currentJournal);
+      applyTransactionCascadeEffects(transId, type, amount, date, desc, state.currentJournal, projectIdx, client, fournisseur);
+      save(K.situations, state.situations);
+      save(K.fournisseurs, state.fournisseurs);
+      save(K.projects, state.projects);
     } else {
       const transId = Date.now();
       state.transactions.push({ journal: state.currentJournal, type, amount, desc, date, projectIdx: projectIdx || null, fournisseur: fournisseur || null, client: client || null, cheque: cheque || null, factureStatus, id: transId });
       syncMissingInvoiceAlert(transId, type, factureStatus, fournisseur, amount, date, desc, state.currentJournal);
-      // Link to project
-      if (projectIdx !== '') {
-        const pIdx = parseInt(projectIdx);
-        if (state.projects[pIdx]) {
-          if (type === 'out') {
-            state.projects[pIdx].expenses.push({ desc: desc || `${state.currentJournal} sortie`, amount, date, id: transId, fromJournal: true, transId });
-          } else if (type === 'in') {
-            state.projects[pIdx].payments.push({ amount, ref: desc || `${state.currentJournal} entrée`, date, id: transId, fromJournal: true, transId });
-          }
-          save(K.projects, state.projects);
-        }
-      }
-      // Link to client situations (money in) — cascade oldest first
-      if (type === 'in') {
-        const clientName = document.getElementById('trans-client-sit').value;
-        if (clientName) {
-          let remaining = amount;
-          // Get unpaid situations for this client, sorted by date (oldest first)
-          const clientSits = state.situations
-            .map((s, i) => ({ sit: s, idx: i }))
-            .filter(x => x.sit.client === clientName && !sitIsPaid(x.sit))
-            .sort((a, b) => (a.sit.date || '').localeCompare(b.sit.date || ''));
-          
-          for (const { sit, idx } of clientSits) {
-            if (remaining <= 0) break;
-            const rem = sitRemaining(sit);
-            const payAmount = Math.min(remaining, rem);
-            if (!state.situations[idx].payments) state.situations[idx].payments = [];
-            state.situations[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
-            remaining -= payAmount;
-          }
-          save(K.situations, state.situations);
-        }
-      }
-      // Link to fournisseur situations (money out) — cascade oldest first
-      if (type === 'out') {
-        const fournName = document.getElementById('trans-fourn-sit').value;
-        if (fournName) {
-          let remaining = amount;
-          const fournSits = state.fournisseurs
-            .map((f, i) => ({ four: f, idx: i }))
-            .filter(x => x.four.name === fournName && !fIsPaid(x.four))
-            .sort((a, b) => (a.four.date || '').localeCompare(b.four.date || ''));
-          
-          for (const { four, idx } of fournSits) {
-            if (remaining <= 0) break;
-            const rem = fRemaining(four);
-            const payAmount = Math.min(remaining, rem);
-            if (!state.fournisseurs[idx].payments) state.fournisseurs[idx].payments = [];
-            state.fournisseurs[idx].payments.push({ amount: payAmount, date, id: transId, fromJournal: true, transId });
-            remaining -= payAmount;
-          }
-          save(K.fournisseurs, state.fournisseurs);
-        }
-      }
+      applyTransactionCascadeEffects(transId, type, amount, date, desc, state.currentJournal, projectIdx, client, fournisseur);
+      save(K.situations, state.situations);
+      save(K.fournisseurs, state.fournisseurs);
+      save(K.projects, state.projects);
     }
     save(K.transactions, state.transactions);
     closeTransactionModal();
@@ -5554,11 +5740,6 @@ window.onload=function(){
     save(K.caisseTerkmane, state.caisseTerkmane);
     document.getElementById('ct-versement-modal').classList.remove('active');
     renderCaisseTerkmane();
-    renderOverview();
-    renderJournaux();
-    renderAlerts();
-    renderForecast();
-    renderSimulateur();
     alert('✓ Entrée enregistrée.');
   }
 
@@ -5624,11 +5805,6 @@ window.onload=function(){
     save(K.caisseTerkmane, state.caisseTerkmane);
     document.getElementById('ct-decharge-modal').classList.remove('active');
     renderCaisseTerkmane();
-    renderOverview();
-    renderJournaux();
-    renderAlerts();
-    renderForecast();
-    renderSimulateur();
     printCaisseTerkmaneDecharge(movement.id);
   }
 
@@ -5637,17 +5813,11 @@ window.onload=function(){
     state.caisseTerkmane = (state.caisseTerkmane || []).filter(m => m.id !== id);
     save(K.caisseTerkmane, state.caisseTerkmane);
     renderCaisseTerkmane();
-    renderOverview();
-    renderJournaux();
-    renderAlerts();
-    renderForecast();
-    renderSimulateur();
   }
 
   function renderCaisseTerkmane() {
     const balEl = document.getElementById('ct-balance');
     if (!balEl) return;
-    populateCtVersementDropdown();
     const movements = state.caisseTerkmane || [];
     const totalIn = movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
     const totalOut = movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
@@ -5661,59 +5831,30 @@ window.onload=function(){
       el.innerHTML = '<div class="empty-state">Aucun mouvement enregistré. Commencez par ajouter une entrée.</div>';
       return;
     }
-
+    const sorted = movements.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
     // Compute running balance chronologically (oldest first), then look up per-row for display
-    const chrono = movements.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
     let running = 0;
     const runningById = {};
-    chrono.forEach(m => {
+    movements.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id).forEach(m => {
       running += m.type === 'in' ? m.amount : -m.amount;
       runningById[m.id] = running;
     });
 
-    // Group by month (newest month first, movements within each month newest first)
-    const monthGroups = getCaisseTerkmaneMonths();
-    const monthKeys = Object.keys(monthGroups).sort().reverse(); // newest month first
-
-    let html = '';
-    monthKeys.forEach(mk => {
-      const grp = monthGroups[mk];
-      const [y, mo] = mk.split('-');
-      const monthLabel = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
-      const mIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
-      const mOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
-      const sorted = grp.movements.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
-
-      html += `<div style="margin-bottom:18px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--gray-900);border-radius:var(--radius-md) var(--radius-md) 0 0;">
-          <span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.04em;">${monthLabel}</span>
-          <span style="font-size:11px;color:var(--gray-400);">
-            <span style="color:#6EE7B7;">+${fmtDZD(mIn)}</span>
-            <span style="margin:0 6px;">|</span>
-            <span style="color:#FCA5A5;">−${fmtDZD(mOut)}</span>
-            <span style="margin:0 6px;">|</span>
-            <span style="color:#e2e2e2;font-weight:600;">Solde fin : ${fmtDZD(grp.closingBalance)}</span>
-          </span>
-        </div>
-        <table class="mod" style="border-radius:0 0 var(--radius-md) var(--radius-md);overflow:hidden;">
-          <thead><tr><th>Date</th><th>Type</th><th>Bénéficiaire / Source</th><th>Motif</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde après</th><th></th></tr></thead>
-          <tbody>${sorted.map(m => `<tr>
-            <td style="font-size:11px;color:var(--text-secondary);">${m.date}</td>
-            <td><span class="badge ${m.type === 'in' ? 'b-ok' : 'b-danger'}">${m.type === 'in' ? 'Entrée' : 'Retrait'}</span></td>
-            <td style="font-weight:600;">${m.type === 'in' ? '—' : (m.beneficiaire || '—')}${m.isFournisseur ? ' <span class="badge b-info" style="margin-left:4px;">Fournisseur</span>' : ''}</td>
-            <td style="font-size:12px;color:var(--text-secondary);">${m.type === 'in' ? (m.desc || '—') : (m.reason || '—')}</td>
-            <td style="text-align:right;font-weight:600;color:${m.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'};">${m.type === 'in' ? '+' : '−'}${fmtDZD(m.amount)}</td>
-            <td style="text-align:right;font-size:12px;color:var(--text-secondary);">${fmtDZD(runningById[m.id])}</td>
-            <td style="text-align:right;white-space:nowrap;">
-              ${m.type === 'out' ? `<button class="ghost-btn" title="Imprimer la décharge" onclick="app.printCaisseTerkmaneDecharge(${m.id})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
-              <button class="ghost-btn" title="Supprimer" onclick="app.deleteCaisseTerkmaneMovement(${m.id})">×</button>
-            </td>
-          </tr>`).join('')}</tbody>
-        </table>
-      </div>`;
-    });
-
-    el.innerHTML = html;
+    el.innerHTML = `<table class="mod">
+      <thead><tr><th>Date</th><th>Type</th><th>Bénéficiaire / Source</th><th>Motif</th><th style="text-align:right">Montant</th><th style="text-align:right">Solde après</th><th></th></tr></thead>
+      <tbody>${sorted.map(m => `<tr>
+        <td style="font-size:11px;color:var(--text-secondary);">${m.date}</td>
+        <td><span class="badge ${m.type === 'in' ? 'b-ok' : 'b-danger'}">${m.type === 'in' ? 'Entrée' : 'Retrait'}</span></td>
+        <td style="font-weight:600;">${m.type === 'in' ? '—' : (m.beneficiaire || '—')}${m.isFournisseur ? ' <span class="badge b-info" style="margin-left:4px;">Fournisseur</span>' : ''}</td>
+        <td style="font-size:12px;color:var(--text-secondary);">${m.type === 'in' ? (m.desc || '—') : (m.reason || '—')}</td>
+        <td style="text-align:right;font-weight:600;color:${m.type === 'in' ? 'var(--ok-text)' : 'var(--danger-text)'};">${m.type === 'in' ? '+' : '−'}${fmtDZD(m.amount)}</td>
+        <td style="text-align:right;font-size:12px;color:var(--text-secondary);">${fmtDZD(runningById[m.id])}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          ${m.type === 'out' ? `<button class="ghost-btn" title="Imprimer la décharge" onclick="app.printCaisseTerkmaneDecharge(${m.id})" style="color:var(--accent);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>` : ''}
+          <button class="ghost-btn" title="Supprimer" onclick="app.deleteCaisseTerkmaneMovement(${m.id})">×</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
   }
 
   function printCaisseTerkmaneDecharge(id) {
@@ -5794,103 +5935,87 @@ ${headerHtml}
     w.document.close();
   }
 
-  // Groups all caisse movements into "cycles": one cycle per versement, containing
-  // that versement plus every retrait that follows it, up until the NEXT versement.
-  // Whatever remains at the end of a cycle carries over automatically as the
-  // opening balance of the next one — exactly like handing over cash in real life.
-  function getCaisseTerkmaneMonths() {
-    const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
-    const groups = {}; // keyed by 'YYYY-MM'
-    let running = 0;
+  // Before printing either report, ask whether it needs a signature line —
+  // e.g. an internal check doesn't need one, but a report handed to Mme Terkmane
+  // to countersign does.
+  function openCtReportSigChoice(type) {
+    state._ctReportPendingType = type; // 'monthly' | 'global'
+    document.getElementById('ct-report-sig-modal').classList.add('active');
+  }
 
+  function confirmCtReportPrint(includeSignature) {
+    document.getElementById('ct-report-sig-modal').classList.remove('active');
+    const type = state._ctReportPendingType;
+    if (type === 'monthly') printCaisseTerkmaneRapportMonthly(includeSignature);
+    else if (type === 'global') printCaisseTerkmaneRapportGlobal(includeSignature);
+  }
+
+  function printCaisseTerkmaneRapportMonthly(includeSignature) {
+    const monthEl = document.getElementById('ct-report-month');
+    const yearEl = document.getElementById('ct-report-year');
+    const month = parseInt(monthEl?.value ?? new Date().getMonth());
+    const year = parseInt(yearEl?.value ?? new Date().getFullYear());
+    const monthName = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+    const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
+
+    const periodStart = new Date(year, month, 1);
+    const periodEnd = new Date(year, month + 1, 1);
+    let openingBalance = 0;
+    const inPeriod = [];
     all.forEach(m => {
-      const mk = (m.date || '').slice(0, 7) || 'unknown';
-      if (!groups[mk]) groups[mk] = { movements: [], openingBalance: running, closingBalance: running };
-      running += (m.type === 'in' ? m.amount : -m.amount);
-      groups[mk].movements.push(m);
-      groups[mk].closingBalance = running;
+      const d = m.date ? new Date(m.date) : new Date(m.createdAt || m.id);
+      const delta = m.type === 'in' ? m.amount : -m.amount;
+      if (d < periodStart) openingBalance += delta;
+      else if (d >= periodStart && d < periodEnd) inPeriod.push(m);
     });
 
-    // Set opening balances correctly for each month
-    const sortedKeys = Object.keys(groups).sort();
-    for (let i = 1; i < sortedKeys.length; i++) {
-      groups[sortedKeys[i]].openingBalance = groups[sortedKeys[i - 1]].closingBalance;
-    }
-
-    return groups;
-  }
-
-  function populateCtVersementDropdown() {
-    const sel = document.getElementById('ct-report-versement');
-    if (!sel) return;
-    const previousValue = sel.value;
-    const groups = getCaisseTerkmaneMonths();
-    const monthKeys = Object.keys(groups).sort().reverse(); // newest first
-    if (monthKeys.length === 0) {
-      sel.innerHTML = '<option value="">Aucun mouvement enregistré</option>';
-      return;
-    }
-    sel.innerHTML = monthKeys.map(mk => {
-      const [y, mo] = mk.split('-');
-      const label = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
-      const grp = groups[mk];
-      const mIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
-      const mOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
-      return `<option value="${mk}">${label} — Entrées: ${fmtDZD(mIn)} | Retraits: ${fmtDZD(mOut)}</option>`;
-    }).join('');
-    if (previousValue && [...sel.options].some(o => o.value === previousValue)) {
-      sel.value = previousValue;
-    }
-  }
-
-  function printCaisseTerkmaneRapport() {
-    const sel = document.getElementById('ct-report-versement');
-    const selectedValue = sel?.value;
-    if (!selectedValue) { alert('Aucun mois à imprimer.'); return; }
-
-    const groups = getCaisseTerkmaneMonths();
-    const grp = groups[selectedValue];
-    if (!grp) { alert('Mois introuvable.'); return; }
-
-    const [y, mo] = selectedValue.split('-');
-    const monthLabel = MONTH_NAMES[parseInt(mo) - 1] + ' ' + y;
-    const openingBalance = grp.openingBalance;
-    const closingBalance = grp.closingBalance;
-    const totalIn = grp.movements.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
-    const totalOut = grp.movements.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
-
     let running = openingBalance;
-    const rows = grp.movements.map(m => {
+    const rows = inPeriod.map(m => {
       running += (m.type === 'in' ? m.amount : -m.amount);
       return { ...m, runningBalance: running };
     });
+
+    const totalIn = inPeriod.filter(m => m.type === 'in').reduce((s, m) => s + m.amount, 0);
+    const totalOut = inPeriod.filter(m => m.type === 'out').reduce((s, m) => s + m.amount, 0);
+    const closingBalance = openingBalance + totalIn - totalOut;
 
     const headerEl = document.querySelector('.print-header');
     const headerClone = headerEl ? headerEl.cloneNode(true) : null;
     if (headerClone) { headerClone.style.display = 'block'; const pi = headerClone.querySelector('#print-page-info'); if (pi) pi.remove(); }
     const headerHtml = headerClone ? headerClone.outerHTML : '';
     const todayFr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const monthNameCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-    const rowsHtml = rows.map(function(m) {
-      const dest = m.type === 'in' ? '—' : (m.beneficiaire || '—') + (m.isFournisseur ? ' (Fournisseur)' : '');
-      const motif = m.type === 'in' ? (m.desc || '—') : (m.reason || '—');
-      const sign = m.type === 'in' ? '+' : '−';
-      const color = m.type === 'in' ? '#16803D' : '#B91C1C';
-      return '<tr>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;">' + m.date + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Entrée' : 'Retrait') + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;">' + dest + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;">' + motif + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;color:' + color + ';font-weight:600;">' + sign + fmtDZD(m.amount) + '</td>' +
-        '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;">' + fmtDZD(m.runningBalance) + '</td>' +
-        '</tr>';
-    }).join('');
+    const rowsHtml = rows.length === 0
+      ? '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">Aucun mouvement enregistré ce mois-ci.</td></tr>'
+      : rows.map(function(m) {
+          const dest = m.type === 'in' ? '—' : (m.beneficiaire || '—') + (m.isFournisseur ? ' (Fournisseur)' : '');
+          const motif = m.type === 'in' ? (m.desc || '—') : (m.reason || '—');
+          const sign = m.type === 'in' ? '+' : '−';
+          const color = m.type === 'in' ? '#16803D' : '#B91C1C';
+          return '<tr>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;">' + m.date + '</td>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;">' + (m.type === 'in' ? 'Entrée' : 'Retrait') + '</td>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;">' + dest + '</td>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;">' + motif + '</td>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;color:' + color + ';font-weight:600;">' + sign + fmtDZD(m.amount) + '</td>' +
+            '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;">' + fmtDZD(m.runningBalance) + '</td>' +
+            '</tr>';
+        }).join('');
+
+    const sigHtml = includeSignature ? `
+<div class="sig">
+  <div class="sig-box">
+    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
+  </div>
+</div>` : '';
 
     const w = window.open('', '_blank', 'width=900,height=700');
     if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
 
     w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Rapport de Caisse — ${monthLabel}</title>
+<title>Rapport de Caisse — ${monthNameCap}</title>
 <style>
   * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
   body { font-family:Arial,sans-serif; font-size:12px; color:#111; background:#fff; padding:10mm 12mm; }
@@ -5903,6 +6028,8 @@ ${headerHtml}
   .sum-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#666; margin-bottom:4px; }
   .sum-val { font-size:15px; font-weight:700; }
   table { border-collapse:collapse; width:100%; font-size:11px; margin-top:6px; }
+  thead { display:table-header-group; }
+  tr { page-break-inside:avoid; }
   th { border:1px solid #999; background:#f0f0f0; padding:7px 10px; text-align:left; font-size:10px; text-transform:uppercase; font-weight:700; }
   .sig { margin-top:50px; display:flex; justify-content:flex-end; }
   .sig-box { text-align:center; width:220px; }
@@ -5914,13 +6041,13 @@ ${headerHtml}
 <p class="date-fr">Date d'édition : ${todayFr}</p>
 
 <div class="title">Rapport de Caisse</div>
-<p class="subtitle">Mme Terkmane — ${monthLabel}</p>
+<p class="subtitle">Mme Terkmane — ${monthNameCap}</p>
 
 <div class="summary">
-  <div class="sum-box"><div class="sum-lbl">Solde reporté (début du mois)</div><div class="sum-val">${fmtDZD(openingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde d'ouverture</div><div class="sum-val">${fmtDZD(openingBalance)}</div></div>
   <div class="sum-box"><div class="sum-lbl">Total entrées</div><div class="sum-val" style="color:#16803D;">+${fmtDZD(totalIn)}</div></div>
-  <div class="sum-box"><div class="sum-lbl">Total retiré</div><div class="sum-val" style="color:#B91C1C;">−${fmtDZD(totalOut)}</div></div>
-  <div class="sum-box"><div class="sum-lbl">Solde fin de mois</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Total retraits</div><div class="sum-val" style="color:#B91C1C;">−${fmtDZD(totalOut)}</div></div>
+  <div class="sum-box"><div class="sum-lbl">Solde de clôture</div><div class="sum-val">${fmtDZD(closingBalance)}</div></div>
 </div>
 
 <table>
@@ -5934,21 +6061,14 @@ ${headerHtml}
   </tr></thead>
   <tbody>${rowsHtml}</tbody>
 </table>
-
-<p style="font-size:11px;color:#666;margin-top:10px;">Le solde de ${fmtDZD(closingBalance)} sera reporté automatiquement sur le mois suivant.</p>
-
-<div class="sig">
-  <div class="sig-box">
-    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
-  </div>
-</div>
+${sigHtml}
 
 <script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
 </body></html>`);
     w.document.close();
   }
 
-  function printCaisseTerkmaneRapportGlobal() {
+  function printCaisseTerkmaneRapportGlobal(includeSignature) {
     const all = (state.caisseTerkmane || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.id - b.id);
     if (all.length === 0) { alert('Aucun mouvement enregistré dans la caisse.'); return; }
 
@@ -5984,6 +6104,13 @@ ${headerHtml}
         '<td style="border:1px solid #ddd;padding:6px 10px;text-align:right;">' + fmtDZD(m.runningBalance) + '</td>' +
         '</tr>';
     }).join('');
+
+    const sigHtml = includeSignature ? `
+<div class="sig">
+  <div class="sig-box">
+    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
+  </div>
+</div>` : '';
 
     const w = window.open('', '_blank', 'width=900,height=700');
     if (!w) { alert('Autorise les pop-ups pour imprimer.'); return; }
@@ -6035,17 +6162,13 @@ ${headerHtml}
   </tr></thead>
   <tbody>${rowsHtml}</tbody>
 </table>
-
-<div class="sig">
-  <div class="sig-box">
-    <div class="sig-line">Mme Terkmane — Responsable Caisse</div>
-  </div>
-</div>
+${sigHtml}
 
 <script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
 </body></html>`);
     w.document.close();
   }
+
 
   function openSituationModal() {
     state.editingSitIdx = null;
@@ -6145,28 +6268,10 @@ ${headerHtml}
     if (!confirm('Supprimer ce mouvement ?')) return;
     const t = state.transactions[idx];
     const transId = t.id;
-    
-    // Remove linked payments from client situations
-    state.situations.forEach(s => {
-      if (s.payments) {
-        s.payments = s.payments.filter(p => p.transId !== transId);
-      }
-    });
+
+    removeTransactionCascadeEffects(transId);
     save(K.situations, state.situations);
-    
-    // Remove linked payments from fournisseur situations
-    state.fournisseurs.forEach(f => {
-      if (f.payments) {
-        f.payments = f.payments.filter(p => p.transId !== transId);
-      }
-    });
     save(K.fournisseurs, state.fournisseurs);
-    
-    // Remove linked expenses/payments from projects
-    state.projects.forEach(p => {
-      if (p.expenses) p.expenses = p.expenses.filter(e => e.transId !== transId);
-      if (p.payments) p.payments = p.payments.filter(v => v.transId !== transId);
-    });
     save(K.projects, state.projects);
 
     // Remove any missing-invoice alert tied to this transaction
@@ -6191,6 +6296,12 @@ ${headerHtml}
     document.getElementById('trans-date').value = t.date;
     document.getElementById('trans-cheque').value = t.cheque || '';
     updateTransSitDropdowns();
+    const projSel = document.getElementById('trans-project');
+    if (projSel) {
+      projSel.innerHTML = '<option value="">— Aucun projet —</option>' +
+        state.projects.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+      if (t.projectIdx != null) projSel.value = t.projectIdx;
+    }
     if (t.type === 'in' && t.client) document.getElementById('trans-client-sit').value = t.client;
     if (t.type === 'out' && t.fournisseur) document.getElementById('trans-fourn-sit').value = t.fournisseur;
     if (t.type === 'out') {
@@ -6753,6 +6864,10 @@ ${headerHtml}
       renderSalaires();
     }
     if (p === 'caisse-terkmane') {
+      const now = new Date();
+      const cm = document.getElementById('ct-report-month');
+      const cy = document.getElementById('ct-report-year');
+      if (cm && !cm.dataset.init) { cm.value = now.getMonth(); cy.value = now.getFullYear(); cm.dataset.init = '1'; }
       renderCaisseTerkmane();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6830,6 +6945,23 @@ ${headerHtml}
   document.getElementById('mhd-logout-btn') && document.getElementById('mhd-logout-btn').addEventListener('click', function() {
     document.getElementById('mhd-dropdown').classList.remove('open');
     document.getElementById('logout-btn').click();
+  });
+
+  // ── Mobile sidebar drawer (☰) — gives touch users a way to reach every
+  // module/section that only fits in the desktop sidebar ──────────────────
+  function openMobileSidebar() {
+    document.getElementById('sidebar').classList.add('mobile-open');
+    document.getElementById('sidebar-backdrop').classList.add('open');
+  }
+  function closeMobileSidebar() {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebar-backdrop').classList.remove('open');
+  }
+  document.getElementById('mhd-menu-btn') && document.getElementById('mhd-menu-btn').addEventListener('click', openMobileSidebar);
+  document.getElementById('sidebar-backdrop') && document.getElementById('sidebar-backdrop').addEventListener('click', closeMobileSidebar);
+  // Selecting an actual destination (not just expanding a module group) closes the drawer.
+  document.querySelectorAll('.sidebar .nav-btn').forEach(btn => {
+    btn.addEventListener('click', closeMobileSidebar);
   });
 
   function renderSimulateur() {
@@ -6968,13 +7100,13 @@ ${headerHtml}
       </div>`;
     }).join('');
 
-    const bankBal = journalBalance('banque');
+    const bankBal = journalBalance('banque') + journalBalance('caisse');
     const bankAfter = bankBal - grandTotalToPay;
 
     el.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; margin-bottom:16px;">
         <div style="background:var(--bg-muted); border-radius:8px; padding:10px 12px;">
-          <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Solde banque actuel</p>
+          <p style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; font-weight:600; margin:0 0 4px;">Trésorerie actuelle</p>
           <p style="font-size:16px; font-weight:700; margin:0;">${fmtDZD(bankBal)}</p>
         </div>
         <div style="background:var(--danger-bg); border-radius:8px; padding:10px 12px;">
@@ -9410,7 +9542,9 @@ ${contentClone.outerHTML}
     saveCaisseTerkmaneDecharge,
     deleteCaisseTerkmaneMovement,
     printCaisseTerkmaneDecharge,
-    printCaisseTerkmaneRapport,
+    openCtReportSigChoice,
+    confirmCtReportPrint,
+    printCaisseTerkmaneRapportMonthly,
     printCaisseTerkmaneRapportGlobal,
     openSituationModal,
     closeSituationModal,

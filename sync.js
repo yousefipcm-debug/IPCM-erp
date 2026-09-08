@@ -27,9 +27,7 @@
     'ipcm_v2_hrFolders':        'hrFolders',
     'ipcm_v2_techWorkSites':    'techWorkSites',
     'ipcm_v2_adminPointage':    'adminPointage',
-    'ipcm_v2_adminPtgLegend':   'adminPtgLegend',
-    'ipcm_v2_caisseTerkmane':   'caisseTerkmane',
-    'ipcm_v2_missingInvoiceAlerts': 'missingInvoiceAlerts'
+    'ipcm_v2_adminPtgLegend':   'adminPtgLegend'
   };
 
   const SHORT_TO_LS = {};
