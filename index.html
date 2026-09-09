@@ -2867,8 +2867,8 @@
             <div class="field"><label>Montant à virer (DZD)</label><input type="number" id="vir-amount" min="0" oninput="app.updateVirEcartPreview()"/></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:10px 14px;background:var(--bg-muted);border-radius:10px;">
-            <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;">Écart (reste à verser)</span>
-            <span id="vir-ecart-preview" style="font-size:14px;font-weight:800;color:var(--warn-text);">0,00 DZD</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;">Espèces (complément en main propre)</span>
+            <span id="vir-ecart-preview" style="font-size:14px;font-weight:800;color:var(--ok-text);">0,00 DZD</span>
           </div>
           <button class="btn-primary" style="margin-top:16px;" onclick="app.addVirEntry()">+ Ajouter à la liste</button>
           <p class="login-error" id="vir-error" style="text-align:left;margin-top:8px;"></p>
@@ -7789,7 +7789,9 @@ ${sigHtml}
     const ecartEl = document.getElementById('vir-ecart-preview');
     if (ecartEl) {
       ecartEl.textContent = fmtDZD(ecart);
-      ecartEl.style.color = ecart > 0 ? 'var(--warn-text)' : ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)';
+      // Espèces is a normal split (not a problem) as long as it isn't negative —
+      // negative means the montant à virer was set higher than the total due.
+      ecartEl.style.color = ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)';
     }
   }
 
@@ -7846,7 +7848,7 @@ ${sigHtml}
             <th style="text-align:right">Salaire/jour</th>
             <th style="text-align:right">Total dû</th>
             <th style="text-align:right">Montant à virer</th>
-            <th style="text-align:right">Écart</th>
+            <th style="text-align:right">Espèces</th>
             <th></th>
           </tr></thead>
           <tbody>
@@ -7857,14 +7859,14 @@ ${sigHtml}
                 <td style="text-align:right;">${e.isFixed ? '—' : fmtDZD(e.rate)}</td>
                 <td style="text-align:right;font-weight:700;">${fmtDZD(e.total)}</td>
                 <td style="text-align:right;color:var(--ok-text);font-weight:700;">${fmtDZD(e.montantVire)}</td>
-                <td style="text-align:right;font-weight:700;color:${e.ecart > 0 ? 'var(--warn-text)' : e.ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(e.ecart)}</td>
+                <td style="text-align:right;font-weight:700;color:${e.ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(e.ecart)}</td>
                 <td style="text-align:right;"><button class="ghost-btn" onclick="app.deleteVirEntry(${i})" title="Supprimer">🗑</button></td>
               </tr>`).join('')}
             <tr style="background:var(--bg-muted);font-weight:700;">
               <td colspan="3">Total</td>
               <td style="text-align:right;">${fmtDZD(totals.total)}</td>
               <td style="text-align:right;color:var(--ok-text);">${fmtDZD(totals.montantVire)}</td>
-              <td style="text-align:right;color:${totals.ecart > 0 ? 'var(--warn-text)' : 'var(--ok-text)'};">${fmtDZD(totals.ecart)}</td>
+              <td style="text-align:right;color:${totals.ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(totals.ecart)}</td>
               <td></td>
             </tr>
           </tbody>
