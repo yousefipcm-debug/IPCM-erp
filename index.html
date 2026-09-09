@@ -1218,7 +1218,8 @@
     'ipcm_v2_techWorkSites':    'techWorkSites',
     'ipcm_v2_adminPointage':    'adminPointage',
     'ipcm_v2_adminPtgLegend':   'adminPtgLegend',
-    'ipcm_v2_virEntries':       'virEntries'
+    'ipcm_v2_virEntries':       'virEntries',
+    'ipcm_v2_monthlyDays':      'monthlyDays'
   };
 
   const SHORT_TO_LS = {};
@@ -1227,7 +1228,7 @@
   const ROLE_MODULES = {
     admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-vir', 'module-admin', 'module-commercial'],
     finance:    ['module-finance', 'module-commercial'],
-    hr:         ['module-rh', 'module-vir', 'module-pilotage'],
+    hr:         ['module-rh', 'module-pilotage'],
     technique:  ['module-pilotage', 'module-commercial'],
     commercial: ['module-commercial', 'module-pilotage']
   };
@@ -1360,7 +1361,7 @@
         { panel: 'overview',          label: 'Accueil',  svg: SVG.home },
         { panel: 'workers',           label: 'Personnel',svg: SVG.users },
         { panel: 'work-sites',        label: 'Chantiers',svg: SVG.house },
-        { panel: 'vir',                label: 'VIR',      svg: SVG.money },
+        { panel: 'hr-monthly-days',   label: 'Jours',    svg: SVG.clock },
         { panel: 'hr-documents',      label: 'Docs RH',  svg: SVG.doc },
       ],
       technique: [
@@ -1453,7 +1454,7 @@
     'ipcm_v2_workers': '[]', 'ipcm_v2_workSites': '[]',
     'ipcm_v2_hrDocuments': '[]', 'ipcm_v2_hrFolders': '[]',
     'ipcm_v2_techWorkSites': '[]', 'ipcm_v2_adminPointage': '{}',
-    'ipcm_v2_adminPtgLegend': '[]', 'ipcm_v2_virEntries': '[]'
+    'ipcm_v2_adminPtgLegend': '[]', 'ipcm_v2_virEntries': '[]', 'ipcm_v2_monthlyDays': '{}'
   };
 
   function clearAppLocalStorage() {
@@ -1954,6 +1955,10 @@
           <li><button class="nav-btn" data-panel="workers">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
             Personnel
+          </button></li>
+          <li><button class="nav-btn" data-panel="hr-monthly-days">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Jours Travaillés
           </button></li>
           <li><button class="nav-btn" data-panel="work-sites">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -2842,6 +2847,27 @@
         </div>
       </section>
 
+      <section class="panel" data-panel="hr-monthly-days">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Jours Travaillés</p>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="mdays-month" onchange="app.renderMonthlyDays()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+                <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+                <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+                <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+              </select>
+              <select id="mdays-year" onchange="app.renderMonthlyDays()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+              </select>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-tertiary);margin:0 0 14px;">Indiquez simplement le nombre de jours travaillés ce mois-ci pour chaque employé.</p>
+          <div id="mdays-content"></div>
+        </div>
+      </section>
+
       <section class="panel" data-panel="hr-notifications">
         <div class="card">
           <div class="card-head">
@@ -2855,7 +2881,19 @@
         <div class="card">
           <div class="card-head">
             <p class="card-title">Nouveau virement</p>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="vir-month" onchange="app.onVirWorkerChange()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+                <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+                <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+                <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+              </select>
+              <select id="vir-year" onchange="app.onVirWorkerChange()" style="height:32px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font-size:13px;background:var(--bg);color:var(--text-primary);">
+                <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+              </select>
+            </div>
           </div>
+          <p style="font-size:11.5px;color:var(--text-tertiary);margin:-4px 0 10px;">Le nombre de jours saisi par la RH dans « Jours Travaillés » pour ce mois se remplit automatiquement ci-dessous.</p>
           <div class="form-grid" style="grid-template-columns:1fr 1fr;">
             <div class="field" style="grid-column:1/-1;">
               <label>Employé</label>
@@ -3539,7 +3577,8 @@ window.app = (() => {
     commercialContacts: 'ipcm_v2_commercialContacts',
     missingInvoiceAlerts: 'ipcm_v2_missingInvoiceAlerts',
     caisseTerkmane: 'ipcm_v2_caisseTerkmane',
-    virEntries: 'ipcm_v2_virEntries'
+    virEntries: 'ipcm_v2_virEntries',
+    monthlyDays: 'ipcm_v2_monthlyDays'
   };
 
   const state = {
@@ -3583,7 +3622,8 @@ window.app = (() => {
     currentContactTab: 'fournisseur',
     editingContactIdx: null,
     adminPtgActiveColor: null,
-    virEntries: []
+    virEntries: [],
+    monthlyDays: {}
   };
 
   const MONTH_NAMES = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -3618,6 +3658,7 @@ window.app = (() => {
     'work-sites': { title: 'Chantiers (RH)', sub: 'Gestion des chantiers et affectation du personnel' },
     'rh-admin-pointage': { title: 'Pointage Administration', sub: 'Feuille de présence — travailleurs administratifs' },
     'hr-salaires': { title: 'Liste des Salaires', sub: 'Calcul automatique des salaires par pointage' },
+    'hr-monthly-days': { title: 'Jours Travaillés', sub: 'Nombre de jours travaillés par employé, par mois' },
     'vir': { title: 'VIR', sub: 'Virements salaires — jours, montant à virer et écart' },
     'commercial-contacts': { title: 'Contacts Commerciaux', sub: 'Répertoire des fournisseurs et clients' },
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
@@ -3663,7 +3704,8 @@ window.app = (() => {
     [K.techWorkSites]:    'techWorkSites',
     [K.adminPointage]:    'adminPointage',
     [K.adminPtgLegend]:   'adminPtgLegend',
-    [K.virEntries]:       'virEntries'
+    [K.virEntries]:       'virEntries',
+    [K.monthlyDays]:      'monthlyDays'
   };
 
   function getAuthToken() { return sessionStorage.getItem('ipcm_token'); }
@@ -3752,6 +3794,7 @@ window.app = (() => {
     state.missingInvoiceAlerts = load(K.missingInvoiceAlerts, []);
     state.caisseTerkmane = load(K.caisseTerkmane, []);
     state.virEntries = load(K.virEntries, []);
+    state.monthlyDays = load(K.monthlyDays, {});
     const _now = new Date();
     state.adminPointageMonth = _now.getMonth();
     state.adminPointageYear  = _now.getFullYear();
@@ -7022,6 +7065,10 @@ ${sigHtml}
     }
     if (p === 'commercial-contacts') renderContacts();
     if (p === 'vir') {
+      const now = new Date();
+      const vm = document.getElementById('vir-month');
+      const vy = document.getElementById('vir-year');
+      if (vm && !vm.dataset.init) { vm.value = now.getMonth(); vy.value = now.getFullYear(); vm.dataset.init = '1'; }
       populateVirWorkerSelect();
       resetVirForm();
       renderVir();
@@ -7032,6 +7079,13 @@ ${sigHtml}
       const ys = document.getElementById('salaire-year');
       if (ms && !ms.dataset.init) { ms.value = now.getMonth(); ys.value = now.getFullYear(); ms.dataset.init = '1'; }
       renderSalaires();
+    }
+    if (p === 'hr-monthly-days') {
+      const now = new Date();
+      const ms = document.getElementById('mdays-month');
+      const ys = document.getElementById('mdays-year');
+      if (ms && !ms.dataset.init) { ms.value = now.getMonth(); ys.value = now.getFullYear(); ms.dataset.init = '1'; }
+      renderMonthlyDays();
     }
     if (p === 'caisse-terkmane') {
       const now = new Date();
@@ -7668,6 +7722,54 @@ ${sigHtml}
     return jours;
   }
 
+  // ========== JOURS TRAVAILLÉS (HR-only — no salary figures shown here) ==========
+
+  function monthlyDaysKey() {
+    const month = parseInt(document.getElementById('mdays-month')?.value ?? new Date().getMonth());
+    const year = parseInt(document.getElementById('mdays-year')?.value ?? new Date().getFullYear());
+    return year + '-' + String(month + 1).padStart(2, '0');
+  }
+
+  function renderMonthlyDays() {
+    const el = document.getElementById('mdays-content');
+    if (!el) return;
+    if (state.workers.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun employé enregistré.</div>';
+      return;
+    }
+    const monthKey = monthlyDaysKey();
+    const monthData = state.monthlyDays[monthKey] || {};
+    el.innerHTML = `
+      <div class="tbl-wrap">
+        <table class="mod">
+          <thead><tr>
+            <th>Employé</th>
+            <th style="text-align:right;width:160px;">Jours travaillés</th>
+          </tr></thead>
+          <tbody>
+            ${state.workers.map((w, i) => `
+              <tr>
+                <td style="font-weight:600;">${esc2(w.name)} ${esc2(w.surname)}</td>
+                <td style="text-align:right;">
+                  <input type="number" min="0" max="31" step="0.5" value="${monthData[i] ?? ''}" placeholder="—"
+                    oninput="app.setMonthlyDays(${i}, this.value)"
+                    style="width:90px;height:36px;text-align:right;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:14px;background:var(--bg);color:var(--text-primary);"/>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function setMonthlyDays(workerIdx, value) {
+    const monthKey = monthlyDaysKey();
+    if (!state.monthlyDays[monthKey]) state.monthlyDays[monthKey] = {};
+    const days = parseFloat(value);
+    if (isNaN(days) || days <= 0) delete state.monthlyDays[monthKey][workerIdx];
+    else state.monthlyDays[monthKey][workerIdx] = days;
+    save(K.monthlyDays, state.monthlyDays);
+  }
+
   function renderSalaires() {
     const el = document.getElementById('salaires-content');
     if (!el) return;
@@ -7796,6 +7898,12 @@ ${sigHtml}
     const daysEl = document.getElementById('vir-days');
     const rateEl = document.getElementById('vir-rate');
     const fixedAmountEl = document.getElementById('vir-fixed-amount');
+    // Days worked come from what HR already entered in "Jours Travaillés"
+    // for the selected month — no need to re-type or re-calculate them here.
+    const month = parseInt(document.getElementById('vir-month')?.value ?? new Date().getMonth());
+    const year = parseInt(document.getElementById('vir-year')?.value ?? new Date().getFullYear());
+    const monthKey = year + '-' + String(month + 1).padStart(2, '0');
+    const savedDays = (idx !== '' && idx !== undefined) ? (state.monthlyDays[monthKey] || {})[parseInt(idx)] : undefined;
     if (w && w.virIsFixed) {
       if (fixedChk) fixedChk.checked = true;
       if (fixedAmountEl) fixedAmountEl.value = w.virFixedAmount || '';
@@ -7803,7 +7911,7 @@ ${sigHtml}
     } else {
       if (fixedChk) fixedChk.checked = false;
       if (rateEl) rateEl.value = (w && parseFloat(w.virDailyRate) > 0) ? w.virDailyRate : '';
-      if (daysEl) daysEl.value = '';
+      if (daysEl) daysEl.value = savedDays !== undefined ? savedDays : '';
     }
     toggleVirFixed();
   }
@@ -9910,6 +10018,8 @@ ${contentClone.outerHTML}
     renderJournaux,
     renderSalaires,
     printSalaires,
+    renderMonthlyDays,
+    setMonthlyDays,
     populateVirWorkerSelect,
     resetVirForm,
     toggleVirFixed,
