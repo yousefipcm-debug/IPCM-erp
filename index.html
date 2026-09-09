@@ -2864,12 +2864,10 @@
             <div class="field" id="vir-rate-field"><label>Salaire journalier (DZD)</label><input type="number" id="vir-rate" min="0" placeholder="Ex. 2000" oninput="app.updateVirPreview()"/></div>
             <div class="field" id="vir-fixed-field" style="display:none;grid-column:1/-1;"><label>Montant fixe (DZD)</label><input type="number" id="vir-fixed-amount" min="0" placeholder="Ex. 45000" oninput="app.updateVirPreview()"/></div>
             <div class="field"><label>Total dû (calculé)</label><input type="text" id="vir-total-preview" disabled value="0,00 DZD" style="font-weight:700;color:var(--ok-text);"/></div>
-            <div class="field"><label>Montant à virer (DZD)</label><input type="number" id="vir-amount" min="0" oninput="app.updateVirEcartPreview()"/></div>
+            <div class="field"><label>Montant à virer (DZD)</label><input type="number" id="vir-amount" min="0" oninput="app.onVirAmountInput()"/></div>
+            <div class="field" style="grid-column:1/-1;"><label>Espèces — le reste, en main propre (DZD)</label><input type="number" id="vir-ecart-preview" min="0" oninput="app.onVirEcartInput()"/></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:10px 14px;background:var(--bg-muted);border-radius:10px;">
-            <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;">Espèces (complément en main propre)</span>
-            <span id="vir-ecart-preview" style="font-size:14px;font-weight:800;color:var(--ok-text);">0,00 DZD</span>
-          </div>
+          <p style="font-size:11.5px;color:var(--text-tertiary);margin:6px 0 0;">Entrez l'un ou l'autre montant — l'autre se calcule automatiquement pour que Virement + Espèces = Total dû.</p>
           <button class="btn-primary" style="margin-top:16px;" onclick="app.addVirEntry()">+ Ajouter à la liste</button>
           <p class="login-error" id="vir-error" style="text-align:left;margin-top:8px;"></p>
         </div>
@@ -7745,7 +7743,7 @@ ${sigHtml}
   function resetVirForm() {
     const worker = document.getElementById('vir-worker'); if (worker) worker.value = '';
     const fixed = document.getElementById('vir-fixed'); if (fixed) fixed.checked = false;
-    ['vir-days', 'vir-rate', 'vir-fixed-amount', 'vir-amount'].forEach(id => {
+    ['vir-days', 'vir-rate', 'vir-fixed-amount', 'vir-amount', 'vir-ecart-preview'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
     const err = document.getElementById('vir-error'); if (err) err.textContent = '';
@@ -7773,26 +7771,36 @@ ${sigHtml}
     return days * rate;
   }
 
+  // Montant à virer and Espèces are two ends of the same split — editing
+  // either one recalculates the other so Virement + Espèces always = Total,
+  // whichever amount the user prefers to type first.
   function updateVirPreview() {
     const total = computeVirTotal();
     const totalEl = document.getElementById('vir-total-preview');
     if (totalEl) { totalEl.value = fmtDZD(total); totalEl.dataset.total = total; }
+    // Default split when the total changes: everything by virement, nothing in cash.
     const amountEl = document.getElementById('vir-amount');
     if (amountEl) amountEl.value = total || '';
-    updateVirEcartPreview();
+    const ecartEl = document.getElementById('vir-ecart-preview');
+    if (ecartEl) ecartEl.value = '';
   }
 
-  function updateVirEcartPreview() {
-    const total = parseFloat(document.getElementById('vir-total-preview')?.dataset.total) || 0;
+  function getVirTotal() {
+    return parseFloat(document.getElementById('vir-total-preview')?.dataset.total) || 0;
+  }
+
+  function onVirAmountInput() {
+    const total = getVirTotal();
     const amount = parseFloat(document.getElementById('vir-amount')?.value) || 0;
-    const ecart = total - amount;
     const ecartEl = document.getElementById('vir-ecart-preview');
-    if (ecartEl) {
-      ecartEl.textContent = fmtDZD(ecart);
-      // Espèces is a normal split (not a problem) as long as it isn't negative —
-      // negative means the montant à virer was set higher than the total due.
-      ecartEl.style.color = ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)';
-    }
+    if (ecartEl) ecartEl.value = total - amount;
+  }
+
+  function onVirEcartInput() {
+    const total = getVirTotal();
+    const ecart = parseFloat(document.getElementById('vir-ecart-preview')?.value) || 0;
+    const amountEl = document.getElementById('vir-amount');
+    if (amountEl) amountEl.value = total - ecart;
   }
 
   function addVirEntry() {
@@ -9812,7 +9820,8 @@ ${contentClone.outerHTML}
     resetVirForm,
     toggleVirFixed,
     updateVirPreview,
-    updateVirEcartPreview,
+    onVirAmountInput,
+    onVirEcartInput,
     addVirEntry,
     deleteVirEntry,
     renderVir,
