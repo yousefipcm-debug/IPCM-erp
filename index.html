@@ -2727,9 +2727,18 @@
               <div class="field"><label>Salaire de base (DZD)</label><input type="number" id="wnp-base-salary" placeholder="Ex. 35000" min="0"/></div>
               <div class="field"><label>Net à payer (DZD)</label><input type="number" id="wnp-salary" placeholder="Ex. 45000" min="0"/></div>
               <div class="field"><label>RIP / Compte postal</label><input type="text" id="wnp-rib" placeholder="Ex. CPA 00012345678"/></div>
-              
-              
-              
+
+              <p style="grid-column:1/-1;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);margin:14px 0 2px;">Paramètres VIR (virement/espèces mensuel)</p>
+              <div class="field" style="grid-column:1/-1;">
+                <label class="psm-chk" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;">
+                  <input type="checkbox" id="wnp-vir-fixed" onchange="app.toggleWnpVirFixed()"/>
+                  Salaire fixe (payé en entier, même pour 1 jour travaillé)
+                </label>
+              </div>
+              <div class="field" id="wnp-vir-rate-field"><label>Salaire journalier — VIR (DZD)</label><input type="number" id="wnp-vir-rate" min="0" placeholder="Ex. 2500"/></div>
+              <div class="field" id="wnp-vir-fixed-field" style="display:none;"><label>Montant fixe mensuel — VIR (DZD)</label><input type="number" id="wnp-vir-fixed-amount" min="0" placeholder="Ex. 45000"/></div>
+              <p style="grid-column:1/-1;font-size:11px;color:var(--text-tertiary);margin:0;">Enregistré une fois ici — se remplit automatiquement dans VIR chaque mois, il ne restera qu'à saisir les jours travaillés.</p>
+
               <div class="field" style="grid-column:1/-1;"><label>Certificats / Attestations</label><textarea id="wnp-cert" rows="2" placeholder="Ex. Attestation de travail, Certificat médical, Diplôme..." oninput="app.updateWorkerPreview()" style="resize:vertical;"></textarea></div>
               <div class="field" style="grid-column:1/-1;"><label>Affectation</label>
                 <select id="wnp-worksite"><option value="">🏢 Administration (Bureau)</option></select>
@@ -2850,7 +2859,7 @@
           <div class="form-grid" style="grid-template-columns:1fr 1fr;">
             <div class="field" style="grid-column:1/-1;">
               <label>Employé</label>
-              <select id="vir-worker" onchange="app.updateVirPreview()">
+              <select id="vir-worker" onchange="app.onVirWorkerChange()">
                 <option value="">— Sélectionner un employé —</option>
               </select>
             </div>
@@ -4804,7 +4813,7 @@ window.app = (() => {
   }
 
   function resetWorkerForm() {
-    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-base-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    ['wnp-name','wnp-surname','wnp-birth','wnp-function','wnp-ss','wnp-address','wnp-phone','wnp-cin','wnp-cin-exp','wnp-salary','wnp-base-salary','wnp-rib','wnp-contract-end','wnp-entry','wnp-cert','wnp-vir-rate','wnp-vir-fixed-amount'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
     const ks = document.getElementById('wnp-kids'); if(ks) ks.value='0';
     const bl = document.getElementById('wnp-blood'); if(bl) bl.value='';
     const st = document.getElementById('wnp-status'); if(st) st.value='';
@@ -4812,10 +4821,20 @@ window.app = (() => {
     const ct = document.getElementById('wnp-contract'); if(ct) ct.value='CDD';
     const wsSel = document.getElementById('wnp-worksite'); if(wsSel) wsSel.value='';
     const ph = document.getElementById('wnp-photo-preview'); if(ph) { ph.src=''; ph.style.display='none'; }
+    const vf = document.getElementById('wnp-vir-fixed'); if(vf) vf.checked = false;
+    toggleWnpVirFixed();
     state._newWorkerPhoto = null;
     state.editingWorkerIdx = null;
     state._editingFromPanel = false;
     updateWorkerPreview();
+  }
+
+  function toggleWnpVirFixed() {
+    const isFixed = document.getElementById('wnp-vir-fixed')?.checked;
+    const rateF = document.getElementById('wnp-vir-rate-field');
+    const fixedF = document.getElementById('wnp-vir-fixed-field');
+    if (rateF) rateF.style.display = isFixed ? 'none' : '';
+    if (fixedF) fixedF.style.display = isFixed ? '' : 'none';
   }
 
   function saveWorkerFromPanel() {
@@ -4844,6 +4863,9 @@ window.app = (() => {
       salary: document.getElementById('wnp-salary')?.value || '0',
       baseSalary: document.getElementById('wnp-base-salary')?.value || '0',
       rib: document.getElementById('wnp-rib')?.value?.trim() || '',
+      virIsFixed: document.getElementById('wnp-vir-fixed')?.checked || false,
+      virDailyRate: document.getElementById('wnp-vir-rate')?.value || '0',
+      virFixedAmount: document.getElementById('wnp-vir-fixed-amount')?.value || '0',
       photo: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.photo || state._newWorkerPhoto || null) : (state._newWorkerPhoto || null),
       history: state._editingFromPanel ? (state.workers[state.editingWorkerIdx]?.history || []) : []
     };
@@ -4899,6 +4921,10 @@ window.app = (() => {
       document.getElementById('wnp-salary').value = w.salary || '';
       document.getElementById('wnp-base-salary').value = w.baseSalary || '';
       document.getElementById('wnp-rib').value = w.rib || '';
+      document.getElementById('wnp-vir-fixed').checked = !!w.virIsFixed;
+      document.getElementById('wnp-vir-rate').value = w.virDailyRate || '';
+      document.getElementById('wnp-vir-fixed-amount').value = w.virFixedAmount || '';
+      toggleWnpVirFixed();
       if (w.photo) {
         const ph = document.getElementById('wnp-photo-preview');
         if (ph) { ph.src = w.photo; ph.style.display = 'block'; }
@@ -7760,6 +7786,28 @@ ${sigHtml}
     toggleVirFixed();
   }
 
+  // Selecting a worker pulls in whatever daily rate / fixed amount was saved
+  // once on their profile (Personnel → Paramètres VIR), so month after month
+  // HR only has to type the days actually worked (or nothing, if fixed).
+  function onVirWorkerChange() {
+    const idx = document.getElementById('vir-worker')?.value;
+    const w = idx !== '' && idx !== undefined ? state.workers[parseInt(idx)] : null;
+    const fixedChk = document.getElementById('vir-fixed');
+    const daysEl = document.getElementById('vir-days');
+    const rateEl = document.getElementById('vir-rate');
+    const fixedAmountEl = document.getElementById('vir-fixed-amount');
+    if (w && w.virIsFixed) {
+      if (fixedChk) fixedChk.checked = true;
+      if (fixedAmountEl) fixedAmountEl.value = w.virFixedAmount || '';
+      if (daysEl) daysEl.value = '';
+    } else {
+      if (fixedChk) fixedChk.checked = false;
+      if (rateEl) rateEl.value = (w && parseFloat(w.virDailyRate) > 0) ? w.virDailyRate : '';
+      if (daysEl) daysEl.value = '';
+    }
+    toggleVirFixed();
+  }
+
   function toggleVirFixed() {
     const isFixed = document.getElementById('vir-fixed')?.checked;
     const daysF = document.getElementById('vir-days-field');
@@ -9865,6 +9913,7 @@ ${contentClone.outerHTML}
     populateVirWorkerSelect,
     resetVirForm,
     toggleVirFixed,
+    onVirWorkerChange,
     updateVirPreview,
     onVirAmountInput,
     onVirEcartInput,
@@ -9968,6 +10017,7 @@ ${contentClone.outerHTML}
     resetWorkerForm,
     saveWorkerFromPanel,
     editWorkerInPanel,
+    toggleWnpVirFixed,
     printNewWorkerSheet,
     printWorkerSheet,
     doPrintWorkerSheet,
