@@ -2886,6 +2886,10 @@
               </button>
             </div>
           </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label>Titre de la liste espèces (optionnel — apparaît sur la feuille imprimée)</label>
+            <input type="text" id="vir-espece-title" placeholder="Ex. Espèces — Semaine 1, Septembre 2026"/>
+          </div>
           <div id="vir-content"></div>
         </div>
       </section>
@@ -7898,8 +7902,11 @@ ${sigHtml}
     if (rows.length === 0) { alert('Aucun montant en espèces à imprimer.'); return; }
     const total = rows.reduce((s, e) => s + e.ecart, 0);
     const today = new Date().toLocaleDateString('fr-FR');
+    const customTitle = (document.getElementById('vir-espece-title')?.value || '').trim();
+    const docTitle = customTitle || 'Liste Espèces — Émargement';
     const container = document.createElement('div');
     container.innerHTML = `
+      <h2 class="doc-title" style="font-size:20px; font-weight:700; text-align:center; text-decoration:underline; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px;">${esc2(docTitle)}</h2>
       <p style="font-size:12px;color:#666;margin:0 0 14px;">Date : ${today}</p>
       <table class="mod">
         <thead><tr>
@@ -7923,7 +7930,7 @@ ${sigHtml}
           </tr>
         </tbody>
       </table>`;
-    openPrintWindow('Liste Espèces — Émargement', container);
+    openPrintWindow(docTitle, container);
   }
 
   function switchContactTab(tab) {
