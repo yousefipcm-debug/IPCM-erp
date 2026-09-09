@@ -1224,10 +1224,10 @@
   Object.entries(LS_TO_SHORT).forEach(([ls, s]) => (SHORT_TO_LS[s] = ls));
 
   const ROLE_MODULES = {
-    admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'],
+    admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-admin', 'module-commercial'],
     finance:    ['module-finance', 'module-commercial'],
     hr:         ['module-rh', 'module-pilotage'],
-    technique:  ['module-technique', 'module-pilotage', 'module-commercial'],
+    technique:  ['module-pilotage', 'module-commercial'],
     commercial: ['module-commercial', 'module-pilotage']
   };
 
@@ -1346,7 +1346,6 @@
         { panel: 'overview',        label: 'Accueil',  svg: SVG.home },
         { panel: 'journaux',        label: 'Finance',  svg: SVG.money },
         { panel: 'workers',         label: 'RH',       svg: SVG.user1 },
-        { panel: 'tech-work-sites', label: 'Technique',svg: SVG.house },
         { panel: 'admin-users',     label: 'Admin.',    svg: SVG.gear },
       ],
       finance:   [
@@ -1360,13 +1359,12 @@
         { panel: 'overview',          label: 'Accueil',  svg: SVG.home },
         { panel: 'workers',           label: 'Personnel',svg: SVG.users },
         { panel: 'work-sites',        label: 'Chantiers',svg: SVG.house },
-        { panel: 'rh-daily-pointage', label: 'Pointage', svg: SVG.clock },
+        { panel: 'hr-contracts',      label: 'Contrats', svg: SVG.clock },
         { panel: 'hr-documents',      label: 'Docs RH',  svg: SVG.doc },
       ],
       technique: [
-        { panel: 'overview',            label: 'Accueil',  svg: SVG.home },
-        { panel: 'tech-work-sites',     label: 'Chantiers',svg: SVG.house },
-        { panel: 'tech-admin-pointage', label: 'Pointage', svg: SVG.clock },
+        { panel: 'overview',     label: 'Accueil',      svg: SVG.home },
+        { panel: 'facturation',  label: 'Facturation',  svg: SVG.doc },
       ],
     };
     const tabs = NAVS[role] || NAVS.finance;
@@ -1968,47 +1966,10 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
             Suivi Contrat
           </button></li>
-          <li><button class="nav-btn" data-panel="rh-daily-pointage">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
-            Présence du Jour
-          </button></li>
-
-          <li><button class="nav-btn" data-panel="tech-admin-pointage">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Pointage Administration
-          </button></li>
-          <li><button class="nav-btn" data-panel="hr-salaires">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Liste des Salaires
-          </button></li>
           <li><button class="nav-btn" data-panel="hr-notifications" id="nav-hr-notifications">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             Notification
             <span class="nav-dot"></span>
-          </button></li>
-        </ul>
-      </div>
-
-      <!-- TECHNIQUE -->
-      <div class="module-group" id="module-technique">
-        <button class="module-btn" onclick="app.switchModule('technique')">
-          <span class="mod-icon">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </span>
-          <span>Technique</span>
-        </button>
-        <ul class="nav-list module-items" id="items-technique" style="display:none;">
-          <li><button class="nav-btn" data-panel="tech-work-sites">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Chantiers
-          </button></li>
-          <li><button class="nav-btn" data-panel="tech-admin-pointage">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Pointage Général
-          </button></li>
-          <li><button class="nav-btn" data-panel="hr-documents">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Documents
           </button></li>
         </ul>
       </div>
@@ -2038,23 +1999,9 @@
           <span>Commercial</span>
         </button>
         <ul class="nav-list module-items" id="items-commercial" style="display:none;">
-          <li><button class="nav-btn" data-panel="commercial-contacts">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Contacts
-          </button></li>
           <li><button class="nav-btn" data-panel="facturation">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Facturation
-          </button></li>
-
-          <li><button class="nav-btn" data-panel="hr-documents">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Documents
-          </button></li>
-          <li><button class="nav-btn" data-panel="commercial-notifications" id="nav-commercial-notifications">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            Notification
-            <span class="nav-dot"></span>
           </button></li>
         </ul>
       </div>
@@ -7044,7 +6991,7 @@ ${sigHtml}
     if (btn) btn.classList.toggle('active', !isOpen);
     // For admin module, open and switch to users panel
     if (name === 'admin' && !isOpen) switchPanel('admin-users');
-    if (name === 'commercial' && !isOpen) switchPanel('commercial-contacts');
+    if (name === 'commercial' && !isOpen) switchPanel('facturation');
   }
 
   loadAll();
