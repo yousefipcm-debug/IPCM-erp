@@ -1217,16 +1217,17 @@
     'ipcm_v2_hrFolders':        'hrFolders',
     'ipcm_v2_techWorkSites':    'techWorkSites',
     'ipcm_v2_adminPointage':    'adminPointage',
-    'ipcm_v2_adminPtgLegend':   'adminPtgLegend'
+    'ipcm_v2_adminPtgLegend':   'adminPtgLegend',
+    'ipcm_v2_virEntries':       'virEntries'
   };
 
   const SHORT_TO_LS = {};
   Object.entries(LS_TO_SHORT).forEach(([ls, s]) => (SHORT_TO_LS[s] = ls));
 
   const ROLE_MODULES = {
-    admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-admin', 'module-commercial'],
+    admin:      ['module-pilotage', 'module-finance', 'module-rh', 'module-vir', 'module-admin', 'module-commercial'],
     finance:    ['module-finance', 'module-commercial'],
-    hr:         ['module-rh', 'module-pilotage'],
+    hr:         ['module-rh', 'module-vir', 'module-pilotage'],
     technique:  ['module-pilotage', 'module-commercial'],
     commercial: ['module-commercial', 'module-pilotage']
   };
@@ -1359,7 +1360,7 @@
         { panel: 'overview',          label: 'Accueil',  svg: SVG.home },
         { panel: 'workers',           label: 'Personnel',svg: SVG.users },
         { panel: 'work-sites',        label: 'Chantiers',svg: SVG.house },
-        { panel: 'hr-contracts',      label: 'Contrats', svg: SVG.clock },
+        { panel: 'vir',                label: 'VIR',      svg: SVG.money },
         { panel: 'hr-documents',      label: 'Docs RH',  svg: SVG.doc },
       ],
       technique: [
@@ -1416,7 +1417,7 @@
 
   function applyRoleUI(role, displayName) {
     const allowed = ROLE_MODULES[role] || [];
-    ['module-pilotage', 'module-finance', 'module-rh', 'module-technique', 'module-admin', 'module-commercial'].forEach(id => {
+    ['module-pilotage', 'module-finance', 'module-rh', 'module-vir', 'module-admin', 'module-commercial'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = allowed.includes(id) ? '' : 'none';
     });
@@ -1452,7 +1453,7 @@
     'ipcm_v2_workers': '[]', 'ipcm_v2_workSites': '[]',
     'ipcm_v2_hrDocuments': '[]', 'ipcm_v2_hrFolders': '[]',
     'ipcm_v2_techWorkSites': '[]', 'ipcm_v2_adminPointage': '{}',
-    'ipcm_v2_adminPtgLegend': '[]'
+    'ipcm_v2_adminPtgLegend': '[]', 'ipcm_v2_virEntries': '[]'
   };
 
   function clearAppLocalStorage() {
@@ -1970,6 +1971,22 @@
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             Notification
             <span class="nav-dot"></span>
+          </button></li>
+        </ul>
+      </div>
+
+      <!-- VIR (Virements salaires) -->
+      <div class="module-group" id="module-vir">
+        <button class="module-btn" onclick="app.switchModule('vir')">
+          <span class="mod-icon">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+          </span>
+          <span>VIR</span>
+        </button>
+        <ul class="nav-list module-items" id="items-vir" style="display:none;">
+          <li><button class="nav-btn" data-panel="vir">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+            Virements
           </button></li>
         </ul>
       </div>
@@ -2825,6 +2842,50 @@
         </div>
       </section>
 
+      <section class="panel" data-panel="vir">
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Nouveau virement</p>
+          </div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="field" style="grid-column:1/-1;">
+              <label>Employé</label>
+              <select id="vir-worker" onchange="app.updateVirPreview()">
+                <option value="">— Sélectionner un employé —</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+              <label class="psm-chk" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;">
+                <input type="checkbox" id="vir-fixed" onchange="app.toggleVirFixed()"/>
+                Salaire fixe (payé en entier, même pour 1 jour travaillé)
+              </label>
+            </div>
+            <div class="field" id="vir-days-field"><label>Jours travaillés</label><input type="number" id="vir-days" min="0" placeholder="Ex. 22" oninput="app.updateVirPreview()"/></div>
+            <div class="field" id="vir-rate-field"><label>Salaire journalier (DZD)</label><input type="number" id="vir-rate" min="0" placeholder="Ex. 2000" oninput="app.updateVirPreview()"/></div>
+            <div class="field" id="vir-fixed-field" style="display:none;grid-column:1/-1;"><label>Montant fixe (DZD)</label><input type="number" id="vir-fixed-amount" min="0" placeholder="Ex. 45000" oninput="app.updateVirPreview()"/></div>
+            <div class="field"><label>Total dû (calculé)</label><input type="text" id="vir-total-preview" disabled value="0,00 DZD" style="font-weight:700;color:var(--ok-text);"/></div>
+            <div class="field"><label>Montant à virer (DZD)</label><input type="number" id="vir-amount" min="0" oninput="app.updateVirEcartPreview()"/></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:10px 14px;background:var(--bg-muted);border-radius:10px;">
+            <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;">Écart (reste à verser)</span>
+            <span id="vir-ecart-preview" style="font-size:14px;font-weight:800;color:var(--warn-text);">0,00 DZD</span>
+          </div>
+          <button class="btn-primary" style="margin-top:16px;" onclick="app.addVirEntry()">+ Ajouter à la liste</button>
+          <p class="login-error" id="vir-error" style="text-align:left;margin-top:8px;"></p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <p class="card-title">Liste des virements</p>
+            <button class="print-btn" onclick="app.printVir()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimer
+            </button>
+          </div>
+          <div id="vir-content"></div>
+        </div>
+      </section>
+
       <section class="panel" data-panel="rh-daily-pointage">
         <div id="rh-daily-ptg-root"></div>
       </section>
@@ -3460,7 +3521,8 @@ window.app = (() => {
     adminPtgLegend: 'ipcm_v2_adminPtgLegend',
     commercialContacts: 'ipcm_v2_commercialContacts',
     missingInvoiceAlerts: 'ipcm_v2_missingInvoiceAlerts',
-    caisseTerkmane: 'ipcm_v2_caisseTerkmane'
+    caisseTerkmane: 'ipcm_v2_caisseTerkmane',
+    virEntries: 'ipcm_v2_virEntries'
   };
 
   const state = {
@@ -3503,7 +3565,8 @@ window.app = (() => {
     caisseTerkmane: [],
     currentContactTab: 'fournisseur',
     editingContactIdx: null,
-    adminPtgActiveColor: null
+    adminPtgActiveColor: null,
+    virEntries: []
   };
 
   const MONTH_NAMES = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -3538,6 +3601,7 @@ window.app = (() => {
     'work-sites': { title: 'Chantiers (RH)', sub: 'Gestion des chantiers et affectation du personnel' },
     'rh-admin-pointage': { title: 'Pointage Administration', sub: 'Feuille de présence — travailleurs administratifs' },
     'hr-salaires': { title: 'Liste des Salaires', sub: 'Calcul automatique des salaires par pointage' },
+    'vir': { title: 'VIR', sub: 'Virements salaires — jours, montant à virer et écart' },
     'commercial-contacts': { title: 'Contacts Commerciaux', sub: 'Répertoire des fournisseurs et clients' },
     'hr-documents': { title: 'Documents RH', sub: 'Rédaction et gestion des documents administratifs' },
     'hr-contracts': { title: 'Suivi Contrat', sub: 'Historique et suivi des contrats du personnel' },
@@ -3581,7 +3645,8 @@ window.app = (() => {
     [K.hrFolders]:        'hrFolders',
     [K.techWorkSites]:    'techWorkSites',
     [K.adminPointage]:    'adminPointage',
-    [K.adminPtgLegend]:   'adminPtgLegend'
+    [K.adminPtgLegend]:   'adminPtgLegend',
+    [K.virEntries]:       'virEntries'
   };
 
   function getAuthToken() { return sessionStorage.getItem('ipcm_token'); }
@@ -3669,6 +3734,7 @@ window.app = (() => {
     state.commercialContacts = load(K.commercialContacts, []);
     state.missingInvoiceAlerts = load(K.missingInvoiceAlerts, []);
     state.caisseTerkmane = load(K.caisseTerkmane, []);
+    state.virEntries = load(K.virEntries, []);
     const _now = new Date();
     state.adminPointageMonth = _now.getMonth();
     state.adminPointageYear  = _now.getFullYear();
@@ -6921,6 +6987,11 @@ ${sigHtml}
       updateWorkerPreview();
     }
     if (p === 'commercial-contacts') renderContacts();
+    if (p === 'vir') {
+      populateVirWorkerSelect();
+      resetVirForm();
+      renderVir();
+    }
     if (p === 'hr-salaires') {
       const now = new Date();
       const ms = document.getElementById('salaire-month');
@@ -6992,6 +7063,7 @@ ${sigHtml}
     // For admin module, open and switch to users panel
     if (name === 'admin' && !isOpen) switchPanel('admin-users');
     if (name === 'commercial' && !isOpen) switchPanel('facturation');
+    if (name === 'vir' && !isOpen) switchPanel('vir');
   }
 
   loadAll();
@@ -7657,6 +7729,152 @@ ${sigHtml}
     const monthName = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
     const card = document.querySelector('.panel[data-panel="hr-salaires"] .card');
     openPrintWindow(`Liste des Salaires — ${monthName}`, card);
+  }
+
+  // ========== VIR (Virements salaires) ==========
+
+  function populateVirWorkerSelect() {
+    const sel = document.getElementById('vir-worker');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Sélectionner un employé —</option>' +
+      state.workers.map((w, i) => `<option value="${i}">${esc2(w.name)} ${esc2(w.surname)}</option>`).join('');
+  }
+
+  function esc2(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function resetVirForm() {
+    const worker = document.getElementById('vir-worker'); if (worker) worker.value = '';
+    const fixed = document.getElementById('vir-fixed'); if (fixed) fixed.checked = false;
+    ['vir-days', 'vir-rate', 'vir-fixed-amount', 'vir-amount'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    const err = document.getElementById('vir-error'); if (err) err.textContent = '';
+    toggleVirFixed();
+  }
+
+  function toggleVirFixed() {
+    const isFixed = document.getElementById('vir-fixed')?.checked;
+    const daysF = document.getElementById('vir-days-field');
+    const rateF = document.getElementById('vir-rate-field');
+    const fixedF = document.getElementById('vir-fixed-field');
+    if (daysF) daysF.style.display = isFixed ? 'none' : '';
+    if (rateF) rateF.style.display = isFixed ? 'none' : '';
+    if (fixedF) fixedF.style.display = isFixed ? '' : 'none';
+    updateVirPreview();
+  }
+
+  function computeVirTotal() {
+    const isFixed = document.getElementById('vir-fixed')?.checked;
+    if (isFixed) {
+      return parseFloat(document.getElementById('vir-fixed-amount')?.value) || 0;
+    }
+    const days = parseFloat(document.getElementById('vir-days')?.value) || 0;
+    const rate = parseFloat(document.getElementById('vir-rate')?.value) || 0;
+    return days * rate;
+  }
+
+  function updateVirPreview() {
+    const total = computeVirTotal();
+    const totalEl = document.getElementById('vir-total-preview');
+    if (totalEl) { totalEl.value = fmtDZD(total); totalEl.dataset.total = total; }
+    const amountEl = document.getElementById('vir-amount');
+    if (amountEl) amountEl.value = total || '';
+    updateVirEcartPreview();
+  }
+
+  function updateVirEcartPreview() {
+    const total = parseFloat(document.getElementById('vir-total-preview')?.dataset.total) || 0;
+    const amount = parseFloat(document.getElementById('vir-amount')?.value) || 0;
+    const ecart = total - amount;
+    const ecartEl = document.getElementById('vir-ecart-preview');
+    if (ecartEl) {
+      ecartEl.textContent = fmtDZD(ecart);
+      ecartEl.style.color = ecart > 0 ? 'var(--warn-text)' : ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)';
+    }
+  }
+
+  function addVirEntry() {
+    const errEl = document.getElementById('vir-error');
+    errEl.textContent = '';
+    const workerIdx = document.getElementById('vir-worker').value;
+    if (workerIdx === '') { errEl.textContent = 'Sélectionnez un employé.'; return; }
+    const w = state.workers[parseInt(workerIdx)];
+    if (!w) { errEl.textContent = 'Employé introuvable.'; return; }
+    const isFixed = document.getElementById('vir-fixed').checked;
+    const days = isFixed ? 0 : (parseFloat(document.getElementById('vir-days').value) || 0);
+    const rate = isFixed ? 0 : (parseFloat(document.getElementById('vir-rate').value) || 0);
+    const fixedAmount = isFixed ? (parseFloat(document.getElementById('vir-fixed-amount').value) || 0) : 0;
+    const total = isFixed ? fixedAmount : (days * rate);
+    if (total <= 0) { errEl.textContent = isFixed ? 'Montant fixe requis.' : 'Jours et salaire journalier requis.'; return; }
+    const montantVire = parseFloat(document.getElementById('vir-amount').value) || 0;
+    state.virEntries.push({
+      id: Date.now(),
+      workerName: `${w.name} ${w.surname}`,
+      isFixed, days, rate, fixedAmount,
+      total, montantVire,
+      ecart: total - montantVire,
+      date: new Date().toISOString().slice(0, 10)
+    });
+    save(K.virEntries, state.virEntries);
+    resetVirForm();
+    renderVir();
+  }
+
+  function deleteVirEntry(idx) {
+    if (!confirm('Supprimer ce virement de la liste ?')) return;
+    state.virEntries.splice(idx, 1);
+    save(K.virEntries, state.virEntries);
+    renderVir();
+  }
+
+  function renderVir() {
+    const el = document.getElementById('vir-content');
+    if (!el) return;
+    if (state.virEntries.length === 0) {
+      el.innerHTML = '<div class="empty-state">Aucun virement ajouté pour le moment.</div>';
+      return;
+    }
+    const totals = state.virEntries.reduce((acc, e) => ({
+      total: acc.total + e.total, montantVire: acc.montantVire + e.montantVire, ecart: acc.ecart + e.ecart
+    }), { total: 0, montantVire: 0, ecart: 0 });
+    el.innerHTML = `
+      <div class="tbl-wrap">
+        <table class="mod">
+          <thead><tr>
+            <th>Employé</th>
+            <th style="text-align:center">Jours</th>
+            <th style="text-align:right">Salaire/jour</th>
+            <th style="text-align:right">Total dû</th>
+            <th style="text-align:right">Montant à virer</th>
+            <th style="text-align:right">Écart</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+            ${state.virEntries.map((e, i) => `
+              <tr>
+                <td style="font-weight:600;">${esc2(e.workerName)}${e.isFixed ? ' <span class="badge b-info">Fixe</span>' : ''}</td>
+                <td style="text-align:center;">${e.isFixed ? '—' : e.days}</td>
+                <td style="text-align:right;">${e.isFixed ? '—' : fmtDZD(e.rate)}</td>
+                <td style="text-align:right;font-weight:700;">${fmtDZD(e.total)}</td>
+                <td style="text-align:right;color:var(--ok-text);font-weight:700;">${fmtDZD(e.montantVire)}</td>
+                <td style="text-align:right;font-weight:700;color:${e.ecart > 0 ? 'var(--warn-text)' : e.ecart < 0 ? 'var(--danger-text)' : 'var(--ok-text)'};">${fmtDZD(e.ecart)}</td>
+                <td style="text-align:right;"><button class="ghost-btn" onclick="app.deleteVirEntry(${i})" title="Supprimer">🗑</button></td>
+              </tr>`).join('')}
+            <tr style="background:var(--bg-muted);font-weight:700;">
+              <td colspan="3">Total</td>
+              <td style="text-align:right;">${fmtDZD(totals.total)}</td>
+              <td style="text-align:right;color:var(--ok-text);">${fmtDZD(totals.montantVire)}</td>
+              <td style="text-align:right;color:${totals.ecart > 0 ? 'var(--warn-text)' : 'var(--ok-text)'};">${fmtDZD(totals.ecart)}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function printVir() {
+    const card = document.querySelectorAll('.panel[data-panel="vir"] .card')[1];
+    openPrintWindow('Virements — Salaires', card);
   }
 
   function switchContactTab(tab) {
@@ -9588,6 +9806,15 @@ ${contentClone.outerHTML}
     renderJournaux,
     renderSalaires,
     printSalaires,
+    populateVirWorkerSelect,
+    resetVirForm,
+    toggleVirFixed,
+    updateVirPreview,
+    updateVirEcartPreview,
+    addVirEntry,
+    deleteVirEntry,
+    renderVir,
+    printVir,
     renderRhAdminPointage,
     filterJournalByFourn,
     filterJournalByClient,
