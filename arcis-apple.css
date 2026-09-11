@@ -212,20 +212,23 @@ tbody tr:hover td { background:rgba(10,122,255,0.045); }
 .lg-mark-name { font-size:21px; font-weight:600; letter-spacing:-0.025em; }
 .lg-mark-sub { display:none; }
 .lg-title { display:none; }
-.login-sub { font-size:14px !important; color:var(--gray-500) !important;
-  margin:-24px 0 26px !important; text-align:center !important; }
+.login-sub { font-size:14px !important; color:var(--text-secondary) !important;
+  margin:-24px 0 28px !important; text-align:center !important; }
 
 /* fields: two hairline rows, no boxes */
-.login-field { margin:0 !important; position:relative; }
-.login-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
-.login-input { height:46px !important; border:none !important; border-radius:0 !important;
+.login-field { margin:0 0 6px !important; position:relative; text-align:left; }
+.login-label { display:block !important; position:static !important; width:auto !important;
+  height:auto !important; overflow:visible !important; clip:auto !important;
+  font-size:12.5px !important; font-weight:600 !important; color:var(--text-secondary) !important;
+  letter-spacing:0.01em !important; text-transform:none !important; margin:0 0 2px !important; }
+.login-input { height:44px !important; border:none !important; border-radius:0 !important;
   background:transparent !important; box-shadow:none !important; padding:0 2px !important;
-  font-size:17px !important; font-weight:400; text-align:center;
-  border-bottom:0.5px solid rgba(0,0,0,0.16) !important; transition:border-color .15s ease; }
-#login-form > .login-field:last-of-type .login-input { border-bottom:0.5px solid rgba(0,0,0,0.16) !important; }
+  font-size:17px !important; font-weight:400; text-align:left;
+  border-bottom:0.5px solid rgba(0,0,0,0.22) !important; transition:border-color .15s ease; }
+#login-form > .login-field:last-of-type { margin-bottom:0 !important; }
 .login-input:focus { background:transparent !important; box-shadow:none !important;
   border-bottom:1.5px solid var(--accent) !important; }
-.login-input::placeholder { color:#B8B8BE; }
+.login-input::placeholder { color:#8E8E93; }
 
 .login-btn { width:100%; height:48px !important; margin-top:26px; border-radius:24px !important;
   font-size:16px !important; font-weight:600 !important; letter-spacing:-0.01em;
@@ -233,9 +236,9 @@ tbody tr:hover td { background:rgba(10,122,255,0.045); }
 .login-btn:disabled { opacity:0.4; }
 .login-error { background:transparent; color:var(--danger-text); border:none; padding:0;
   text-align:center !important; font-size:13px; min-height:0; margin-top:14px !important; }
-.lg-hint { margin-top:22px; font-size:12.5px; color:var(--gray-400); text-align:center; }
+.lg-hint { margin-top:22px; font-size:12.5px; color:var(--text-secondary); text-align:center; }
 .lg-foot { position:fixed; left:0; right:0; bottom:22px; text-align:center;
-  font-size:12px; color:var(--gray-400); display:flex; align-items:center;
+  font-size:12.5px; color:var(--text-secondary); display:flex; align-items:center;
   justify-content:center; gap:7px; }
 .lg-foot .lg-live { width:6px; height:6px; border-radius:50%; background:#34C759; }
 .lg-list { display:none; }
@@ -246,133 +249,134 @@ tbody tr:hover td { background:rgba(10,122,255,0.045); }
   #login-overlay[style*="display: none"], #login-overlay[style*="display:none"] { display:none !important; }
   .login-card { max-width:340px; }
   .lg-mark { margin-bottom:26px; }
-  .login-input { height:50px !important; font-size:17px !important; }
+  .login-input { height:48px !important; font-size:17px !important; }
   .login-btn { height:52px !important; border-radius:26px !important; }
   .lg-foot { bottom:calc(20px + env(safe-area-inset-bottom)); }
 }
 
-/* ══════════ iOS phone app layer (≤900px + arcis-mobile.js) ══════════ */
-@media (max-width:900px) {
-  html.ios-mode, html.ios-mode body { background:#F2F2F7; overflow-x:hidden; }
-  html.ios-mode .app-shell { grid-template-columns:1fr !important; }
+/* ══════════ iOS phone app layer — driven by html.ios-mode (set by arcis-mobile.js) ══════════ */
+/* No @media here on purpose: the JS owns when phone mode is on, so
+   window.ARCIS_MOBILE = true previews it at any window width. */
 
-  /* ── chrome: large title, translucent bars ── */
-  html.ios-mode .mobile-header {
-    background:rgba(242,242,247,0.86) !important;
-    -webkit-backdrop-filter:saturate(1.8) blur(20px); backdrop-filter:saturate(1.8) blur(20px);
-    border-bottom:0.5px solid rgba(0,0,0,0.12) !important; height:44px !important; }
-  html.ios-mode .mhd-title { font-size:16px; font-weight:600; letter-spacing:-0.02em; }
-  html.ios-mode .topbar { display:block !important; background:transparent; backdrop-filter:none;
-    border:none; padding:10px 16px 8px !important; height:auto !important; }
-  html.ios-mode .topbar h1 { font-size:32px; font-weight:700; letter-spacing:-0.035em;
-    line-height:1.1; }
-  html.ios-mode .breadcrumb, html.ios-mode .bc-sep { display:none !important; }
-  html.ios-mode .content { padding:0 16px 156px !important; background:transparent; }
+html.ios-mode, html.ios-mode body { background:#F2F2F7; overflow-x:hidden; }
+html.ios-mode .app-shell { grid-template-columns:1fr !important; }
 
-  /* ── section titles, iOS list-header style ── */
-  html.ios-mode .card { background:transparent !important; box-shadow:none !important;
-    border:none !important; border-radius:0 !important; padding:0 !important; margin:0 0 18px; }
-  html.ios-mode .card-head { background:transparent !important; border:none !important;
-    min-height:0 !important; padding:0 4px 7px !important; display:flex; align-items:baseline; }
-  html.ios-mode .card-title { font-size:13px !important; font-weight:600 !important;
-    letter-spacing:0.02em; text-transform:uppercase; color:var(--gray-600) !important; }
+/* ── chrome: large title, translucent bars ── */
+html.ios-mode .mobile-header {
+  background:rgba(242,242,247,0.86) !important;
+  -webkit-backdrop-filter:saturate(1.8) blur(20px); backdrop-filter:saturate(1.8) blur(20px);
+  border-bottom:0.5px solid rgba(0,0,0,0.12) !important; height:44px !important; }
+html.ios-mode .mhd-title { font-size:16px; font-weight:600; letter-spacing:-0.02em; }
+html.ios-mode .topbar { display:block !important; background:transparent; backdrop-filter:none;
+  border:none; padding:10px 16px 8px !important; height:auto !important; }
+html.ios-mode .topbar h1 { font-size:32px; font-weight:700; letter-spacing:-0.035em;
+  line-height:1.1; }
+html.ios-mode .breadcrumb, html.ios-mode .bc-sep { display:none !important; }
+html.ios-mode .content { padding:0 16px 156px !important; background:transparent; }
 
-  /* ── TABLES → grouped iOS cards (no DOM changes, so inputs keep working) ── */
-  html.ios-mode .panel .tbl-wrap, html.ios-mode .panel .ptg-scroll {
-    overflow:visible !important; border:none; background:transparent; }
-  html.ios-mode .panel table[data-ios]:not([data-ios-wide]) { display:block; width:100%;
-    background:transparent; border:none; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) thead { display:none; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) tbody { display:flex; flex-direction:column;
-    gap:12px; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) tr { display:block; background:#fff;
-    border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); overflow:hidden; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td {
-    display:flex; align-items:center; gap:12px; min-height:44px;
-    padding:9px 14px !important; border:none !important;
-    border-bottom:0.5px solid rgba(0,0,0,0.07) !important;
-    font-size:15px; text-align:right; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td:last-child { border-bottom:none !important; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td::before {
-    content:attr(data-ios-label); flex:none; width:40%; text-align:left;
-    font-size:13px; font-weight:500; color:var(--gray-500); letter-spacing:-0.01em; }
-  /* first cell is the card's header row */
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child {
-    background:#FAFAFC; font-size:16px; font-weight:600; letter-spacing:-0.015em;
-    text-align:left; justify-content:flex-start; min-height:46px; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child::before { display:none; }
-  html.ios-mode td.ios-empty { display:none !important; }
-  html.ios-mode table[data-ios] tbody tr:hover td { background:inherit; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td > * { margin-left:auto; }
-  html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child > * { margin-left:0; }
+/* ── section titles, iOS list-header style ── */
+html.ios-mode .card { background:transparent !important; box-shadow:none !important;
+  border:none !important; border-radius:0 !important; padding:0 !important; margin:0 0 18px; }
+html.ios-mode .card-head { background:transparent !important; border:none !important;
+  min-height:0 !important; padding:0 4px 7px !important; display:flex; align-items:baseline; }
+html.ios-mode .card-title { font-size:13px !important; font-weight:600 !important;
+  letter-spacing:0.02em; text-transform:uppercase; color:var(--gray-600) !important; }
 
-  /* wide grids (pointage month) stay tables, but scroll with a pinned name column */
-  html.ios-mode table[data-ios-wide] { font-size:13px; }
-  html.ios-mode .panel .ptg-scroll:has(table[data-ios-wide]) { overflow-x:auto !important;
-    -webkit-overflow-scrolling:touch; border-radius:16px; background:#fff;
-    box-shadow:0 1px 3px rgba(0,0,0,0.06); }
-  html.ios-mode table[data-ios-wide] td:first-child, html.ios-mode table[data-ios-wide] th:first-child {
-    position:sticky; left:0; background:#fff; z-index:2; }
+/* ── TABLES → grouped iOS cards (no DOM changes, so inputs keep working) ── */
+html.ios-mode .panel .tbl-wrap, html.ios-mode .panel .ptg-scroll {
+  overflow:visible !important; border:none; background:transparent; }
+html.ios-mode .panel table[data-ios]:not([data-ios-wide]) { display:block; width:100%;
+  background:transparent; border:none; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) thead { display:none; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) tbody { display:flex; flex-direction:column;
+  gap:12px; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) tr { display:block; background:#fff;
+  border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,0.06); overflow:hidden; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td {
+  display:flex; align-items:center; gap:12px; min-height:44px;
+  padding:9px 14px !important; border:none !important;
+  border-bottom:0.5px solid rgba(0,0,0,0.07) !important;
+  font-size:15px; text-align:right; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td:last-child { border-bottom:none !important; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td::before {
+  content:attr(data-ios-label); flex:none; width:40%; text-align:left;
+  font-size:13px; font-weight:500; color:var(--gray-500); letter-spacing:-0.01em; }
+/* first cell is the card's header row */
+html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child {
+  background:#FAFAFC; font-size:16px; font-weight:600; letter-spacing:-0.015em;
+  text-align:left; justify-content:flex-start; min-height:46px; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child::before { display:none; }
+html.ios-mode td.ios-empty { display:none !important; }
+html.ios-mode table[data-ios] tbody tr:hover td { background:inherit; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td > * { margin-left:auto; }
+html.ios-mode table[data-ios]:not([data-ios-wide]) td:first-child > * { margin-left:0; }
 
-  /* ── fields: full size, always typable, no iOS zoom ── */
-  html.ios-mode input, html.ios-mode select, html.ios-mode textarea {
-    font-size:16px !important; min-height:44px; border-radius:10px !important;
-    background:rgba(118,118,128,0.1) !important; -webkit-user-select:text; user-select:text; }
-  html.ios-mode td input, html.ios-mode td select {
-    min-width:104px; max-width:100%; text-align:right; padding:0 10px !important; }
-  html.ios-mode .field { margin-bottom:14px; }
-  html.ios-mode .field .lbl { font-size:13px; margin-bottom:5px; display:block; }
-  html.ios-mode .form-grid, html.ios-mode .grid-2 { grid-template-columns:1fr !important; }
+/* wide grids (pointage month) stay tables, but scroll with a pinned name column */
+html.ios-mode table[data-ios-wide] { font-size:13px; }
+html.ios-mode .panel .ptg-scroll:has(table[data-ios-wide]) { overflow-x:auto !important;
+  -webkit-overflow-scrolling:touch; border-radius:16px; background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+html.ios-mode table[data-ios-wide] td:first-child, html.ios-mode table[data-ios-wide] th:first-child {
+  position:sticky; left:0; background:#fff; z-index:2; }
 
-  /* ── buttons ── */
-  html.ios-mode .btn-primary, html.ios-mode .btn-secondary, html.ios-mode .ghost-btn,
-  html.ios-mode .journal-action { min-height:44px; border-radius:12px; font-size:15px; }
-  html.ios-mode td button { min-height:38px; border-radius:10px; font-size:13.5px;
-    padding:0 12px; }
+/* ── fields: full size, always typable, no iOS zoom ── */
+html.ios-mode input, html.ios-mode select, html.ios-mode textarea {
+  font-size:16px !important; min-height:44px; border-radius:10px !important;
+  background:rgba(118,118,128,0.1) !important; -webkit-user-select:text; user-select:text; }
+html.ios-mode td input, html.ios-mode td select {
+  min-width:104px; max-width:100%; text-align:right; padding:0 10px !important; }
+html.ios-mode .field { margin-bottom:14px; }
+html.ios-mode .field .lbl { font-size:13px; margin-bottom:5px; display:block; }
+html.ios-mode .form-grid, html.ios-mode .grid-2 { grid-template-columns:1fr !important; }
 
-  /* ── KPI widgets ── */
-  html.ios-mode .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:11px;
-    background:transparent !important; }
-  html.ios-mode .kpi-card { border-radius:18px !important; padding:13px !important; }
-  html.ios-mode .kpi-val { font-size:22px; }
-  html.ios-mode .journal-card, html.ios-mode .fournisseur-card, html.ios-mode .ptg-card {
-    border-radius:18px !important; }
-  html.ios-mode .journal-grid { grid-template-columns:1fr !important; }
+/* ── buttons ── */
+html.ios-mode .btn-primary, html.ios-mode .btn-secondary, html.ios-mode .ghost-btn,
+html.ios-mode .journal-action { min-height:44px; border-radius:12px; font-size:15px; }
+html.ios-mode td button { min-height:38px; border-radius:10px; font-size:13.5px;
+  padding:0 12px; }
 
-  /* ── modals → bottom sheets ── */
-  html.ios-mode .modal-overlay { align-items:flex-end !important; padding:0 !important; }
-  html.ios-mode .modal { width:100% !important; max-width:100% !important; max-height:92vh;
-    border-radius:22px 22px 0 0 !important; padding-bottom:env(safe-area-inset-bottom);
-    animation:appleSheetUp .34s cubic-bezier(0.32,0.72,0,1); }
-  html.ios-mode .modal-head { position:relative; padding-top:20px !important; }
-  html.ios-mode .modal-head::before { content:""; position:absolute; top:8px; left:50%;
-    transform:translateX(-50%); width:38px; height:5px; border-radius:3px; background:rgba(0,0,0,0.16); }
-  @keyframes appleSheetUp { from { transform:translateY(100%); } to { transform:none; } }
+/* ── KPI widgets ── */
+html.ios-mode .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:11px;
+  background:transparent !important; }
+html.ios-mode .kpi-card { border-radius:18px !important; padding:13px !important; }
+html.ios-mode .kpi-val { font-size:22px; }
+html.ios-mode .journal-card, html.ios-mode .fournisseur-card, html.ios-mode .ptg-card {
+  border-radius:18px !important; }
+html.ios-mode .journal-grid { grid-template-columns:1fr !important; }
 
-  /* ── tab bar + sticky primary action ── */
-  html.ios-mode .mobile-nav { background:rgba(249,249,251,0.9) !important;
-    -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px);
-    border-top:0.5px solid rgba(0,0,0,0.1) !important;
-    padding-bottom:env(safe-area-inset-bottom); z-index:80; }
-  html.ios-mode .mobile-nav-btn { color:var(--gray-500); font-size:10.5px; font-weight:500; gap:3px; }
-  html.ios-mode .mobile-nav-btn.active { color:var(--accent); font-weight:600; }
-  html.ios-mode .mobile-nav-btn svg { width:24px; height:24px; }
-  html.ios-mode .mobile-nav-btn:active { transform:scale(0.93); }
-  #ios-action-bar { position:fixed; left:0; right:0; bottom:66px; z-index:70;
-    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-    background:linear-gradient(to top,rgba(242,242,247,0.98) 55%,rgba(242,242,247,0));
-    pointer-events:none; }
-  .ios-action-btn { pointer-events:auto; width:100%; height:50px; border:none; border-radius:14px;
-    background:var(--accent); color:#fff; font-size:16px; font-weight:600; letter-spacing:-0.01em;
-    box-shadow:0 8px 22px rgba(10,122,255,0.3); font-family:var(--font-stack); }
-  .ios-action-btn:active { transform:scale(0.985); }
+/* ── modals → bottom sheets ── */
+html.ios-mode .modal-overlay { align-items:flex-end !important; padding:0 !important; }
+html.ios-mode .modal { width:100% !important; max-width:100% !important; max-height:92vh;
+  border-radius:22px 22px 0 0 !important; padding-bottom:env(safe-area-inset-bottom);
+  animation:appleSheetUp .34s cubic-bezier(0.32,0.72,0,1); }
+html.ios-mode .modal-head { position:relative; padding-top:20px !important; }
+html.ios-mode .modal-head::before { content:""; position:absolute; top:8px; left:50%;
+  transform:translateX(-50%); width:38px; height:5px; border-radius:3px; background:rgba(0,0,0,0.16); }
+@keyframes appleSheetUp { from { transform:translateY(100%); } to { transform:none; } }
 
-  /* drawer */
-  html.ios-mode .sidebar { background:rgba(249,249,251,0.96) !important;
-    -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); }
-  html.ios-mode .nav-btn, html.ios-mode .module-btn { height:46px; font-size:16px;
-    border-radius:11px; }
-}
+/* ── tab bar + sticky primary action ── */
+html.ios-mode .mobile-nav { background:rgba(249,249,251,0.9) !important;
+  -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px);
+  border-top:0.5px solid rgba(0,0,0,0.1) !important;
+  padding-bottom:env(safe-area-inset-bottom); z-index:80; }
+html.ios-mode .mobile-nav-btn { color:var(--gray-500); font-size:10.5px; font-weight:500; gap:3px; }
+html.ios-mode .mobile-nav-btn.active { color:var(--accent); font-weight:600; }
+html.ios-mode .mobile-nav-btn svg { width:24px; height:24px; }
+html.ios-mode .mobile-nav-btn:active { transform:scale(0.93); }
+#ios-action-bar { position:fixed; left:0; right:0; bottom:66px; z-index:70;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgba(242,242,247,0.98) 55%,rgba(242,242,247,0));
+  pointer-events:none; }
+.ios-action-btn { pointer-events:auto; width:100%; height:50px; border:none; border-radius:14px;
+  background:var(--accent); color:#fff; font-size:16px; font-weight:600; letter-spacing:-0.01em;
+  box-shadow:0 8px 22px rgba(10,122,255,0.3); font-family:var(--font-stack); }
+.ios-action-btn:active { transform:scale(0.985); }
+
+/* drawer */
+html.ios-mode .sidebar { background:rgba(249,249,251,0.96) !important;
+  -webkit-backdrop-filter:blur(30px); backdrop-filter:blur(30px); }
+html.ios-mode .nav-btn, html.ios-mode .module-btn { height:46px; font-size:16px;
+  border-radius:11px; }
 
 @media print {
   .sidebar, .topbar, .mobile-nav, .mobile-header, #ios-action-bar { display:none !important; }
