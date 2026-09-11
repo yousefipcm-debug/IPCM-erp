@@ -1187,7 +1187,7 @@
   }
   .logout-btn:hover { background: var(--danger-bg); color: var(--danger-text); border-color: #FECACA; }
 </style>
-<!-- ARCIS Apple skin (desktop) -->
+<!-- ARCIS Apple skin (vue ordinateur) -->
 <style id="arcis-apple-skin">
 /* ============================================================
    ARCIS — Apple skin (drop-in)
@@ -10623,12 +10623,15 @@ if ('serviceWorker' in navigator) {
     situations: 'ipcm_v2_situations',
     workers: 'ipcm_v2_workers',
     workSites: 'ipcm_v2_workSites',
-    clientNames: 'ipcm_v2_clientNames'
+    clientNames: 'ipcm_v2_clientNames',
+    techWorkSites: 'ipcm_v2_techWorkSites',
+    fournisseurNames: 'ipcm_v2_fournisseurNames'
   };
   var RED = '#ec3013';
 
   var S = { tab: 'home', detail: null, q: '', filter: 'all', sit: 'late', ws: 0,
-            sheet: null, kind: 'out', toast: null, root: null };
+            sheet: null, kind: 'out', journal: 'caisse', toast: null, root: null,
+            panel: null, panelLabel: '' };
 
   /* ── data ─────────────────────────────────────────────── */
   function read(k) { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { return []; } }
@@ -10685,8 +10688,78 @@ if ('serviceWorker' in navigator) {
   }
   function role() { return (sessionStorage.getItem('ipcm_role') || localStorage.getItem('ipcm_role') || ''); }
   function uname() { return (sessionStorage.getItem('ipcm_dname') || localStorage.getItem('ipcm_dname') || 'Utilisateur'); }
+  function wName(w) {
+    if (!w) return '';
+    return [w.name, w.surname].filter(Boolean).join(' ').trim() || w.fullName || 'Ouvrier';
+  }
+  function wRole(w) { return (w && (w.function || w.poste || w.job || w.contract)) || 'Ouvrier'; }
+  // both HR chantiers and technique chantiers
+  function allSites() {
+    var a = read(K.workSites).map(function (s, i) { s._src = K.workSites; s._i = i; return s; });
+    var b = read(K.techWorkSites).map(function (s, i) { s._src = K.techWorkSites; s._i = i; return s; });
+    return a.concat(b);
+  }
+  // the desktop stores pointage as { date, worker, hours, task, notes } — no status field,
+  // so présence is expressed in hours and read back the same way
+  function statusOf(e) {
+    if (!e) return null;
+    if (e.status) return e.status;
+    var h = parseFloat(e.hours);
+    if (isNaN(h)) return 'P';
+    if (h <= 0) return 'A';
+    return h > 8 ? 'H' : 'P';
+  }
+  function hoursFor(st) { return st === 'A' ? 0 : st === 'H' ? 10 : 8; }
   function initials(n) {
     return String(n || '?').trim().split(/\s+/).map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+  }
+
+  /* ── every module / panel of the desktop app, read from the live DOM ── */
+  function modules() {
+    var out = [];
+    document.querySelectorAll('.module-group').forEach(function (g) {
+      if (getComputedStyle(g).display === 'none') return;
+      var btn = g.querySelector('.module-btn');
+      var label = btn ? (btn.querySelector('span:not(.mod-icon)') || btn).textContent.trim() : (g.id || '').replace('module-', '');
+      var items = [];
+      g.querySelectorAll('.nav-btn[data-panel]').forEach(function (b) {
+        var p = b.getAttribute('data-panel');
+        var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+        if (p && t) items.push({ panel: p, label: t });
+      });
+      if (items.length) out.push({ id: g.id, label: label || 'Module', items: items });
+    });
+    return out;
+  }
+  function panelLabel(id) {
+    var l = id;
+    modules().forEach(function (m) {
+      m.items.forEach(function (it) { if (it.panel === id) l = it.label; });
+    });
+    return l;
+  }
+
+  /* ── embedding a real desktop panel inside the phone shell ──
+     The live node is MOVED (never cloned), so every handler, input and
+     render target keeps working exactly as it does on the computer. */
+  var held = null;   // { node, placeholder }
+  function releasePanel() {
+    if (!held) return;
+    try { held.placeholder.parentNode.insertBefore(held.node, held.placeholder); } catch (e) {}
+    try { held.placeholder.remove(); } catch (e) {}
+    held.node.style.display = held.display || '';
+    held = null;
+  }
+  function embedPanel(id, host) {
+    var node = document.getElementById(id) || document.querySelector('.panel#' + id);
+    if (!node) { host.innerHTML = '<div class="ai-list">' + empty('Ce module est indisponible pour votre rôle.') + '</div>'; return; }
+    try { if (window.app && window.app.switchPanel) window.app.switchPanel(id); } catch (e) {}
+    var ph = document.createComment('arcis-ios-panel');
+    node.parentNode.insertBefore(ph, node);
+    held = { node: node, placeholder: ph, display: node.style.display };
+    node.style.display = 'block';
+    node.classList.add('active');
+    host.appendChild(node);
   }
 
   /* ── chrome ───────────────────────────────────────────── */
@@ -10825,7 +10898,7 @@ if ('serviceWorker' in navigator) {
   }
 
   function scrPtg() {
-    var sites = read(K.workSites), workers = read(K.workers);
+    var sites = allSites(), workers = read(K.workers);
     if (!sites.length) return groupHead('Pointage') + '<div class="ai-list">' + empty('Aucun chantier enregistré. Créez-en un depuis le poste.') + '</div>';
     if (S.ws >= sites.length) S.ws = 0;
     var ws = sites[S.ws];
@@ -10833,28 +10906,28 @@ if ('serviceWorker' in navigator) {
     var crew = ids.length ? ids.map(function (i) { return workers[i]; }).filter(Boolean) : workers;
     var today = new Date().toISOString().slice(0, 10);
     var pt = (ws.pointage || []).filter(function (p) { return p.date === today; });
-    function statOf(name) { var e = pt.filter(function (p) { return p.worker === name; })[0]; return e ? (e.status || 'P') : null; }
+    function statOf(nm) { var e = pt.filter(function (p) { return p.worker === nm; })[0]; return statusOf(e); }
     var pres = 0, abs = 0, hs = 0;
-    crew.forEach(function (w) { var v = statOf(w.name); if (v === 'P') pres++; else if (v === 'H') { pres++; hs++; } else if (v === 'A') abs++; });
+    crew.forEach(function (w) { var v = statOf(wName(w)); if (v === 'P') pres++; else if (v === 'H') { pres++; hs++; } else if (v === 'A') abs++; });
 
     var h = '';
     h += '<div class="ai-sticky"><div class="ai-wsbar">' +
-      '<div class="ai-wsl"><span>Chantier</span><b>' + esc(ws.name || ws.site || 'Chantier ' + (S.ws + 1)) + '</b></div>' +
+      '<div class="ai-wsl"><span>Chantier</span><b>' + esc(ws.name || ws.site || ws.title || 'Chantier ' + (S.ws + 1)) + '</b></div>' +
       (sites.length > 1 ? '<button data-act="ws-next" class="ai-mini">Changer</button>' : '') +
       '<div class="ai-wsr"><span>Présents</span><b>' + pres + ' / ' + crew.length + '</b></div></div></div>';
     h += '<div class="ai-list">';
     if (!crew.length) h += empty('Aucun ouvrier affecté à ce chantier.');
     crew.forEach(function (w, i) {
-      var v = statOf(w.name);
+      var nm = wName(w), v = statOf(nm);
       h += '<div class="ai-wcell" style="border-bottom:' + (i === crew.length - 1 ? 'none' : SEP) + '">' +
         '<div class="ai-wtop"><span class="ai-av">' + esc(initials(w.name)) + '</span>' +
         '<span class="ai-cb-main"><span class="ai-t b">' + esc(w.name || 'Ouvrier') + '</span>' +
         '<span class="ai-s">' + esc(w.poste || w.job || 'Ouvrier') + ' · ' +
         (v === 'P' ? 'présent' : v === 'A' ? 'absent' : v === 'H' ? 'présent + HS' : 'non saisi') + '</span></span></div>' +
         '<div class="ai-seg tight">' +
-          '<button data-act="att" data-w="' + esc(w.name) + '" data-v="P" class="ai-seg-o' + (v === 'P' ? ' on' : '') + '">Présent</button>' +
-          '<button data-act="att" data-w="' + esc(w.name) + '" data-v="A" class="ai-seg-o' + (v === 'A' ? ' on red' : '') + '">Absent</button>' +
-          '<button data-act="att" data-w="' + esc(w.name) + '" data-v="H" class="ai-seg-o' + (v === 'H' ? ' on' : '') + '">+ HS</button>' +
+          '<button data-act="att" data-w="' + esc(nm) + '" data-v="P" class="ai-seg-o' + (v === 'P' ? ' on' : '') + '">Présent</button>' +
+          '<button data-act="att" data-w="' + esc(nm) + '" data-v="A" class="ai-seg-o' + (v === 'A' ? ' on red' : '') + '">Absent</button>' +
+          '<button data-act="att" data-w="' + esc(nm) + '" data-v="H" class="ai-seg-o' + (v === 'H' ? ' on' : '') + '">+ HS</button>' +
         '</div></div>';
     });
     h += '</div><div class="ai-foot">' + pres + ' présents · ' + abs + ' absents · ' + hs + ' en heures supplémentaires · ' + frDate(today) + '</div>';
@@ -10862,27 +10935,20 @@ if ('serviceWorker' in navigator) {
   }
 
   function scrMore() {
-    var g = sitGroups();
-    var mods = [
-      ['Facturation', '', 'facturation'],
-      ['Journaux complets', '', 'journaux'],
-      ['Situations & clients', g.late.length ? g.late.length + ' en retard' : '', 'situations'],
-      ['Fournisseurs', '', 'fournisseurs'],
-      ['Projets / Chantiers', '', 'projets'],
-      ['Alertes', '', 'alertes']
-    ];
     var h = '';
     h += '<div class="ai-list plain"><div class="ai-prof"><span class="ai-av big">' + esc(initials(uname())) + '</span>' +
       '<span class="ai-cb-main"><span class="ai-t big">' + esc(uname()) + '</span><span class="ai-s">' + esc(role() || 'Utilisateur') + '</span></span></div></div>';
-    h += groupHead('Ouvrir sur le poste');
-    h += '<div class="ai-list">';
-    mods.forEach(function (m, i) {
-      h += '<button data-act="desk" data-v="' + m[2] + '" class="ai-cell">' +
-        '<span class="ai-cell-b" style="border-bottom:' + (i === mods.length - 1 ? 'none' : SEP) + '">' +
-        '<span class="ai-t">' + esc(m[0]) + '</span>' +
-        (m[1] ? '<span class="ai-s r">' + esc(m[1]) + '</span>' : '') + chev() + '</span></button>';
+    // every module of the app, with all of its panels
+    modules().forEach(function (m) {
+      h += groupHead(m.label);
+      h += '<div class="ai-list">';
+      m.items.forEach(function (it, i) {
+        h += '<button data-act="panel" data-v="' + esc(it.panel) + '" class="ai-cell">' +
+          '<span class="ai-cell-b" style="border-bottom:' + (i === m.items.length - 1 ? 'none' : SEP) + '">' +
+          '<span class="ai-t">' + esc(it.label) + '</span>' + chev() + '</span></button>';
+      });
+      h += '</div>';
     });
-    h += '</div>';
     h += groupHead('Application');
     h += '<div class="ai-list plain">' +
       '<div class="ai-row"><span>Vue ordinateur</span><b><button data-act="desktop-view" class="ai-mini">Afficher</button></b></div>' +
@@ -10894,17 +10960,27 @@ if ('serviceWorker' in navigator) {
   /* ── sheets ───────────────────────────────────────────── */
   function sheetEntry() {
     var inn = S.kind === 'in';
+    var names = inn ? read(K.clientNames) : read(K.fournisseurNames);
+    var opts = '<option value="">— Aucun —</option>' + (names || []).map(function (n) {
+      return '<option value="' + esc(n) + '">' + esc(n) + '</option>';
+    }).join('');
     return '<div class="ai-sheet-h"><button data-act="close-sheet" class="ai-lk">Annuler</button>' +
       '<b>' + (inn ? 'Nouvelle entrée' : 'Nouvelle sortie') + '</b>' +
       '<button data-act="save-entry" class="ai-lk strong">Ajouter</button></div>' +
       '<div class="ai-sheet-b">' +
       seg([{ v: 'in', l: 'Entrée' }, { v: 'out', l: 'Sortie' }], S.kind, 'kind') +
+      seg([{ v: 'caisse', l: 'Caisse' }, { v: 'banque', l: 'Banque' }], S.journal, 'journal') +
       '<div class="ai-list plain" style="margin-top:14px">' +
-        '<label class="ai-frow big"><span>Montant</span><input id="ai-amt" inputmode="numeric" placeholder="0" /><i>DA</i></label>' +
+        '<label class="ai-frow big"><span>Montant</span><input id="ai-amt" inputmode="decimal" placeholder="0" /><i>DA</i></label>' +
         '<label class="ai-frow"><span>Libellé</span><input id="ai-desc" placeholder="Ex. carburant engins" /></label>' +
-        '<label class="ai-frow" data-last="1"><span>' + (inn ? 'Client' : 'Tiers') + '</span><input id="ai-party" placeholder="Optionnel" /></label>' +
+        '<label class="ai-frow"><span>Date</span><input id="ai-date" type="date" value="' + new Date().toISOString().slice(0, 10) + '" /></label>' +
+        '<label class="ai-frow" data-last="1"><span>' + (inn ? 'Client' : 'Fournisseur') + '</span>' +
+          '<select id="ai-party">' + opts + '</select></label>' +
       '</div>' +
-      '<button data-act="save-entry" class="ai-btn" style="margin-top:16px">Enregistrer l\'écriture</button>' +
+      '<div class="ai-note">' + (inn
+        ? 'Un client sélectionné solde automatiquement ses situations impayées, comme sur le poste.'
+        : 'Un fournisseur sélectionné solde automatiquement ses factures dues, comme sur le poste.') + '</div>' +
+      '<button data-act="save-entry" class="ai-btn" style="margin-top:14px">Enregistrer l\'écriture</button>' +
       '</div>';
   }
   function sheetPay() {
@@ -10929,9 +11005,15 @@ if ('serviceWorker' in navigator) {
 
   function render() {
     var el = S.root; if (!el) return;
+    releasePanel();   // always hand a borrowed panel back before redrawing
     var g = sitGroups();
     var body, navBar;
-    if (S.detail !== null && S.tab === 'sit') {
+    if (S.tab === 'panel') {
+      body = '<div class="ai-embed" id="ai-embed"></div>';
+      navBar = '<div class="ai-nav back"><button data-act="tab" data-v="more" class="ai-lk">' +
+        '<svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L2 10l8 8"/></svg>Modules</button>' +
+        '<b>' + esc(S.panelLabel || '') + '</b></div>';
+    } else if (S.detail !== null && S.tab === 'sit') {
       body = scrDetail();
       navBar = '<div class="ai-nav back"><button data-act="back" class="ai-lk"><svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L2 10l8 8"/></svg>Situations</button><b>Fiche</b></div>';
     } else {
@@ -10951,13 +11033,19 @@ if ('serviceWorker' in navigator) {
       '<nav class="ai-tabs">' + TABS.map(function (t) {
         var on = S.tab === t[0] && (t[0] !== 'sit' || S.detail === null || true);
         var badge = t[0] === 'sit' && g.late.length ? '<i class="ai-badge">' + g.late.length + '</i>' : '';
-        return '<button data-act="tab" data-v="' + t[0] + '" class="ai-tab' + (S.tab === t[0] ? ' on' : '') + '">' +
+        var lit = S.tab === t[0] || (S.tab === 'panel' && t[0] === 'more');
+        return '<button data-act="tab" data-v="' + t[0] + '" class="ai-tab' + (lit ? ' on' : '') + '">' +
           '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + t[2] + '</svg>' +
           '<span>' + t[1] + '</span>' + badge + '</button>';
       }).join('') + '</nav>' +
       (S.sheet ? '<div class="ai-scrim" data-act="close-sheet"></div><div class="ai-sheet">' +
         (S.sheet === 'pay' ? sheetPay() : sheetEntry()) + '</div>' : '') +
       (S.toast ? '<div class="ai-toast"><span class="ai-tk">✓</span>' + esc(S.toast) + '</div>' : '');
+
+    if (S.tab === 'panel') {
+      var host = el.querySelector('#ai-embed');
+      if (host) embedPanel(S.panel, host);
+    }
 
     var q = el.querySelector('#ai-q');
     if (q) {
@@ -10979,6 +11067,14 @@ if ('serviceWorker' in navigator) {
     if (s2) s2.scrollTop = top;
   }
 
+  function set(id, val) {
+    var el = document.getElementById(id);
+    if (!el) return false;
+    el.value = val;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
   function toast(msg) {
     S.toast = msg; render();
     clearTimeout(toast._t);
@@ -10992,34 +11088,58 @@ if ('serviceWorker' in navigator) {
     e.preventDefault(); e.stopPropagation();
 
     if (act === 'tab') { S.tab = v; S.detail = null; S.sheet = null; render(); return; }
+    if (act === 'panel') { S.tab = 'panel'; S.panel = v; S.panelLabel = panelLabel(v); S.detail = null; render(); return; }
     if (act === 'back') { S.detail = null; render(); return; }
     if (act === 'filter') { S.filter = v; render(); return; }
     if (act === 'sit') { S.tab = 'sit'; S.detail = parseInt(v, 10); render(); return; }
     if (act === 'clearq') { S.q = ''; render(); return; }
-    if (act === 'ws-next') { S.ws = (S.ws + 1) % Math.max(1, read(K.workSites).length); render(); return; }
+    if (act === 'ws-next') { S.ws = (S.ws + 1) % Math.max(1, allSites().length); render(); return; }
     if (act === 'kind') { S.kind = v; render(); return; }
+    if (act === 'journal') { S.journal = v; render(); return; }
     if (act === 'close-sheet') { S.sheet = null; render(); return; }
     if (act === 'new-in' || act === 'new-out') {
       S.tab = 'cash'; S.detail = null; S.kind = act === 'new-in' ? 'in' : 'out';
       S.sheet = 'entry'; S._focusAmt = true; render(); S._focusAmt = false; return;
     }
-    if (act === 'sit' + '') return;
-
     if (act === 'save-entry') {
       var amount = parseFloat(String((document.getElementById('ai-amt') || {}).value || '').replace(/[^0-9.,]/g, '').replace(',', '.'));
       if (!amount) { toast('Saisissez un montant'); return; }
       var desc = ((document.getElementById('ai-desc') || {}).value || '').trim();
       var party = ((document.getElementById('ai-party') || {}).value || '').trim();
-      var tx = read(K.transactions);
-      tx.push({
-        id: Date.now(), journal: 'caisse', type: S.kind, amount: amount,
-        desc: desc || (S.kind === 'in' ? 'Encaissement' : 'Dépense'),
-        date: new Date().toISOString().slice(0, 10),
-        client: S.kind === 'in' ? (party || null) : null,
-        fournisseur: S.kind === 'out' ? (party || null) : null,
-        projectIdx: null, cheque: null, source: 'mobile'
-      });
-      write(K.transactions, tx);
+      var date = ((document.getElementById('ai-date') || {}).value || '') || new Date().toISOString().slice(0, 10);
+
+      // Preferred path: drive the desktop app's real transaction flow, so the
+      // fournisseur / projet / situation cascades and alerts behave identically.
+      var done = false;
+      try {
+        var A = window.app;
+        if (A && A.openTransactionModal && A.saveTransaction) {
+          A.openTransactionModal(S.journal);
+          set('trans-type', S.kind);
+          if (A.updateTransSitDropdowns) A.updateTransSitDropdowns();
+          set('trans-amount', amount);
+          set('trans-desc', desc || (S.kind === 'in' ? 'Encaissement' : 'Dépense'));
+          set('trans-date', date);
+          if (party) set(S.kind === 'in' ? 'trans-client-sit' : 'trans-fourn-sit', party);
+          var okRadio = document.getElementById('trans-facture-ok');
+          if (S.kind === 'out' && okRadio) okRadio.checked = true;
+          A.saveTransaction();
+          if (A.closeTransactionModal) { try { A.closeTransactionModal(); } catch (e2) {} }
+          done = true;
+        }
+      } catch (e) { done = false; }
+
+      if (!done) {   // fallback: write straight to the store
+        var tx = read(K.transactions);
+        tx.push({
+          id: Date.now(), journal: S.journal, type: S.kind, amount: amount,
+          desc: desc || (S.kind === 'in' ? 'Encaissement' : 'Dépense'), date: date,
+          client: S.kind === 'in' ? (party || null) : null,
+          fournisseur: S.kind === 'out' ? (party || null) : null,
+          projectIdx: null, cheque: null, factureStatus: S.kind === 'out' ? 'not-needed' : null
+        });
+        write(K.transactions, tx);
+      }
       S.sheet = null; toast('Écriture enregistrée'); return;
     }
 
@@ -11032,25 +11152,49 @@ if ('serviceWorker' in navigator) {
         if (!amt) { toast('Saisissez un montant'); return; }
         amt = Math.min(amt, remain(s));
       }
-      s.payments = s.payments || [];
-      s.payments.push({ amount: amt, date: new Date().toISOString().slice(0, 10), source: 'mobile' });
-      write(K.situations, all);
+      var today = new Date().toISOString().slice(0, 10), ok = false;
+      try {
+        var B = window.app;
+        if (B && B.openPartialPayment && B.savePartialPayment) {
+          B.openPartialPayment(S.detail);
+          set('pp-amount', Math.round(amt));
+          set('pp-date', today);
+          B.savePartialPayment();
+          if (B.closePartialPayment) { try { B.closePartialPayment(); } catch (e3) {} }
+          ok = true;
+        }
+      } catch (e) { ok = false; }
+      if (!ok) {
+        s.payments = s.payments || [];
+        s.payments.push({ amount: amt, date: today, id: Date.now() });
+        write(K.situations, all);
+      }
       S.sheet = null; toast('Paiement de ' + fmt(amt) + ' DA enregistré'); return;
     }
     if (act === 'pay-part') { S.sheet = 'pay'; S._focusAmt = true; render(); S._focusAmt = false; return; }
 
     if (act === 'att') {
       var name = b.getAttribute('data-w'), st = v;
-      var sites = read(K.workSites); var ws = sites[S.ws]; if (!ws) return;
+      var site = allSites()[S.ws]; if (!site) return;
+      var store = read(site._src); var ws = store[site._i]; if (!ws) return;
       ws.pointage = ws.pointage || [];
       var today = new Date().toISOString().slice(0, 10);
       var idx = -1;
       ws.pointage.forEach(function (p, i) { if (p.date === today && p.worker === name) idx = i; });
       if (idx > -1) {
-        if (ws.pointage[idx].status === st) ws.pointage.splice(idx, 1);
-        else ws.pointage[idx].status = st;
-      } else ws.pointage.push({ date: today, worker: name, status: st, source: 'mobile' });
-      write(K.workSites, sites);
+        if (statusOf(ws.pointage[idx]) === st) ws.pointage.splice(idx, 1);   // tap again to clear
+        else {
+          ws.pointage[idx].hours = hoursFor(st);
+          ws.pointage[idx].status = st;
+          if (st === 'A' && !ws.pointage[idx].notes) ws.pointage[idx].notes = 'Absent';
+        }
+      } else {
+        ws.pointage.push({
+          date: today, worker: name, hours: hoursFor(st), status: st,
+          task: st === 'H' ? 'Heures supplémentaires' : '', notes: st === 'A' ? 'Absent' : '', source: 'mobile'
+        });
+      }
+      write(site._src, store);
       render(); return;
     }
     if (act === 'save-ptg') { toast('Pointage enregistré'); return; }
@@ -11074,7 +11218,11 @@ if ('serviceWorker' in navigator) {
     '-webkit-font-smoothing:antialiased;letter-spacing:-.024em;}',
   'html.arcis-ios-on body{overflow:hidden!important;}',
   'html.arcis-ios-on .app-shell,html.arcis-ios-on .mobile-nav,html.arcis-ios-on .mobile-header,',
-  'html.arcis-ios-on .sidebar,html.arcis-ios-on .sidebar-backdrop{display:none!important;}',
+  'html.arcis-ios-on .sidebar,html.arcis-ios-on .sidebar-backdrop,',
+  'html.arcis-ios-on .modal-overlay{display:none!important;}',
+  '.ai-note{padding:10px 4px 0;font-size:13px;color:#8E8E93;letter-spacing:-.005em;}',
+  '#arcis-ios select{font:inherit;color:#000;background:none;border:none;outline:none;text-align:right;',
+    'direction:rtl;flex:1;min-width:0;height:44px;-webkit-appearance:none;appearance:none;}',
   '#arcis-ios *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}',
   '#arcis-ios button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}',
   '#arcis-ios input{font:inherit;color:#000;background:none;border:none;outline:none;-webkit-appearance:none;appearance:none;}',
@@ -11211,6 +11359,29 @@ if ('serviceWorker' in navigator) {
     'box-shadow:0 10px 30px rgba(0,0,0,.3);animation:aiToast .28s cubic-bezier(.32,.72,0,1);}',
   '.ai-tk{width:20px;height:20px;flex:none;border-radius:10px;background:#ec3013;color:#fff;',
     'display:flex;align-items:center;justify-content:center;font-size:12px;}',
+  '.ai-embed{padding:8px 0 20px;}',
+  '.ai-embed .panel{display:block!important;animation:none;}',
+  '.ai-embed .topbar,.ai-embed .breadcrumb{display:none!important;}',
+  '.ai-embed .card,.ai-embed .journal-card,.ai-embed .kpi-card,.ai-embed .ptg-card,.ai-embed .fournisseur-card,',
+  '.ai-embed .rapport-card{background:#fff!important;border:none!important;border-radius:14px!important;',
+    'box-shadow:0 1px 3px rgba(0,0,0,.06)!important;margin-bottom:14px!important;}',
+  '.ai-embed .card-head,.ai-embed .journal-head{border-bottom:.33px solid rgba(60,60,67,.29)!important;min-height:44px;}',
+  '.ai-embed .card-title,.ai-embed .journal-title{font-size:15px!important;font-weight:600!important;}',
+  '.ai-embed .kpi-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important;',
+    'background:transparent!important;box-shadow:none!important;}',
+  '.ai-embed .kpi-val{font-size:22px!important;}',
+  '.ai-embed .grid-2,.ai-embed .form-grid,.ai-embed .journal-grid{grid-template-columns:1fr!important;}',
+  '.ai-embed .tbl-wrap,.ai-embed .ptg-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch;',
+    'border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);}',
+  '.ai-embed table{font-size:14px!important;}',
+  '.ai-embed th{font-size:12px!important;white-space:nowrap;}',
+  '.ai-embed td{padding:10px 12px!important;white-space:nowrap;}',
+  '.ai-embed input,.ai-embed select,.ai-embed textarea{font-size:16px!important;min-height:44px!important;',
+    'border-radius:10px!important;background:rgba(118,118,128,.1)!important;border:none!important;}',
+  '.ai-embed .btn-primary,.ai-embed .btn-secondary,.ai-embed .ghost-btn,.ai-embed .journal-action,',
+  '.ai-embed button{min-height:44px;border-radius:12px;font-size:15px;}',
+  '.ai-embed .btn-primary{background:#ec3013!important;color:#fff!important;}',
+  '.ai-embed .field label,.ai-embed .lbl{font-size:13px!important;}',
   '@keyframes aiToast{from{opacity:0;transform:translate(-50%,-8px) scale(.94)}to{opacity:1;transform:translate(-50%,0) scale(1)}}'
   ].join('');
 
@@ -11243,12 +11414,19 @@ if ('serviceWorker' in navigator) {
     render();
   }
   function unmount() {
+    releasePanel();
     document.documentElement.classList.remove('arcis-ios-on');
     if (S.root) { S.root.remove(); S.root = null; }
   }
   function boot() {
     if (on() && loggedIn()) mount(); else unmount();
   }
+
+  // the desktop functions we reuse end in alert()/confirm() — the phone app shows
+  // its own toast instead, so those dialogs are suppressed only while it is mounted
+  var _alert = window.alert, _confirm = window.confirm;
+  window.alert = function (m) { if (S.root) { toast(String(m).replace(/^[✓✅]\s*/, '')); return; } return _alert.call(window, m); };
+  window.confirm = function (m) { if (S.root) return true; return _confirm.call(window, m); };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
