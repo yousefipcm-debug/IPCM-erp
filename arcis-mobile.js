@@ -1,150 +1,79 @@
-/* ARCIS — iOS mobile layer (≤900px only)
-   Turns the desktop panels into a native-feeling phone app:
-   every data table becomes a grouped list of cells, interactive
-   controls are moved (not cloned) into each cell so handlers survive,
-   and the panel's primary action becomes a sticky bottom bar.
-   Disable at runtime with window.ARCIS_MOBILE = false. */
+/* ARCIS — iOS phone layer (≤900px)
+   Non-destructive: it NEVER moves, clones or replaces a DOM node, so every
+   input, select and event handler in the app keeps working and keeps focus
+   while you type. It only (a) stamps each cell with its column label so CSS
+   can stack tables into iOS cards, and (b) mirrors the panel's primary
+   action into a sticky bottom bar.
+   Switches: window.ARCIS_MOBILE = true | false (force on / off). */
 (function () {
   'use strict';
   var MQ = window.matchMedia('(max-width: 900px)');
-  var raf = null, observer = null;
+  var timer = null, observer = null;
+  var WIDE = 12; // more columns than this stays a scrollable table
 
   function on() {
-    if (window.ARCIS_MOBILE === false) return false;   // force off
-    if (window.ARCIS_MOBILE === true) return true;     // force on (testing on desktop)
+    if (window.ARCIS_MOBILE === false) return false;
+    if (window.ARCIS_MOBILE === true) return true;
     return MQ.matches;
   }
+  function typing() {
+    var a = document.activeElement;
+    return !!a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName);
+  }
   function txt(el) { return (el.textContent || '').trim(); }
-  function isNum(s) { return /[0-9]/.test(s) && /^[\s0-9.,%+\u2212\u2013\-\u00a0DAjh/]*$/.test(s); }
 
-  function interactive(tr) {
-    return tr.querySelectorAll('button, input, select, textarea, a[onclick], a[href]:not([href^="#"])');
-  }
-
-  function buildRow(tr, heads) {
-    var cells = Array.prototype.slice.call(tr.children);
-    if (!cells.length) return null;
-
-    var row = document.createElement('div');
-    row.className = 'ios-row';
-
-    var main = document.createElement('div');
-    main.className = 'ios-row-main';
-
-    // title = first text cell; trailing value = last numeric cell
-    var title = txt(cells[0]) || '—';
-    var tail = '', tailHtml = '';
-    var last = cells[cells.length - 1];
-    if (cells.length > 1 && (isNum(txt(last)) || last.querySelector('.badge, .pill'))) {
-      tailHtml = last.innerHTML; tail = txt(last);
-      cells.pop();
-    }
-    var metaParts = [];
-    for (var i = 1; i < cells.length; i++) {
-      var t = txt(cells[i]);
-      if (!t || t === '—' || t === '·') continue;
-      var label = heads[i] ? heads[i] + ' ' : '';
-      metaParts.push(isNum(t) && label ? label + t : t);
-    }
-
-    var t1 = document.createElement('div');
-    t1.className = 'ios-row-title';
-    t1.textContent = title;
-    main.appendChild(t1);
-    if (metaParts.length) {
-      var t2 = document.createElement('div');
-      t2.className = 'ios-row-meta';
-      t2.textContent = metaParts.join(' · ');
-      main.appendChild(t2);
-    }
-    row.appendChild(main);
-
-    if (tailHtml) {
-      var v = document.createElement('div');
-      v.className = 'ios-row-value' + (/^\s*[\u2212\u2013-]/.test(tail) ? ' ios-neg' : '');
-      v.innerHTML = tailHtml;
-      row.appendChild(v);
-    }
-
-    // move live controls across so their listeners keep working
-    var ctrls = interactive(tr);
-    if (ctrls.length) {
-      var box = document.createElement('div');
-      box.className = 'ios-row-actions';
-      Array.prototype.forEach.call(ctrls, function (c) { box.appendChild(c); });
-      row.appendChild(box);
-    }
-    return row;
-  }
-
-  function transformTable(table) {
+  function stamp(table) {
     var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), txt);
-    var body = table.querySelector('tbody') || table;
-    var trs = Array.prototype.filter.call(body.querySelectorAll('tr'), function (tr) {
-      return tr.querySelector('td');
+    if (heads.length > WIDE) table.setAttribute('data-ios-wide', '1');
+    var rows = table.querySelectorAll('tbody tr, tr');
+    Array.prototype.forEach.call(rows, function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) {
+        if (td.tagName !== 'TD') return;
+        var label = heads[i] || '';
+        if (label && td.getAttribute('data-ios-label') !== label) {
+          td.setAttribute('data-ios-label', label);
+        }
+        var t = txt(td);
+        var empty = (!t || t === '—' || t === '-' || t === '·') &&
+                    !td.querySelector('input, select, button, svg, .badge');
+        td.classList.toggle('ios-empty', empty);
+      });
     });
-    if (!trs.length) return;
-
-    var list = document.createElement('div');
-    list.className = 'ios-list';
-    list.setAttribute('data-ios-list', '1');
-
-    trs.forEach(function (tr) {
-      var r = buildRow(tr, heads);
-      if (r) list.appendChild(r);
-    });
-
     table.setAttribute('data-ios', '1');
-    table.classList.add('ios-hidden');
-    var host = table.closest('.tbl-wrap') || table.parentNode;
-    host.parentNode.insertBefore(list, host.nextSibling);
   }
 
-  function hoistPrimary() {
+  function actionBar() {
     var bar = document.getElementById('ios-action-bar');
-    var panel = document.querySelector('.panel.active');
-    if (!panel) { if (bar) bar.remove(); return; }
-    var btn = panel.querySelector('.btn-primary:not(.ios-skip)');
-    if (!btn) { if (bar) bar.remove(); return; }
+    var panel = document.querySelector('.panel.active') || document.querySelector('.panel');
+    var btn = panel && panel.querySelector('.btn-primary:not(.ios-skip)');
+    if (!btn || !on()) { if (bar) bar.remove(); return; }
+    var label = txt(btn) || 'Valider';
     if (!bar) {
       bar = document.createElement('div');
       bar.id = 'ios-action-bar';
+      bar.innerHTML = '<button type="button" class="ios-action-btn"></button>';
       document.body.appendChild(bar);
     }
-    var label = txt(btn) || 'Valider';
-    if (bar.dataset.label === label) return;
-    bar.dataset.label = label;
-    bar.innerHTML = '';
-    var proxy = document.createElement('button');
-    proxy.type = 'button';
-    proxy.className = 'ios-action-btn';
-    proxy.textContent = label;
-    proxy.addEventListener('click', function () { btn.click(); });
-    bar.appendChild(proxy);
-    btn.classList.add('ios-hoisted');
+    var proxy = bar.firstChild;
+    if (bar.dataset.label !== label) {
+      bar.dataset.label = label;
+      proxy.textContent = label;
+      proxy.onclick = function () { btn.click(); };
+    }
   }
 
   function run() {
-    if (!on()) return;
+    if (!on() || typing()) return;
     try {
-      document.querySelectorAll('.panel table:not([data-ios])').forEach(transformTable);
-      hoistPrimary();
-    } catch (e) { /* never break the app for a cosmetic layer */ }
+      var tables = document.querySelectorAll('.panel table');
+      Array.prototype.forEach.call(tables, stamp);
+      actionBar();
+    } catch (e) { /* cosmetic layer: never break the app */ }
   }
 
   function schedule() {
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(function () { raf = null; run(); });
-  }
-
-  function teardown() {
-    document.querySelectorAll('[data-ios-list]').forEach(function (n) { n.remove() });
-    document.querySelectorAll('table[data-ios]').forEach(function (t) {
-      t.removeAttribute('data-ios'); t.classList.remove('ios-hidden');
-    });
-    document.querySelectorAll('.ios-hoisted').forEach(function (b) { b.classList.remove('ios-hoisted') });
-    var bar = document.getElementById('ios-action-bar');
-    if (bar) bar.remove();
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { timer = null; run(); }, 120);
   }
 
   function boot() {
@@ -152,20 +81,30 @@
     if (on()) {
       run();
       if (!observer) {
-        observer = new MutationObserver(schedule);
+        observer = new MutationObserver(function (muts) {
+          if (typing()) return;                   // never rebuild mid-typing
+          for (var i = 0; i < muts.length; i++) {
+            var t = muts[i].target;
+            if (t && t.closest && t.closest('#ios-action-bar')) continue;
+            return schedule();
+          }
+        });
         observer.observe(document.body, { childList: true, subtree: true });
       }
     } else {
       if (observer) { observer.disconnect(); observer = null; }
-      teardown();
+      var bar = document.getElementById('ios-action-bar');
+      if (bar) bar.remove();
     }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
   MQ.addEventListener ? MQ.addEventListener('change', boot) : MQ.addListener(boot);
+  // re-stamp after navigation, and once a field is left
   document.addEventListener('click', function (e) {
-    if (e.target.closest('.mobile-nav-btn, .nav-btn, .module-btn')) setTimeout(boot, 60);
+    if (e.target.closest('.mobile-nav-btn, .nav-btn, .module-btn, .mobile-nav')) setTimeout(boot, 80);
   }, true);
+  document.addEventListener('focusout', function () { setTimeout(schedule, 150); }, true);
   window.ARCIS_MOBILE_REFRESH = boot;
 })();
