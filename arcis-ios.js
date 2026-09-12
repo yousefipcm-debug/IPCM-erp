@@ -15,6 +15,7 @@
     workers: 'ipcm_v2_workers',
     workSites: 'ipcm_v2_workSites',
     clientNames: 'ipcm_v2_clientNames',
+    charges: 'ipcm_v2_charges',
     techWorkSites: 'ipcm_v2_techWorkSites',
     fournisseurNames: 'ipcm_v2_fournisseurNames'
   };
@@ -34,6 +35,19 @@
   function shortM(n) { return (Math.abs(n) >= 1e6) ? (n / 1e6).toFixed(1).replace('.', ',') + ' M' : fmt(n); }
   function paid(s) { return (s.payments || []).reduce(function (a, p) { return a + (p.amount || 0); }, 0); }
   function remain(s) { return Math.round(((s.amount || 0) - paid(s)) * 100) / 100; }
+  function isPaid(s) { return remain(s) <= 0.01; }                        // app: sitIsPaid
+  function fPaid(f) { return (f.payments || []).reduce(function (a, p) { return a + (p.amount || 0); }, 0); }
+  function fRemain(f) { return Math.round(((f.amount || 0) - fPaid(f)) * 100) / 100; }
+  function totalCreances() {                                              // app: totalCreances
+    return read(K.situations).filter(function (s) { return !isPaid(s); })
+      .reduce(function (a, s) { return a + remain(s); }, 0);
+  }
+  function totalDettes() {
+    return read(K.fournisseurs).reduce(function (a, f) { var r = fRemain(f); return a + (r > 0.01 ? r : 0); }, 0);
+  }
+  function chgTotal() {                                                   // app: chgTotal
+    return read(K.charges).reduce(function (a, c) { return a + (c.amount || 0); }, 0);
+  }
   function parseD(d) {
     if (!d) return null;
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
@@ -54,20 +68,16 @@
     var t = parseD(d); if (!t) return '';
     return t.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
   }
-  function balance() {
-    return read(K.transactions).reduce(function (a, t) {
-      return a + (t.type === 'in' ? (t.amount || 0) : -(t.amount || 0));
-    }, 0);
-  }
-  function journalBalance(j) {
-    return read(K.transactions).filter(function (t) { return !j || t.journal === j; })
+  function journalBalance(j) {                                            // app: journalBalance
+    return read(K.transactions).filter(function (t) { return t.journal === j; })
       .reduce(function (a, t) { return a + (t.type === 'in' ? (t.amount || 0) : -(t.amount || 0)); }, 0);
   }
+  function balance() { return journalBalance('caisse') + journalBalance('banque'); }
   function sitGroups() {
     var late = [], soon = [], done = [];
     read(K.situations).forEach(function (s, i) {
       var r = remain(s); s._i = i; s._rem = r; s._late = daysLate(s);
-      if (r <= 0) done.push(s); else if (s._late > 0) late.push(s); else soon.push(s);
+      if (isPaid(s)) done.push(s); else if (s._late > 0) late.push(s); else soon.push(s);
     });
     late.sort(function (a, b) { return b._late - a._late; });
     return { late: late, soon: soon, paid: done };
@@ -101,6 +111,13 @@
     return h > 8 ? 'H' : 'P';
   }
   function hoursFor(st) { return st === 'A' ? 0 : st === 'H' ? 10 : 8; }
+  function photoOf(w) { return (w && (w.photo || w.picture)) || null; }
+  function avatar(w, cls) {
+    var p = photoOf(w);
+    return p
+      ? '<span class="ai-av ' + (cls || '') + ' img"><img src="' + esc(p) + '" alt="" /></span>'
+      : '<span class="ai-av ' + (cls || '') + '">' + esc(initials(wName(w))) + '</span>';
+  }
   function initials(n) {
     return String(n || '?').trim().split(/\s+/).map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
   }
@@ -172,8 +189,11 @@
   /* ── screens ──────────────────────────────────────────── */
   function scrHome() {
     var g = sitGroups();
-    var creances = g.late.concat(g.soon).reduce(function (a, s) { return a + s._rem; }, 0);
+    var creances = totalCreances();
+    var charges = chgTotal();
+    var dettes = totalDettes();
     var bal = balance();
+    var prev = bal + creances - charges;     // app: forecastBalance
     var lates = g.late.slice(0, 3);
     var h = '';
     h += '<div class="ai-hero"><div class="ai-hero-l">Trésorerie disponible</div>' +
@@ -183,8 +203,12 @@
            '<div class="ai-hero-c"><span>Banque</span><b>' + fmt(journalBalance('banque')) + '</b></div>' +
          '</div></div>';
     h += '<div class="ai-duo">' +
-      '<div class="ai-tile"><span>Créances</span><b>' + shortM(creances) + '</b><i style="color:' + RED + '">' + (g.late.length + g.soon.length) + ' en cours</i></div>' +
-      '<div class="ai-tile"><span>En retard</span><b>' + shortM(g.late.reduce(function (a, s) { return a + s._rem; }, 0)) + '</b><i>' + g.late.length + ' situations</i></div>' +
+      '<div class="ai-tile"><span>Créances clients</span><b>' + shortM(creances) + '</b><i style="color:' + RED + '">' + (g.late.length + g.soon.length) + ' situations</i></div>' +
+      '<div class="ai-tile"><span>Dettes fournisseurs</span><b>' + shortM(dettes) + '</b><i>à régler</i></div>' +
+      '</div>';
+    h += '<div class="ai-duo" style="margin-top:11px">' +
+      '<div class="ai-tile"><span>Charges du mois</span><b>' + shortM(charges) + '</b><i>fixes</i></div>' +
+      '<div class="ai-tile"><span>Prévision</span><b>' + shortM(prev) + '</b><i>trésorerie + créances − charges</i></div>' +
       '</div>';
     h += '<div class="ai-trio">' +
       '<button data-act="new-in" class="ai-quick"><span class="ai-qi red"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="' + RED + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></span>Encaisser</button>' +
@@ -311,7 +335,7 @@
     crew.forEach(function (w, i) {
       var nm = wName(w), v = statOf(nm);
       h += '<div class="ai-wcell" style="border-bottom:' + (i === crew.length - 1 ? 'none' : SEP) + '">' +
-        '<div class="ai-wtop"><span class="ai-av">' + esc(initials(w.name)) + '</span>' +
+        '<div class="ai-wtop">' + avatar(w) +
         '<span class="ai-cb-main"><span class="ai-t b">' + esc(w.name || 'Ouvrier') + '</span>' +
         '<span class="ai-s">' + esc(w.poste || w.job || 'Ouvrier') + ' · ' +
         (v === 'P' ? 'présent' : v === 'A' ? 'absent' : v === 'H' ? 'présent + HS' : 'non saisi') + '</span></span></div>' +
@@ -715,9 +739,12 @@
   '.ai-wsr b{font-size:20px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}',
   '.ai-wcell{padding:11px 16px 13px;}',
   '.ai-wtop{display:flex;align-items:center;gap:11px;}',
-  '.ai-av{width:38px;height:38px;flex:none;border-radius:19px;background:#E5E5EA;color:#3C3C43;',
+  '.ai-av{width:44px;height:44px;flex:none;border-radius:22px;background:#E5E5EA;color:#3C3C43;overflow:hidden;',
     'font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;}',
   '.ai-av.big{width:56px;height:56px;border-radius:28px;font-size:20px;}',
+  '.ai-av.img{background:#E5E5EA;}',
+  '.ai-av img{width:100%;height:100%;object-fit:cover;display:block;}',
+  '.ai-embed .wk-photo,.ai-embed td img{border-radius:50%;}',
   '.ai-prof{display:flex;align-items:center;gap:13px;padding:14px 16px;}',
   '.ai-bar{flex:none;padding:8px 16px 10px;background:rgba(249,249,249,.94);-webkit-backdrop-filter:blur(20px);',
     'backdrop-filter:blur(20px);border-top:.33px solid rgba(60,60,67,.29);}',
