@@ -2,6 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const Tesseract = require('tesseract.js');
+// French OCR language data ships inside the project (tessdata/fra.traineddata.gz)
+// so scanning never depends on reaching an external CDN at request time — fully
+// free and self-contained once deployed.
+const TESSDATA_PATH = path.join(__dirname, 'tessdata');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,7 +78,7 @@ async function buildPgDB() {
       id SERIAL PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('admin','finance','hr','technique','commercial')),
+      role TEXT NOT NULL CHECK(role IN ('admin','finance','hr','technique','commercial','secretariat')),
       display_name TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
@@ -83,11 +89,11 @@ async function buildPgDB() {
     );
   `);
 
-  // Migration: databases created before the 'commercial' role existed still have the
-  // old CHECK constraint (admin/finance/hr/technique only) and would reject it. Widen it.
+  // Migration: databases created before 'commercial' or 'secretariat' existed still
+  // have an older, narrower CHECK constraint and would reject those roles. Widen it.
   try {
     await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
-    await pool.query("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin','finance','hr','technique','commercial'))");
+    await pool.query("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin','finance','hr','technique','commercial','secretariat'))");
   } catch (e) {
     console.log('Role constraint migration skipped:', e.message);
   }
@@ -176,11 +182,20 @@ async function buildPgDB() {
 
 // ── Role config ────────────────────────────────────────────────────────────────
 const ROLE_KEYS = {
-  finance:    ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts'],
-  hr:         ['workers','workSites','hrDocuments','hrFolders','adminPointage','monthlyDays'],
-  technique:  ['techWorkSites','workSites','workers','hrDocuments','hrFolders','commercialContacts','adminPointage','adminPtgLegend'],
-  commercial: ['clientNames','fournisseurNames','invoices','ribList','clientDetails','commercialContacts','hrDocuments','hrFolders'],
-  admin:      ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts','virEntries','monthlyDays']
+  // NOTE: missingInvoiceAlerts, caisseTerkmane and pendingScans were added here
+  // alongside commercialContacts (which was already missing for finance/admin) —
+  // without being listed for a role, a key never reaches Postgres at all, no
+  // matter what the frontend does, so that data only ever lived in the browser's
+  // local storage and could vanish on the next login/reset. Fixed below.
+  finance:     ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','hrDocuments','hrFolders','commercialContacts','missingInvoiceAlerts','caisseTerkmane','pendingScans'],
+  hr:          ['workers','workSites','hrDocuments','hrFolders','adminPointage'],
+  technique:   ['techWorkSites','workSites','workers','hrDocuments','hrFolders','commercialContacts','adminPointage','adminPtgLegend'],
+  commercial:  ['clientNames','fournisseurNames','invoices','ribList','clientDetails','commercialContacts','hrDocuments','hrFolders'],
+  admin:       ['transactions','situations','charges','fournisseurs','clientNames','fournisseurNames','projects','simPicks','simCustomAmounts','invoices','ribList','clientDetails','workers','workSites','hrDocuments','hrFolders','adminPointage','techWorkSites','adminPtgLegend','commercialContacts','missingInvoiceAlerts','caisseTerkmane','pendingScans'],
+  // Cylia's restricted role: she can only submit scanned documents to the
+  // pending queue and see supplier names (to help her pick the right one) —
+  // no access to actual debts, balances or transactions.
+  secretariat: ['pendingScans','fournisseurNames']
 };
 
 app.use(express.json({ limit: '50mb' }));
@@ -275,6 +290,28 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   if (id === req.user.id) return res.status(400).json({ error: 'Impossible de supprimer votre propre compte' });
   try { await db.deleteUser(id); res.json({ ok: true }); }
   catch (e) { res.status(500).json({ error: 'Erreur serveur' }); }
+});
+
+// ── Document scan (OCR) ───────────────────────────────────────────────────────
+// Free, self-hosted OCR (Tesseract) — no API key, no external account, no per-scan
+// cost. Runs on the server so every device (phone or desktop) gets the same result.
+// Returns only the raw extracted text; all classification (cheque vs facture) and
+// field extraction happens in the frontend, which only PRE-FILLS the existing
+// transaction / fournisseur forms — nothing is ever saved automatically.
+app.post('/api/scan-document', requireAuth, async (req, res) => {
+  try {
+    const { image } = req.body || {};
+    if (!image) return res.status(400).json({ error: 'Image manquante' });
+    const base64 = String(image).replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64, 'base64');
+    if (buffer.length === 0) return res.status(400).json({ error: 'Image invalide' });
+    if (buffer.length > 15 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 15 Mo)' });
+    const { data } = await Tesseract.recognize(buffer, 'fra', { langPath: TESSDATA_PATH, cachePath: TESSDATA_PATH });
+    res.json({ text: data.text || '', confidence: data.confidence || 0 });
+  } catch (e) {
+    console.error('Scan OCR error:', e.message);
+    res.status(500).json({ error: 'Lecture du document impossible. Réessayez avec une photo plus nette et bien éclairée.' });
+  }
 });
 
 // ── Health ─────────────────────────────────────────────────────────────────────
