@@ -35,6 +35,49 @@ export function legacySample() {
   const m2 = tx({ journal: 'caisse', type: 'out', amount: 62000, desc: 'Boulonnerie chantier', fournisseur: 'Quincaillerie El Amel', date: d(6), factureStatus: 'missing' });
   tx({ journal: 'banque', type: 'out', amount: 380000, desc: 'Location grue chantier Blida', date: d(8), projectIdx: '0' });
   tx({ journal: 'banque', type: 'in', amount: 1500000, desc: 'Avance sur travaux', date: d(5), projectIdx: '0' });
+  const W = (name: string, surname: string, fn: string, salary: number, contract: string, entryAgo: number, endIn: number | null, phone: string, birth: string) =>
+    ({ name, surname, function: fn, salary: String(salary), contract, entry: d(entryAgo), contractEnd: endIn === null ? '' : d(-endIn), phone, birth, status: 'Marié(e)', kids: '2', blood: 'O+', ss: '84' + phone.replace(/\D/g, '').slice(-8), history: [] });
+  const workers = [
+    W('BENALI', 'Karim', 'Chef de chantier', 85000, 'CDI', 900, null, '0550 21 34 11', '1984-03-12'),
+    W('HADJ', 'Mourad', 'Soudeur', 60000, 'CDD', 300, 12, '0661 45 20 87', '1990-07-02'),
+    W('SAIDI', 'Ahmed', 'Monteur charpente', 55000, 'CDD', 200, 26, '0770 12 98 45', '1993-11-19'),
+    W('KACI', 'Yacine', 'Monteur charpente', 52000, 'CDD', 150, 95, '0555 63 71 02', '1996-01-25'),
+    W('ZIANI', 'Samir', 'Grutier', 70000, 'CDD', 400, -5, '0662 88 10 54', '1987-05-30'),
+    W('MEBARKI', 'Nadir', 'Soudeur', 58000, 'CDD', 120, 160, '0771 30 44 19', '1995-09-08'),
+    W('TOUATI', 'Bilal', 'Manœuvre', 40000, 'CDD', 90, 60, '0556 77 21 30', '2000-02-14'),
+    W('RAHMANI', 'Radia', 'Responsable RH', 75000, 'CDI', 700, null, '0550 90 12 77', '1991-04-03'),
+    W('BELKACEM', 'Hakima', 'Comptable', 72000, 'CDI', 1100, null, '0661 02 55 48', '1988-12-21'),
+    W('AMRANI', 'Cylia', 'Secrétaire', 48000, 'CDD', 260, 22, '0770 66 03 92', '1998-06-17'),
+  ];
+  const workSites = [
+    { name: 'Centre commercial Blida', desc: 'Charpente métallique et couverture, lot 2', workerIds: [0, 1, 2, 3, 4] },
+    { name: 'Hangar SAFEX Oued Smar', desc: 'Montage hangar de stockage 2 400 m²', workerIds: [5, 6] },
+  ];
+  // Pointage for last month and the current month up to today (old cell format "<workerIdx>_<day>_<row>")
+  function pointage() {
+    const out: any = {};
+    const now = new Date();
+    for (const back of [1, 0]) {
+      const first = new Date(now.getFullYear(), now.getMonth() - back, 1);
+      const ym = `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, '0')}`;
+      const last = back ? new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate() : now.getDate();
+      const cells: any = {};
+      workers.forEach((_, wi) => {
+        const onSite = wi <= 6;
+        for (let day = 1; day <= last; day++) {
+          const dow = new Date(first.getFullYear(), first.getMonth(), day).getDay();
+          if (dow === 5 || (!onSite && dow === 6)) continue;
+          if (!back && day === last && wi >= 5) continue; // today: a few rows left to fill
+          const r = (wi * 31 + day * 7 + back * 13) % 23;
+          const val = r === 0 ? 'A' : r === 1 ? 'D' : r === 2 && wi === 3 ? 'M' : 'P';
+          cells[`${wi}_${day}_0`] = { val, bg: wi === 0 && day === 4 ? '#93C5FD' : '' };
+          if (onSite && val === 'P' && r % 5 === 0) cells[`${wi}_${day}_1`] = { val: String(2 + (r % 3)), bg: '' };
+        }
+      });
+      out[ym] = { cells };
+    }
+    return out;
+  }
   return {
     clientNames: ['SAFEX', 'BLOCOTELHA Steel', 'Sarl Promo Mitidja', 'EURL Hangars du Centre', 'Cosider Construction'],
     fournisseurNames: ['Acier Blida', 'Transport Bouzid', 'Quincaillerie El Amel', 'Tôlerie Mitidja', 'Location Grues Atlas'],
@@ -48,8 +91,14 @@ export function legacySample() {
       { name: 'Hangar SAFEX Oued Smar', client: 'SAFEX', contractValue: 18000000, startDate: d(150), status: 'active', id: nid(), expenses: [{ desc: 'Tôles et pannes', amount: 7200000, date: d(130), id: nid() }], payments: [] },
     ],
     caisseTerkmane: [{ id: nid(), type: 'in', amount: 500000, date: d(60), desc: 'Approvisionnement' }, { id: nid(), type: 'out', amount: 35000, date: d(40), beneficiaire: 'SAIDI Ahmed', reason: 'Frais de déplacement chantier' }, { id: nid(), type: 'out', amount: 120000, date: d(12), beneficiaire: 'Transport Bouzid', isFournisseur: true, reason: 'Transport de charpente' }],
-    workers: [{ name: 'BENALI', surname: 'Karim', function: 'Chef de chantier', salary: '85000' }, { name: 'HADJ', surname: 'Mourad', function: 'Soudeur', salary: '60000' }],
-    workSites: [{ name: 'Centre commercial Blida', workerIds: [0, 1] }],
+    workers, workSites, adminPointage: pointage(), adminPtgLegend: [{ bg: '#93C5FD', label: 'Mission' }, { bg: '#FCD34D', label: 'Formation' }],
+    hrFolders: ['Attestations de travail', 'Notes de service', 'Ordres de mission'],
+    hrDocuments: [
+      { title: 'Attestations de travail n°001/' + new Date().getFullYear(), date: d(20), folder: 'Attestations de travail', signerLeft: '', signerRight: 'La Direction', images: [],
+        content: 'Nous soussignés, SARL IPCM BOUTEMA, attestons que M. BENALI Karim, né le 12/03/1984, est employé au sein de notre entreprise en qualité de Chef de chantier depuis le ' + d(900).split('-').reverse().join('/') + '.\n\nLa présente attestation est délivrée à l’intéressé pour servir et valoir ce que de droit.' },
+      { title: 'Notes de service n°001/' + new Date().getFullYear(), date: d(8), folder: 'Notes de service', signerLeft: '', signerRight: 'La Direction', images: [],
+        content: 'Il est porté à la connaissance de l’ensemble du personnel que le port des équipements de protection individuelle (casque, harnais, chaussures de sécurité) est obligatoire sur tous les chantiers.\n\nTout manquement sera sanctionné.' },
+    ],
     simPicks: { 'Acier Blida': 1 },
   };
 }

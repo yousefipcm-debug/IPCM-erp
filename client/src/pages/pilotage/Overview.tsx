@@ -9,9 +9,11 @@ import { MONTHS_SHORT, money, moneyShort, dateShort, capitalize } from '@/lib/fo
 import { Amount, Badge, Button, Panel, ProgressBar } from '@/components/ui/ui';
 import { TransactionDialog } from '@/components/finance/TransactionDialog';
 import { navFor } from '@/nav';
+import { HrHome } from '@/pages/hr/HrHome';
 
 export function OverviewPage() {
   const { user } = useAuth();
+  if (user!.role === 'hr' || user!.role === 'technique') return <HrHome />;
   if (user!.role !== 'admin' && user!.role !== 'finance') return <RoleHome />;
   return <FinanceOverview />;
 }

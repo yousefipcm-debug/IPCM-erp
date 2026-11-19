@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Bell, Building2, BookOpen, FileText, Users, Hourglass, TrendingUp, Receipt, Truck, Calculator, Wallet,
-  UserPlus, HardHat, ClipboardCheck, Banknote, FolderOpen, Contact, FileSpreadsheet, ScanLine, Inbox, ShieldCheck, History, Settings,
+  UserPlus, HardHat, ClipboardCheck, Banknote, FolderOpen, Contact, FileSpreadsheet, ScanLine, Inbox, ShieldCheck, History, Settings, CalendarClock,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { Role } from './lib/types';
@@ -30,21 +30,22 @@ export const NAV: NavGroup[] = [
     { to: '/dfc/caisse-terkmane', label: 'Caisse Mme Terkmane', icon: I(Wallet), roles: FIN },
   ] },
   { id: 'rh', label: 'Ressources humaines', items: [
-    { to: '/rh/personnel', label: 'Personnel', icon: I(UserPlus), roles: ['admin', 'hr'], soon: true },
-    { to: '/rh/chantiers', label: 'Chantiers', icon: I(HardHat), roles: ['admin', 'hr'], soon: true },
-    { to: '/rh/pointage', label: 'Pointage', icon: I(ClipboardCheck), roles: ['admin', 'hr'], soon: true },
-    { to: '/rh/salaires', label: 'Salaires', icon: I(Banknote), roles: ['admin', 'hr'], soon: true },
+    { to: '/rh/personnel', label: 'Personnel', icon: I(UserPlus), roles: ['admin', 'hr'], mobile: true },
+    { to: '/rh/chantiers', label: 'Chantiers', icon: I(HardHat), roles: ['admin', 'hr'] },
+    { to: '/rh/pointage', label: 'Pointage', icon: I(ClipboardCheck), roles: ['admin', 'hr'], mobile: true },
+    { to: '/rh/salaires', label: 'Salaires', icon: I(Banknote), roles: ['admin', 'hr'], mobile: true },
+    { to: '/rh/contrats', label: 'Contrats', icon: I(CalendarClock), roles: ['admin', 'hr'] },
   ] },
   { id: 'technique', label: 'Technique', items: [
-    { to: '/technique/chantiers', label: 'Chantiers', icon: I(HardHat), roles: ['admin', 'technique'], soon: true },
-    { to: '/technique/pointage', label: 'Pointage général', icon: I(ClipboardCheck), roles: ['admin', 'technique'], soon: true },
+    { to: '/technique/chantiers', label: 'Chantiers', icon: I(HardHat), roles: ['technique'], mobile: true },
+    { to: '/technique/pointage', label: 'Pointage général', short: 'Pointage', icon: I(ClipboardCheck), roles: ['technique'], mobile: true },
   ] },
   { id: 'commercial', label: 'Commercial', items: [
     { to: '/commercial/contacts', label: 'Contacts', icon: I(Contact), roles: ['admin', 'commercial'], soon: true },
     { to: '/commercial/facturation', label: 'Facturation', icon: I(FileSpreadsheet), roles: ['admin', 'commercial', 'finance'], soon: true },
   ] },
   { id: 'documents', label: 'Documents', items: [
-    { to: '/documents', label: 'Documents', icon: I(FolderOpen), roles: ALL, soon: true },
+    { to: '/documents', label: 'Documents', icon: I(FolderOpen), roles: ALL },
   ] },
   { id: 'secretariat', label: 'Secrétariat', items: [
     { to: '/secretariat/scanner', label: 'Scanner un document', short: 'Scanner', icon: I(ScanLine), roles: ['secretariat'], soon: true, mobile: true },
@@ -61,6 +62,6 @@ export function navFor(role: Role): NavGroup[] {
   return NAV.map((g) => ({ ...g, items: g.items.filter((i) => i.roles.includes(role)) })).filter((g) => g.items.length);
 }
 export function homeFor(role: Role) {
-  if (role === 'admin' || role === 'finance') return '/';
+  if (role === 'admin' || role === 'finance' || role === 'hr' || role === 'technique') return '/';
   return navFor(role)[0]?.items[0]?.to || '/';
 }

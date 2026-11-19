@@ -17,6 +17,11 @@ import { AgingPage, ChargesPage, ForecastPage } from '@/pages/finance/Analysis';
 import { SimulatorPage } from '@/pages/finance/Simulator';
 import { PettyCashPage } from '@/pages/finance/PettyCash';
 import { ActivityPage, CompanyPage, UsersPage } from '@/pages/admin/Admin';
+import { PersonnelPage, WorkerPage, ContractsPage } from '@/pages/hr/Personnel';
+import { SitesPage } from '@/pages/hr/Sites';
+import { PointagePage } from '@/pages/hr/Pointage';
+import { SalariesPage } from '@/pages/hr/Salaries';
+import { DocumentsPage } from '@/pages/hr/Documents';
 import { ComingSoonPage, NotFoundPage } from '@/pages/ComingSoon';
 import type { Role } from '@/lib/types';
 import type { ReactNode } from 'react';
@@ -27,6 +32,9 @@ function Guard({ roles, children }: { roles: Role[]; children: ReactNode }) {
   return roles.includes(user!.role) ? <>{children}</> : <Navigate to="/" replace />;
 }
 const FIN: Role[] = ['admin', 'finance'];
+const HR: Role[] = ['admin', 'hr'];
+const TECH: Role[] = ['admin', 'technique'];
+const DOCS: Role[] = ['admin', 'finance', 'hr', 'technique', 'commercial'];
 
 function Authed() {
   return (
@@ -47,6 +55,15 @@ function Authed() {
           <Route path="dfc/charges" element={<Guard roles={FIN}><ChargesPage /></Guard>} />
           <Route path="dfc/simulateur" element={<Guard roles={FIN}><SimulatorPage /></Guard>} />
           <Route path="dfc/caisse-terkmane" element={<Guard roles={FIN}><PettyCashPage /></Guard>} />
+          <Route path="rh/personnel" element={<Guard roles={HR}><PersonnelPage /></Guard>} />
+          <Route path="rh/personnel/:id" element={<Guard roles={HR}><WorkerPage /></Guard>} />
+          <Route path="rh/contrats" element={<Guard roles={HR}><ContractsPage /></Guard>} />
+          <Route path="rh/chantiers" element={<Guard roles={HR}><SitesPage base="/rh" key="rs" /></Guard>} />
+          <Route path="rh/pointage" element={<Guard roles={HR}><PointagePage key="rp" /></Guard>} />
+          <Route path="rh/salaires" element={<Guard roles={HR}><SalariesPage /></Guard>} />
+          <Route path="technique/chantiers" element={<Guard roles={TECH}><SitesPage base="/technique" key="ts" /></Guard>} />
+          <Route path="technique/pointage" element={<Guard roles={TECH}><PointagePage key="tp" /></Guard>} />
+          <Route path="documents" element={<Guard roles={DOCS}><DocumentsPage /></Guard>} />
           <Route path="admin/utilisateurs" element={<Guard roles={['admin']}><UsersPage /></Guard>} />
           <Route path="admin/activite" element={<Guard roles={['admin']}><ActivityPage /></Guard>} />
           <Route path="admin/entreprise" element={<Guard roles={['admin']}><CompanyPage /></Guard>} />

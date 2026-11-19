@@ -8,7 +8,7 @@ import { legacySample } from './seed';
 
 interface R { collection: string; id: string; data: any; version: number; rev: number; deleted: boolean; updatedAt: string; updatedBy: string }
 interface DB { rev: number; records: R[]; users: any[]; audit: any[] }
-const KEY = 'arcis-demo-db-v1';
+const KEY = 'ossature-demo-db-v2';
 export const DEMO_USERS = [
   { id: 1, username: 'admin', password: 'demo', role: 'admin', display_name: 'Youcef Boutema' },
   { id: 2, username: 'finance', password: 'demo', role: 'finance', display_name: 'Hakima' },
