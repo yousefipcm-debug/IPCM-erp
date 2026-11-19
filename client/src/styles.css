@@ -1,0 +1,162 @@
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ───────────── Design tokens ─────────────
+   Steel neutrals + IPCM copper. Copper is the only accent: used for the
+   primary action, the active navigation item and the treasury beam. */
+:root {
+  --bg: #f5f6f7;
+  --surface: #ffffff;
+  --surface-2: #f0f2f4;
+  --ink: #16181b;
+  --ink-2: #4d555e;
+  --ink-3: #7b838c;
+  --line: #e2e5e9;
+  --line-strong: #cdd2d8;
+  --copper: #c8782a;
+  --copper-strong: #a65f1b;
+  --copper-soft: #f8ecdf;
+  --teal: #2a9d8f;
+  --teal-strong: #1f7a6f;
+  --teal-soft: #e3f3f1;
+  --pos: #23744a;
+  --pos-soft: #e5f3eb;
+  --neg: #b8382a;
+  --neg-soft: #fbe9e6;
+  --warn: #9a6a12;
+  --warn-soft: #fbf1dc;
+  --info: #2f5f8a;
+  --info-soft: #e7eff7;
+  --focus: #c8782a;
+  --shadow-pop: 0 12px 32px -8px rgb(22 24 27 / 0.18), 0 2px 6px rgb(22 24 27 / 0.06);
+}
+.dark {
+  --bg: #0f1113;
+  --surface: #171a1d;
+  --surface-2: #1e2226;
+  --ink: #eceef0;
+  --ink-2: #b2b8bf;
+  --ink-3: #848b93;
+  --line: #2a2f35;
+  --line-strong: #3a4047;
+  --copper: #d98a3d;
+  --copper-strong: #e9a25c;
+  --copper-soft: #2c2118;
+  --teal: #3fb8a9;
+  --teal-strong: #6fd0c3;
+  --teal-soft: #14292a;
+  --pos: #5cc48c;
+  --pos-soft: #16281e;
+  --neg: #f07b6c;
+  --neg-soft: #2d1a17;
+  --warn: #e0b35a;
+  --warn-soft: #2b2415;
+  --info: #7fb0db;
+  --info-soft: #172331;
+  --shadow-pop: 0 16px 40px -8px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-copper: var(--copper);
+  --color-copper-strong: var(--copper-strong);
+  --color-copper-soft: var(--copper-soft);
+  --color-teal: var(--teal);
+  --color-teal-strong: var(--teal-strong);
+  --color-teal-soft: var(--teal-soft);
+  --color-pos: var(--pos);
+  --color-pos-soft: var(--pos-soft);
+  --color-neg: var(--neg);
+  --color-neg-soft: var(--neg-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --shadow-pop: var(--shadow-pop);
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: var(--copper-soft); }
+  input, select, textarea, button { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  input[type='number']::-webkit-inner-spin-button { opacity: 0.4; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+@layer components {
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+  .control {
+    height: 36px;
+    width: 100%;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    border-radius: 7px;
+    padding: 0 10px;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+  .control:hover { border-color: var(--ink-3); }
+  .control:focus { outline: none; border-color: var(--copper); box-shadow: 0 0 0 3px color-mix(in srgb, var(--copper) 22%, transparent); }
+  .control[aria-invalid='true'] { border-color: var(--neg); }
+  textarea.control { height: auto; padding: 8px 10px; min-height: 80px; resize: vertical; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+}
+
+@keyframes pop-in { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes beam { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.anim-pop { animation: pop-in 0.16s ease-out; }
+.anim-fade { animation: fade-in 0.16s ease-out; }
+.anim-beam { transform-origin: left; animation: beam 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+/* ───────────── Opening animation ───────────── */
+.splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg); transition: opacity 0.45s ease, visibility 0.45s; cursor: pointer; }
+.splash-leave { opacity: 0; visibility: hidden; }
+.splash-leave .splash-inner { transform: scale(0.96); }
+.splash-inner { display: flex; flex-direction: column; align-items: center; transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+.splash-mark { width: 92px; height: 92px; animation: splash-settle 0.9s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.splash-a, .splash-b { stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; opacity: 0; }
+.splash-a { animation: splash-draw 0.7s 0.1s cubic-bezier(0.65, 0, 0.35, 1) forwards, splash-fade 0.01s 0.1s forwards; }
+.splash-b { animation: splash-draw 0.7s 0.35s cubic-bezier(0.65, 0, 0.35, 1) forwards, splash-fade 0.01s 0.35s forwards; }
+.splash-link { opacity: 0; animation: splash-fade 0.18s 0.95s ease-out forwards; }
+.splash-word { margin-top: 22px; font-size: 26px; font-weight: 600; letter-spacing: 0.2em; padding-left: 0.2em; color: var(--ink); display: flex; }
+.splash-word span { display: inline-block; opacity: 0; transform: translateY(8px); animation: splash-letter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.splash-sub { margin-top: 6px; font-size: 12px; letter-spacing: 0.08em; color: var(--ink-3); opacity: 0; animation: splash-fade 0.4s 1.4s ease-out forwards; }
+@keyframes splash-draw { to { stroke-dashoffset: 0; } }
+@keyframes splash-fade { to { opacity: 1; } }
+@keyframes splash-letter { to { opacity: 1; transform: none; } }
+@keyframes splash-settle { from { transform: rotate(-8deg) scale(0.86); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .splash-a, .splash-b { stroke-dasharray: none; stroke-dashoffset: 0; opacity: 1; animation: none; }
+  .splash-link, .splash-sub, .splash-word span { opacity: 1; transform: none; animation: none; }
+  .splash-mark { animation: none; }
+}
